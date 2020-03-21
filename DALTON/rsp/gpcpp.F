@@ -237,6 +237,7 @@ C
       END DO
       RETURN
       END
+
       SUBROUTINE ABS_REDSPACE_REBUILD(KZVAR,GD,REDE,REDS,REDGD,
      &          KNVEC,WRK,LWRK)
 C
@@ -279,7 +280,7 @@ c
         REWIND(LUAS)
         CALL DZERO(REDGD(1,1),ABS_KLRED(1))
         CALL DZERO(REDGD(1,2),ABS_KLRED(2))
-       ABS_KLRED(1)=0
+        ABS_KLRED(1)=0
         ABS_KLRED(2)=0
         KNVEC(1)=2*ABS_NFREQ_INTERVAL
         KNVEC(2)=2*ABS_NFREQ_INTERVAL
@@ -399,3 +400,4 @@ c     &           ABS_MAXRM,ABS_MAXRM,1,LUABSPRI)
 c
       RETURN
       END
+! end of gpcpp.F

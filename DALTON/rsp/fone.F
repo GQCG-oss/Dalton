@@ -34,6 +34,7 @@ C
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
+#include "dftcom.h"
 #include "wrkrsp.h"
 #include "infrsp.h"
 C
@@ -42,9 +43,13 @@ C
 C
       PARAMETER ( D2 = 2.0D0  , DP5 = 0.5D0 )
 C
-      IF (NASHT.GT.0) CALL DSCAL(NORBT*NORBT*NSIM,DP5,FVOEX,1)
-      IF (DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT)
-     &   CALL DSCAL(NORBT*NORBT*NSIM,HFXFAC,FCOEX,1)
+      IF (NASHT.GT.0) THEN
+         FACTOR = DP5 * HFXFAC
+         CALL DSCAL(NORBT*NORBT*NSIM,FACTOR,FVOEX,1)
+      END IF
+      IF (HFXFAC .NE. 1.0D0) THEN
+         CALL DSCAL(NORBT*NORBT*NSIM,HFXFAC,FCOEX,1)
+      END IF
       IF (TRPLET) RETURN
       IF (NISHT.GT.0) CALL DSCAL(NORBT*NORBT*NSIM,D2,FCOCO,1)
       DO 100 IPSYM = 1,NSYM

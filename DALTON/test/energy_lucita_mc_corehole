@@ -1,0 +1,410 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > energy_lucita_mc_corehole.info <<'%EOF%'
+   energy_lucita_mc_corehole
+   -------------------------
+   Molecule:         CO
+   Wave Functions:   MCSCF (RAS) with LUCITA as CI module
+   Test Purpose:     Core-hole excitations using both a frozen and a
+                     relaxed core orbital
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > energy_lucita_mc_corehole.mol <<'%EOF%'
+INTGRL
+Calculation of core-hole excitations using both a frozen and a relaxed
+core orbital. This is a three step job
+    2    2  X  Y       1.D-15
+       8.     1    3    1    1    1
+O   0.000000             0.000000                  2.132
+   11    5
+15330.     0.000508   -0.000115 0.000000   0.000000  0.0
+2299.      0.003929   -0.000895 0.000000   0.000000  0.0
+522.4      0.020243   -0.004636 0.000000   0.000000  0.0
+147.3      0.079181   -0.018724 0.000000   0.000000  0.0
+47.55      0.230687   -0.058463 0.000000   0.000000  0.0
+16.76      0.433118   -0.136463 0.000000   0.000000  0.0
+6.207      0.350260   -0.175740 0.000000   0.000000  0.0
+1.752      0.042728    0.160934 1.000000   0.000000  0.0
+0.6882     -0.008154   0.603418 0.000000   0.000000  0.0
+0.2384     0.002381    0.378765 0.000000   1.000000  0.0
+0.073760   0.0         0.0      0.0        0.0       1.000000
+    6    4
+34.46      0.015928    0.000000  0.000000   0.0
+7.749      0.099740    0.000000  0.000000   0.0
+2.280      0.310492    0.000000  0.000000   0.0
+0.7156     0.491026    1.000000  0.000000   0.0
+0.2140     0.336337    0.000000  1.000000   0.0
+0.05974    0.0         0.0       0.0        1.000
+    3    3
+2.314      1.000000    0.000000   0.0
+0.645      0.000000    1.000000   0.0
+0.214000   0.0         0.0        1.0000
+        6.    1    3    1    1    1
+C   0.        0.000000  0.000000
+   11    5
+8236.       0.000531 -0.000113   0.000000   0.000000  0.0
+1235.       0.004108 -0.000878   0.000000   0.000000  0.0
+280.8       0.021087 -0.004540   0.000000   0.000000  0.0
+79.27       0.081853 -0.018133   0.000000   0.000000  0.0
+25.59       0.234817 -0.055760   0.000000   0.000000  0.0
+8.997       0.434401 -0.126895   0.000000   0.000000  0.0
+3.319       0.346129 -0.170352   0.000000   0.000000  0.0
+0.9059      0.039378 0.140382    1.000000   0.000000  0.0
+0.3643     -0.008983 0.598684    0.000000   0.000000  0.0
+0.1285      0.002385 0.395389    0.000000   1.000000  0.0
+0.04402     0.000000 0.000000    0.000000   0.000000  1.0
+    6    4
+18.71      0.014031    0.000000  0.000000  0.0
+4.133      0.086866    0.000000  0.000000  0.0
+1.200      0.290216    0.000000  0.000000  0.0
+0.3827     0.501008    1.000000  0.000000  0.0
+0.1209     0.343406    0.000000  1.000000  0.0
+0.03569    0.000000    0.000000  0.000000  1.0
+    3    3
+1.097      1.000000    0.000000  0.0
+0.318      0.000000    1.000000  0.0
+0.100      0.000000    0.000000  1.0
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > energy_lucita_mc_corehole__1.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
+**WAVE FUNCTIONS
+.HF
+*SCF INPUT
+.DOUBLY OCCUPIED
+   5 1 1 0
+.THRESHOLD
+  1.D-04
+.NONCANONICAL
+*OPTIMIZATION
+.NEO ALWAYS
+.DETERMIN
+**END OF INPUT
+%EOF%
+
+cat > energy_lucita_mc_corehole__2.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
+**WAVE FUNCTIONS
+.MCSCF
+.WESTA
+*CONFIGURATION INPUT
+.INACTIVE
+ 2 0 0 0
+.RAS1 SPACE
+ 1 0 0 0
+.RAS2 SPACE
+ 4 2 2 0
+.RAS3 SPACE
+ 0 0 0 0
+.RAS1 ELECTRONS
+ 1 1
+.ELECTR
+ 10
+.SYMMET
+ 2
+.SPIN MULTIPLICITY
+ 1
+*ORBITA
+.MOSTART
+ NEWORB
+.REORDER
+ 2 0 0 0
+ 2 3 3 2
+.FREEZE
+ 1 0 0 0
+ 3
+*OPTIMI
+.CI PROGRAM
+LUCITA
+.NEO ALWAYS
+.TRACI
+.NO ABS
+.DETERM
+.MAX MAC
+ 30
+*CI VEC
+.PLUS COMBINATIONS
+.STARTHDIAGONAL
+**END OF INPUT
+%EOF%
+
+cat > energy_lucita_mc_corehole__3.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
+**WAVE FUNCTIONS
+.MCSCF
+.WESTA
+*CONFIGURATION INPUT
+.INACTIVE
+ 2 0 0 0
+.RAS1 SPACE
+ 1 0 0 0
+.RAS2 SPACE
+ 4 2 2 0
+.RAS3 SPACE
+ 0 0 0 0
+.RAS1 ELECTRONS
+ 1 1
+.ELECTR
+ 10
+.SYMMET
+ 2
+.SPIN MULTIPLICITY
+ 1
+*ORBITA
+.MOSTART
+ NEWORB
+*OPTIMI
+.CI PROGRAM
+LUCITA
+.NR ALWAYS
+.TRACI
+.OPTIMA
+.NO ABS
+.DETERM
+.MAX MAC
+ 30
+*CI VEC
+.PLUS COMBINATIONS
+.STARTO
+**END OF INPUT
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >energy_lucita_mc_corehole__1.check
+cat >>energy_lucita_mc_corehole__1.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Basis set
+CRIT1=`$GREP "O * 1 * 8\.0000 * 44 * 32 * \[11s6p3d\|5s4p3d\]" $log | wc -l`
+CRIT2=`$GREP "C * 1 * 6\.0000 * 44 * 32 * \[11s6p3d\|5s4p3d\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 2 * 14\.0000 * 88 * 64" $log | wc -l`
+CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=4
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * 2\.1320000000" $log | wc -l`
+CRIT5=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (0| )\.0000000000" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7`
+CTRL[2]=7
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# Symmetry
+CRIT1=`$GREP "Number of coordinates in each symmetry\: * 2 * 2 * 2 * 0" $log | wc -l`
+CRIT2=`$GREP "Number of orbitals in each symmetry\: * 30 * 14 * 14 * 6" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="SYMMETRY NOT CORRECT"
+
+# SCF energy
+CRIT1=`$GREP "Final * HF energy\: * \-112\.77806297" $log | wc -l`
+TEST[4]=`expr	$CRIT1`
+CTRL[4]=1
+ERROR[4]="SCF ENERGY NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################
+echo $CHECK_SHELL >energy_lucita_mc_corehole__2.check
+cat >>energy_lucita_mc_corehole__2.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# HERMIT input processing
+##CRIT1=`$GREP "Output from HERMIT input processing" $log | wc -l`
+##TEST[1]=`expr	$CRIT1`
+##CTRL[1]=0
+##ERROR[1]="HERMIT INPUT PROCESSING SHOULD _NOT_ BE RUN"
+
+# HERINT
+##CRIT1=`$GREP "Output from HERINT" $log | wc -l`
+##TEST[2]=`expr	$CRIT1`
+##CTRL[2]=0
+##ERROR[2]="HERMIT SHOULD NOT BE RUN, THIS IS A RESTART"
+
+# RAS
+CRIT1=`$GREP "Number of active orbitals in RAS1\, RAS2\, and RAS3 \: * 1 * 8 * 0" $log | wc -l`
+CRIT2=`$GREP "Minimum number of electrons in RAS1 \: * 1" $log | wc -l`
+CRIT3=`$GREP "Maximum number of electrons in RAS1 \: * 1" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=3
+ERROR[3]="RAS NOT SET UP CORRECTLY"
+
+# ?
+CRIT1=`$GREP "Number of orbitals frozen with \"\.FREEZE\" * 1" $log | wc -l`
+CRIT2=`$GREP "3 * 1 * 3 * active" $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[4]=2
+ERROR[4]="FROZEN ORBITAL NOT CORRECT"
+
+# Energy
+CRIT1=`$GREP "Final MCSCF energy\: * \-102\.288287(1|2)" $log | wc -l`
+TEST[6]=`expr	$CRIT1`
+CTRL[6]=1
+ERROR[6]="MCSCF ENERGY NOT CORRECT"
+
+# Occupancy
+CRIT1=`$GREP "2\.000000000 * 2\.000000000 * 1\.000000000 * 1\.973134.* 1\.982492" $log | wc -l`
+CRIT2=`$GREP "0*\.012752.* 0*\.026467" $log | wc -l`
+CRIT3=`$GREP "1\.977401.* * 1\.021652" $log | wc -l`
+CRIT4=`$GREP "1\.92697[12].* * 0*\.079125" $log | wc -l`
+CRIT5=`$GREP "No occupied orbitals" $log | wc -l`
+TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[7]=8
+ERROR[7]="NO OCCUPANCIES NOT CORRECT"
+
+PASSED=1
+for i in 3 4 6 7
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################
+echo $CHECK_SHELL >energy_lucita_mc_corehole__3.check
+cat >>energy_lucita_mc_corehole__3.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# HERMIT input processing
+#CRIT1=`$GREP "Output from HERMIT input processing" $log | wc -l`
+#TEST[1]=`expr	$CRIT1`
+#CTRL[1]=0
+#ERROR[1]="HERMIT INPUT PROCESSING SHOULD _NOT_ BE RUN"
+
+# HERINT
+#CRIT1=`$GREP "Output from HERINT" $log | wc -l`
+#TEST[2]=`expr	$CRIT1`
+#CTRL[2]=0
+#ERROR[2]="HERMIT SHOULD NOT BE RUN, THIS IS A RESTART"
+
+# RAS
+CRIT1=`$GREP "Number of active orbitals in RAS1\, RAS2\, and RAS3 \: * 1 * 8 * 0" $log | wc -l`
+CRIT2=`$GREP "Minimum number of electrons in RAS1 \: * 1" $log | wc -l`
+CRIT3=`$GREP "Maximum number of electrons in RAS1 \: * 1" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=3
+ERROR[3]="RAS NOT SET UP CORRECTLY"
+
+# Energy
+CRIT1=`$GREP "Final MCSCF energy\: * \-102\.32015413" $log | wc -l`
+TEST[4]=`expr	$CRIT1`
+CTRL[4]=1
+ERROR[4]="MCSCF ENERGY NOT CORRECT"
+
+# Occupancy
+CRIT1=`$GREP -l "2\.000000000 * 2\.000000000 * 1\.000000000 * 1\.973575.* 1\.982977.*" $log | wc -l`
+CRIT2=`$GREP -l "0*\.012295.* 0*\.026173.*" $log | wc -l`
+CRIT3=`$GREP -l "1\.977380.* 1\.021666.*" $log | wc -l`
+CRIT4=`$GREP -l "1\.927751.* 0*\.078179.*" $log | wc -l`
+CRIT5=`$GREP -l "No occupied orbitals" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+# crit4 is found three times on master branch
+CTRL[5]=5
+ERROR[5]="NO OCCUPANCIES NOT CORRECT"
+
+PASSED=1
+for i in 3 4 5
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################

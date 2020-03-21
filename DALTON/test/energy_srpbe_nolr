@@ -1,0 +1,149 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > energy_srpbe_nolr.info <<'%EOF%'
+   energy_srpbe_nolr
+   -----------------
+   Molecule:         H2O
+   Wave Functions:   SCF / cc-pVDZ (Atombasis)
+   Test Purpose:     Check srDFT energy calculations
+                     with symmetry, with GGA (PBE),
+                     with erf 0.0 (i.e. standard DFT in sr code)
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > energy_srpbe_nolr.mol <<'%EOF%'
+ATOMBASIS
+NEVPT2-srDFT Energy calculation with symmetry
+Basis set specified with ATOMBASIS
+    2     
+        8.    1      Basis=cc-pVDZ
+O     0.0 -0.2249058930 0.0
+        1.    2      Bas=cc-pVDZ
+H1    1.45235 0.899623 0.0
+H2   -1.45235 0.899623 0.0
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > energy_srpbe_nolr.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTION
+**INTEGRALS
+*TWOINT
+.DOSRINTEGRALS
+.ERF
+ 0.0 ! no long-range integrals, i.e. KS-DFT calculation
+**WAVE FUNCTIONS
+.HFSRDFT
+.SRFUN
+SRXPBEHSE SRCPBERI
+*SCF INPUT
+.DOUBLY OCCUPIED
+ 3 1 1 0
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >energy_srpbe_nolr.check
+cat >>energy_srpbe_nolr.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -i -a"
+else
+   GREP="egrep -i"
+fi
+
+# Reading ATOMBASIS:
+CRIT1=`$GREP "\[9s4p1d\|3s2p1d\]" $log | wc -l`
+TEST[1]=`expr $CRIT1`
+CTRL[1]=1
+ERROR[1]="ATOMBASIS NOT READ CORRECTLY"
+
+# Reading molecular geometry:
+CRIT1=`$GREP "1 * x * 0*\.0000000000" $log | wc -l`
+CRIT2=`$GREP "2 * y * 0*\.0000000000" $log | wc -l`
+CRIT3=`$GREP "3 * z * \-*0*\.125851" $log | wc -l`
+CRIT4=`$GREP "4 * x * 0*\.0000000000" $log | wc -l`
+CRIT5=`$GREP "5 * y * 1\.4523500000" $log | wc -l`
+CRIT6=`$GREP "6 * z * 0*\.998677" $log | wc -l`
+CRIT7=`$GREP "7 * x * 0*\.0000000000" $log | wc -l`
+CRIT8=`$GREP "8 * y * \-1\.4523500000" $log | wc -l`
+CRIT9=`$GREP "9 * z * 0*\.998677" $log | wc -l`
+CRIT10=`$GREP "Total number of coordinates: * 9" $log | wc -l`
+TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
+              $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10`
+CTRL[2]=10
+ERROR[2]="MOLECULAR GEOMETRY NOT READ CORRECTLY"
+
+# Nuclear repulsion energy:
+CRIT1=`$GREP "Nuclear repulsion energy : * 9.0550045256" $log | wc -l`
+TEST[3]=`expr $CRIT1`
+CTRL[3]=1
+ERROR[3]="NUCLEAR REPULSION ENERGY NOT CORRECT"
+
+# Wave function:
+CRIT1=`$GREP "Number of closed shell electrons * 10" $log | wc -l`
+CRIT2=`$GREP "Number of electrons in active shells * 0" $log | wc -l`
+CRIT4=`$GREP "Total number of orbitals * 24" $log | wc -l`
+CRIT5=`$GREP "Spin multiplicity .* 1" $log | wc -l`
+CRIT6=`$GREP "Total number of symmetries * 4" $log | wc -l`
+CRIT7=`$GREP "Reference state symmetry * 1" $log | wc -l`
+TEST[4]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
+              $CRIT6  \+ $CRIT7`
+CTRL[4]=7
+ERROR[4]="INCORRECT WAVE FUNCTION"
+
+# SCF energy:
+#   @ Final HF-SRDFT energy:       -76.346541615413
+CRIT1=`$GREP "Final HF-SRDFT energy: * \-76\.346541" $log | wc -l`
+TEST[5]=`expr $CRIT1`
+CTRL[5]=1
+ERROR[5]="PBE energy via HF-srPBE NOT CORRECT"
+
+
+PASSED=1
+for i in 1 2 3 4 5
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]} ' ( ' ${TEST[i]} ${CTRL[i]} ' )'
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################

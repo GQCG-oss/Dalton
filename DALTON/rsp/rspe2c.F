@@ -16,45 +16,44 @@
 !
 !
 C
-#ifdef OLD_LOG
-===========================================================================
-Revision 1.2  2001/01/17 10:41:29  vebjornb
-Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.3  2000/05/24 19:00:24  hjj
-new GETREF and CREF allocation (fix of triplet problem for CSF:s)
-Do not read S(2) CI diagonal but use implicit that it is 1.0D0
-
-961011-hjaaj
-merged with SOPPA changes by ekd
-LRST  : modification needed for proper handling of cubic response
-950705-hjaaj
-RSPPP : New code for GOS oscillator strengths.
-941117-hjaaj
-QONEMU: changed a SMPATB to SMPAB to change DDOT to DAXPY
-FCKOIN: optimized
-940708-hjaaj
-c: SOPPA changes: test KOFFTY.eq.1, not KSYMOP.eq.1 for CREF
-LRST  : only orb (ph) trial vectors for SOPPA (no conf., i.e. no 2p2h)
-RSPDIA: skip S[2] reads if SHIFT .eq. D0
-931007-hjaaj
-removed RSPMC and GETREF (now in rspmai.u)
-extracted **FILENAME=ORPCTL.UPD module as rsporp.u
-931004-pj+hjaaj
-merged previous updates (including some of the comments below and more),
-merged/inserted solvent and RSPSUP changes
-920624-ov: New conversion factors in RSPPP from CODATA
-921125-hj: RSPMC  (rspe2c.u) consistency check with NCONRF, LSYMRF
-           instead of NCONF,LSYM (because of problems with calls from
-           ABACUS).  The NWOPT test has been disabled.
-920722-hjaaj
-RSPNEX: new THRLDV definition for lin.dep.
-LRST: stop if RSPSUP true and restart (need some additional coding)
-920721-Hinne Hettema
-RSPCTL: "NSIM=0" for RSPRED before GO TO 1000 (2 places)
-ORBDIA: inserted averaging code (if RSPSUP)
-===========================================================================
-#endif
+!===========================================================================
+!Revision 1.2  2001/01/17 10:41:29  vebjornb
+!Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
+!
+!Revision 1.3  2000/05/24 19:00:24  hjj
+!new GETREF and CREF allocation (fix of triplet problem for CSF:s)
+!Do not read S(2) CI diagonal but use implicit that it is 1.0D0
+!
+!961011-hjaaj
+!merged with SOPPA changes by ekd
+!LRST  : modification needed for proper handling of cubic response
+!950705-hjaaj
+!RSPPP : New code for GOS oscillator strengths.
+!941117-hjaaj
+!QONEMU: changed a SMPATB to SMPAB to change DDOT to DAXPY
+!FCKOIN: optimized
+!940708-hjaaj
+!c: SOPPA changes: test KOFFTY.eq.1, not KSYMOP.eq.1 for CREF
+!LRST  : only orb (ph) trial vectors for SOPPA (no conf., i.e. no 2p2h)
+!RSPDIA: skip S[2] reads if SHIFT .eq. D0
+!931007-hjaaj
+!removed RSPMC and GETREF (now in rspmai.u)
+!extracted **FILENAME=ORPCTL.UPD module as rsporp.u
+!931004-pj+hjaaj
+!merged previous updates (including some of the comments below and more),
+!merged/inserted solvent and RSPSUP changes
+!920624-ov: New conversion factors in RSPPP from CODATA
+!921125-hj: RSPMC  (rspe2c.u) consistency check with NCONRF, LSYMRF
+!           instead of NCONF,LSYM (because of problems with calls from
+!           ABACUS).  The NWOPT test has been disabled.
+!920722-hjaaj
+!RSPNEX: new THRLDV definition for lin.dep.
+!LRST: stop if RSPSUP true and restart (need some additional coding)
+!920721-Hinne Hettema
+!RSPCTL: "NSIM=0" for RSPRED before GO TO 1000 (2 places)
+!ORBDIA: inserted averaging code (if RSPSUP)
+!===========================================================================
+C
 C  /* Deck e2sym */
       SUBROUTINE E2SYM(IBTYP,CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,
      &                 WRK,LWRK)
@@ -504,7 +503,7 @@ C     CALL JACO(F,V,NB,NMAX,NROWV,BIG,JBIG)
 C     CALL ORDER(EVEC,EVAL,N,NEVEC)
       WRITE(LUPRI,'(/A)') '   The eigenvalues of E2 :'
       DO I = 1,KZYDIM,2
-         WRITE(LUPRI,'(1P,2(I10,D20.10))')
+         WRITE(LUPRI,'(1P,2(I10,E20.10))')
      *      I,WRK(KEIVAL-1+I), I+1, WRK(KEIVAL+I)
       END DO
 C
@@ -528,7 +527,7 @@ C     CALL JACO(F,V,NB,NMAX,NROWV,BIG,JBIG)
 C     CALL ORDER(EVEC,EVAL,N,NEVEC)
       WRITE(LUPRI,'(/A)') '   The eigenvalues of S2 :'
       DO 820 I = 1,KZDIM
-         WRITE(LUPRI,'(1P,2(I10,D20.10))')
+         WRITE(LUPRI,'(1P,2(I10,E20.10))')
      *      I,WRK(KEIVAL-1+I), KZYDIM+1-I, WRK(KEIVAL+KZYDIM-I)
  820  CONTINUE
 C
@@ -779,13 +778,13 @@ C
      &           '. ONE-INDEX TRANSFORMED FOCK CORE MATRIX',
      *           ' BEFORE DIRECT [FC,ZYMAT] CONTRIBUTION'
             CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT,
-     *                  1,LUPRI)
+     *                  -1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
      *           '. ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX',
      *           ' BEFORE DIRECT [FC,ZYMAT] CONTRIBUTION'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
-     *                     ,1,LUPRI)
+     *                     ,-1,LUPRI)
             END IF
  3000    CONTINUE
       END IF
@@ -912,7 +911,7 @@ C
       ICDSYM= MULD2H(ICSYM,IDSYM)
       IF ((ICDTYP.EQ.4) .AND. (.NOT. TRPLET)) THEN
 C
-C   FVONE(P,Q) = (XY,PQ)*DVT(X,Y)
+C   FVTD(P,Q) += (XY,PQ)*DVT(X,Y)
 C
          DO 100 ISIM = 1,NSIM
             IF (ABS(DVT(NCIW,NDIW,ISIM)).GT.DTOL) THEN
@@ -928,7 +927,7 @@ C
  100     CONTINUE
       END IF
 C
-C   FVTD(P,Q) = SUM(X) (YP,XQ)*DVT(X,Y)*DP5
+C   FVTD(P,Q) -= SUM(X) (YP,XQ)*DVT(X,Y)*DP5
 C
       DO 150 ISIM = 1,NSIM
          IXSYM = MULD2H(KSYMOP,ICSYM)
@@ -1082,7 +1081,7 @@ C           ... remove CREF component of E[2] vector
             WRITE(LUPRI,'(/A)')
      *        ' CSF PART OF E(2) TRANSFORMED ORBITAL VECTOR: Z PART'
             CALL OUTPUT(EVECS(1,ISIM),1,KZCONF,1,1,
-     *                  KZCONF,1,1,LUPRI)
+     *                  KZCONF,1,-1,LUPRI)
          END IF
 C
 C CREATE Y PART  <0,H2X,J> OF LINEAR TRANSFORMATION WITH E(2)
@@ -1101,8 +1100,8 @@ C
  130        CONTINUE
  120     CONTINUE
          IF (IPRRSP.GT.110) THEN
-            WRITE(LUPRI,'(/A)')' ONE INDEX TRANSFORMED FCAC '
-            CALL OUTPUT(WRK(KUFCAC),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+           WRITE(LUPRI,'(/A)')' One-index transformed FCAC '
+           CALL OUTPUT(WRK(KUFCAC),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
          END IF
 C
          DISTYP = 3
@@ -1119,7 +1118,7 @@ C           ... remove CREF component of E[2] vector
             WRITE(LUPRI,'(/A)')
      *        ' CSF PART OF E(2) TRANSFORMED ORBITAL VECTOR: Y PART'
             CALL OUTPUT(EVECS(1+KZVAR,ISIM),1,KZCONF,1,1,
-     *                  KZCONF,1,1,LUPRI)
+     *                  KZCONF,1,-1,LUPRI)
          END IF
 C
  100  CONTINUE
@@ -1455,13 +1454,13 @@ C
          IF ((IPRRSP.GT.110).AND.(NCSIM.GT.0)) THEN
             WRITE(LUPRI,'(/A,I5)')' NCSIM CSF TRIAL VECTORS',NCSIM
             CALL OUTPUT(WRK(KBCVEC),1,KZCONF,1,NCSIM,
-     &                  KZCONF,NCSIM,1,LUPRI)
+     &                  KZCONF,NCSIM,-1,LUPRI)
          ENDIF
          IF ((IPRRSP.GT.100).AND.(NOSIM.GT.0)) THEN
             WRITE(LUPRI,'(/A,I5)')' NOSIM (Z,Y) ORBITAL TRIAL VECTORS',
      &           NOSIM
             CALL OUTPUT(WRK(KBOVEC),1,KZWOPT,1,2*NOSIM,
-     *                  KZWOPT,2*NOSIM,1,LUPRI)
+     *                  KZWOPT,2*NOSIM,-1,LUPRI)
          ENDIF
          IF (IPRRSP.GT.30) THEN
             WRITE(LUPRI,'(/A,I5)')
@@ -1503,13 +1502,13 @@ C        CALL RSPORT (BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
  3010    CONTINUE
          IF ((IPRRSP.GT.110).AND.(NCSIM.GT.0)) THEN
             WRITE(LUPRI,*)'LRST: NCSIM CSF TRIAL VECTORS',NCSIM
-            CALL OUTPUT(WRK(KBCVEC),1,KZCONF,1,NCSIM,KZCONF,NCSIM,1,
+            CALL OUTPUT(WRK(KBCVEC),1,KZCONF,1,NCSIM,KZCONF,NCSIM,-1,
      &                  LUPRI)
          ENDIF
          IF ((IPRRSP.GT.110).AND.(NOSIM.GT.0)) THEN
             WRITE(LUPRI,*)'LRST: NOSIM ORBITAL TRIAL VECTORS',NOSIM
             CALL OUTPUT(WRK(KBCVEC+NCSIM*KZCONF),1,KZYWOP,
-     *                1,NOSIM,KZYWOP,NOSIM,1,LUPRI)
+     *                1,NOSIM,KZYWOP,NOSIM,-1,LUPRI)
          ENDIF
          NTSIM = NTSIM + NLSIM
  150  CONTINUE ! DO 150 ISIM = 1,KEXSIM,MAXSIM
@@ -1655,7 +1654,7 @@ C
 c ach
             DO 600 JOP = JST,NOP
                XPROP = SOPR(IFREQ,IOP,JOP)
-               WRITE(LUPRI,'(5A,1P,D20.12)')
+               WRITE(LUPRI,'(5A,1P,E20.12)')
      * '@ -<< ',LBLLR(KSYMOP,IOP),' ; ',LBLLR(KSYMOP,JOP),' >> =',XPROP
 C JK
                 CALL WRIPRO(XPROP,"LR-SCF/DFT   ",2,
@@ -1668,7 +1667,7 @@ C JK
                   CALL GETGPV(LBLLR(KSYMOP,JOP),FC,DUMMY,CMO,UDV,PV,
      &                        XINDX,ANTSYM,WRK(KGP),LWRKGP)
                   W4TERM = DDOT(KZYVAR,WRK(KGP),1,WRK(KISOL),1)
-                  WRITE(LUPRI,'(A,1P,D20.12)')
+                  WRITE(LUPRI,'(A,1P,E20.12)')
      &            '@ SOPPA W4(E) term  ',W4TERM
                END IF
                IF (GCALC) THEN
@@ -2173,10 +2172,10 @@ C
          IF ( IPRRSP.GT.150 ) THEN
             WRITE(LUPRI,'(/A,2I5)')
      *       ' NON-TRANSFORMED INTEGRALS: DISTRBR: NCIW,NDIW',NCIW,NDIW
-             CALL OUTPUT(H2,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+             CALL OUTPUT(H2,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
             WRITE(LUPRI,'(/A,2I5)')
      *       ' HALF TRANSFORMED INTEGRALS: DISTRBR: NCIW,NDIW',NCIW,NDIW
-             CALL OUTPUT(H2X,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+             CALL OUTPUT(H2X,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
          END IF
 C
 C DISTRIBUTE ACTIVE HALF ONE INDEX TRANSFORMED INTEGRALS INTO H2XAC
@@ -2200,7 +2199,7 @@ C
             WRITE(LUPRI,'(/A,I5)')
      *       ' HALF TRANSFORMED ACTIVE INTEGRALS: DISTRB: NCDW',NCDW
              CALL OUTPUT(H2XAC(1,NCDW,IOSIM),1,NASHT,1,NASHT,
-     *                   NASHT,NASHT,1,LUPRI)
+     *                   NASHT,NASHT,-1,LUPRI)
          END IF
          END IF
 C
@@ -2321,14 +2320,18 @@ C     |0(L)> =  SUM(N) S'(N)*|N>
 C
 C MODIFIED 5-5-1988 : ASSUME |0(L)> = 0 i.e. S' = 0 AND
 C                     NOT STORED'
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
 C
       DIMENSION ZYCVEC(KZCONF,*),FCAC(*),H2AC(*)
       DIMENSION EVECS(KZYVAR,*),XINDX(*),WRK(*)
 C
 #include "priunit.h"
+#include "maxorb.h"
 #include "wrkrsp.h"
 #include "infrsp.h"
+#include "infinp.h"
 #include "infopt.h"
 #include "inforb.h"
 #include "infpri.h"
@@ -2362,8 +2365,25 @@ C     ... IADH2 .lt. 0: H2AC in core
       ISPIN1 = 0
       ISPIN2 = 0
       DO 100 ISIM = 1,NCSIM
-         CALL DSPTSI(NASHT,FCAC,WRK(KUFCAC))
-C     ... unpack FCAC using CALL DSPTSI(N,ASP,ASI)
+         if(ci_program .eq. 'SIRIUS-CI')then
+           CALL DSPTSI(NASHT,FCAC,WRK(KUFCAC))
+C     ...  unpack FCAC using CALL DSPTSI(N,ASP,ASI)
+         else if(ci_program .eq. 'LUCITA   ')then
+           call dcopy(NNASHX,FCAC,1,WRK(KUFCAC),1)
+!
+!          set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+           mcscf_ci_trial_vector = .true.
+
+!          set vector exchange type: cref
+           if(cref_is_active_bvec_for_sigma)then
+             vector_exchange_type1 = 2
+             cref_is_active_bvec_for_sigma = .false.
+           else
+!           set vector exchange type: bvec trial vector
+            vector_exchange_type1 = 2
+           end if
+         end if
+
          CALL CISIGD(KSYMST,KSYMST,KZCONF,KZCONF,ZYCVEC(1,ISIM),
      *               EVECS(1,ISIM),WRK(KUFCAC),H2AC,NOH2,IH8SM,
      *               XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
@@ -2418,6 +2438,8 @@ C           CALL OUTPUT(EVECS(1+KZVAR,ISIM),
 C    *                  1,KZCONF,1,1,KZCONF,1,1,LUPRI)
 C        END IF
  100  CONTINUE
+!     reset flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .false.
 C
 C END OF RSPCLI
 C
@@ -2478,7 +2500,10 @@ C  wrkrsp.h: ??
 C  infpri.h: LUERR
 C
 #include "priunit.h"
+#include "maxorb.h"
+
 #include "pgroup.h"
+#include "infinp.h"
 #include "inforb.h"
 #include "wrkrsp.h"
 #include "infrsp.h"
@@ -2560,6 +2585,12 @@ C
 C     SOPCLI reads 2p-2h diagonal (D(0) matrix)
       IF (SOPPA) KTOUSE = KTOUSE - KZCONF
       MAXSIM = MIN(MAXVEC,(KTOUSE-100)/KMAXVE)
+! Manu + Hjj: for linear response MCSCF-srDFT (we still need to fix bugs for
+!             simultaneous calculation of many roots)       /Dec 2011 TODO
+      IF (DOMCSRDFT .OR. DOHFSRDFT) THEN
+         maxsim = MIN(MAXSIM,1)
+      END IF
+!
       IF (IPRRSP.GT.37 .OR. MAXSIM.LE.0) THEN
          WRITE(LUPRI,*)
      *     ' KLIDEN,KUSE,KMAXVE,LBINTM,NORBT,NASHT,KZYVAR,LWRK '
@@ -2764,12 +2795,12 @@ C
             IF (NOSIM .GT. 0) THEN
                WRITE(LUPRI,'(/I5,A)')NOSIM,' ORBITAL TRIAL VECTORS'
                CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,NOSIM,
-     *                     KZYWOP,NOSIM,1,LUPRI)
+     *                     KZYWOP,NOSIM,-1,LUPRI)
             ENDIF
             IF (NCSIM .GT. 0) THEN
                WRITE(LUPRI,'(/I5,A)')NCSIM,' CONFIG. TRIAL VECTORS'
                CALL OUTPUT(WRK(KBCVEC),1,KZCONF,1,NCSIM,
-     *                     KZCONF,NCSIM,1,LUPRI)
+     *                     KZCONF,NCSIM,-1,LUPRI)
             ENDIF
          END IF
          CALL FLSHFO(LUPRI)
@@ -2858,16 +2889,16 @@ C
             IF (NOSIM .GT. 0) THEN
                WRITE(LUPRI,'(/I5,A)')NOSIM,' ORBITAL TRIAL VECTORS'
                CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,NOSIM,
-     *                     KZYWOP,NOSIM,1,LUPRI)
+     *                     KZYWOP,NOSIM,-1,LUPRI)
             ENDIF
             IF (NCSIM .GT. 0) THEN
                WRITE(LUPRI,'(/I5,A)')NCSIM,' CONFIG. TRIAL VECTORS'
                CALL OUTPUT(WRK(KBCVEC),1,KZCONF,1,NCSIM,
-     *                     KZCONF,NCSIM,1,LUPRI)
+     *                     KZCONF,NCSIM,-1,LUPRI)
             ENDIF
             WRITE(LUPRI,'(/I5,A)')NSIM, ' E(2) LINEAR TRANSF. VECTORS'
             CALL OUTPUT(WRK(KEVECS),1,KZYVAR,1,NSIM,
-     *                     KZYVAR,NSIM,1,LUPRI)
+     *                     KZYVAR,NSIM,-1,LUPRI)
          ENDIF
          JEXSIM =JEXSIM-NSIM
          IF (JEXSIM.GT.0) THEN
@@ -3675,10 +3706,14 @@ C
 #include "infpri.h"
 #include "inftap.h"
 #include "esg.h"
-C allocate work space for (oriented) electronic CD and
+
+      CALL QENTER('RSPPP')
+C Allocate work space for (oriented) electronic CD and
 C for reduced E(2) and reduced S(2)
 !     DOMO2 = DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT
-      DOMO2 = DODFT .AND. NASHT.EQ.0
+!     DOMO2 = DODFT
+!     DOMO2 = NASHT .EQ. 0
+      DOMO2 = KZCONF .EQ. 0 .AND. NASHT .EQ. 0 ! KZCONF test to also exclude SOPPA
       IF (RSPOCD) THEN
          IF (LMXFR .LT. NPPCNV(KSYMOP)) THEN
             NINFO = NINFO + 1
@@ -4194,7 +4229,8 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
      &                             WRK(KWRK2),LWRK2)
 
             IF (DOMO2) CALL RSPPMO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),
-     &                             KZVAR,WRK(KCMO2),LUPRI)
+     &                             KZVAR,WRK(KCMO2),IPRRSP,LUPRI)
+
             CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS+(INUM-1)*KZYVAR),
      &                  'EXCITLAB',BLANK,WRK(KEIVAL-1+ISIM-1+INUM),D0,
      &                  KSYMOP,0,WRK(KRESID-1+ISIM-1+INUM),D0)
@@ -4548,6 +4584,7 @@ C
 C
 C *** END OF RSPPP
 C
+      CALL QEXIT('RSPPP')
       RETURN
       END
 C  /* Deck rsplr */
@@ -5043,7 +5080,7 @@ C
  1050 CONTINUE
       IF (IPRRSP.GT.110) THEN
          WRITE (LUPRI,*) ' KEXSIM RESIDUAL VECTORS',KEXSIM
-         CALL OUTPUT(RD,1,KZYVAR,1,NBX,KZYVAR,NBX,1,LUPRI)
+         CALL OUTPUT(RD,1,KZYVAR,1,NBX,KZYVAR,NBX,-1,LUPRI)
       END IF
 C
 C        THE RESIDUAL IS NOW CONSTRUCTED
@@ -5529,14 +5566,14 @@ C
          WRITE(LUPRI,'(2A,I8)')
      *   ' ORBITAL E(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZDIM
-         CALL OUTPUT(OEVEC,1,KZYWOP,1,KZDIM,KZYWOP,KZDIM,1,LUPRI)
+         CALL OUTPUT(OEVEC,1,KZYWOP,1,KZDIM,KZYWOP,KZDIM,-1,LUPRI)
          WRITE(LUPRI,'(2A,I8)')
      *   ' ORBITAL S(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZDIM
-         CALL OUTPUT(OSVEC,1,KZYWOP,1,KZDIM,KZYWOP,KZDIM,1,LUPRI)
+         CALL OUTPUT(OSVEC,1,KZYWOP,1,KZDIM,KZYWOP,KZDIM,-1,LUPRI)
             WRITE(LUPRI,'(2A,I8)')' ORBITAL TRIAL VECTORS ',
      *      ' : DIMENSION ',2*KZDIM
-         CALL OUTPUT(OBVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,1,LUPRI)
+         CALL OUTPUT(OBVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,-1,LUPRI)
       END IF
 C
 C CARRY OUT LINEAR TRANSFORMATION ON (Y,Z) VECTORS
@@ -5610,14 +5647,14 @@ C
          WRITE(LUPRI,'(2A,I8)')
      *   ' ORBITAL E(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZYDIM
-         CALL OUTPUT(OEVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,1,LUPRI)
+         CALL OUTPUT(OEVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,-1,LUPRI)
          WRITE(LUPRI,'(2A,I8)')
      *   ' ORBITAL S(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZYDIM
-         CALL OUTPUT(OSVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,1,LUPRI)
+         CALL OUTPUT(OSVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,-1,LUPRI)
             WRITE(LUPRI,'(2A,I8)')' ORBITAL TRIAL VECTORS ',
      *      ' : DIMENSION ',2*KZDIM
-         CALL OUTPUT(OBVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,1,LUPRI)
+         CALL OUTPUT(OBVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,-1,LUPRI)
       END IF
 C
 C CHECK IF TRIAL VECTORS ARE ORTHONORMAL
@@ -5661,9 +5698,9 @@ C
  80      CONTINUE
  70   CONTINUE
       WRITE(LUPRI,'(A,I8)')' REDUCED E(2) MATRIX : DIMENSION ',KZYDIM
-      CALL OUTPUT(WRK(KE2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,1,LUPRI)
+      CALL OUTPUT(WRK(KE2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,-1,LUPRI)
       WRITE(LUPRI,'(A,I8)')' REDUCED S(2) MATRIX : DIMENSION ',KZYDIM
-      CALL OUTPUT(WRK(KS2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,1,LUPRI)
+      CALL OUTPUT(WRK(KS2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,-1,LUPRI)
 C
 C CHECK BLOCK STRUCTURE OF E2 AND S2 AND WRITE OUT LARGEST DEVIATIONS
 C
@@ -5888,14 +5925,14 @@ C
          WRITE(LUPRI,'(2A,I8)')
      *   ' ORBITAL E(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZDIM
-         CALL OUTPUT(OEVEC,1,KZYWOP,1,KZDIM,KZYWOP,KZDIM,1,LUPRI)
+         CALL OUTPUT(OEVEC,1,KZYWOP,1,KZDIM,KZYWOP,KZDIM,-1,LUPRI)
          WRITE(LUPRI,'(2A,I8)')
      *   ' ORBITAL S(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZDIM
-         CALL OUTPUT(OSVEC,1,KZYWOP,1,KZDIM,KZYWOP,KZDIM,1,LUPRI)
+         CALL OUTPUT(OSVEC,1,KZYWOP,1,KZDIM,KZYWOP,KZDIM,-1,LUPRI)
             WRITE(LUPRI,'(2A,I8)')' ORBITAL TRIAL VECTORS ',
      *      ' : DIMENSION ',2*KZDIM
-         CALL OUTPUT(OBVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,1,LUPRI)
+         CALL OUTPUT(OBVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,-1,LUPRI)
       END IF
 C
 C CARRY OUT LINEAR TRANSFORMATION ON (Y,Z) VECTORS
@@ -5969,14 +6006,14 @@ C
          WRITE(LUPRI,'(2A,I8)')
      *   ' ORBITAL E(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZYDIM
-         CALL OUTPUT(OEVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,1,LUPRI)
+         CALL OUTPUT(OEVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,-1,LUPRI)
          WRITE(LUPRI,'(2A,I8)')
      *   ' ORBITAL S(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZYDIM
-         CALL OUTPUT(OSVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,1,LUPRI)
+         CALL OUTPUT(OSVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,-1,LUPRI)
             WRITE(LUPRI,'(2A,I8)')' ORBITAL TRIAL VECTORS ',
      *      ' : DIMENSION ',2*KZDIM
-         CALL OUTPUT(OBVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,1,LUPRI)
+         CALL OUTPUT(OBVEC,1,KZYWOP,1,KZYDIM,KZYWOP,KZYDIM,-1,LUPRI)
       END IF
 C
 C CHECK IF TRIAL VECTORS ARE ORTHONORMAL
@@ -6020,9 +6057,9 @@ C
  80      CONTINUE
  70   CONTINUE
       WRITE(LUPRI,'(A,I8)')' REDUCED E(2) MATRIX : DIMENSION ',KZYDIM
-      CALL OUTPUT(WRK(KE2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,1,LUPRI)
+      CALL OUTPUT(WRK(KE2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,-1,LUPRI)
       WRITE(LUPRI,'(A,I8)')' REDUCED S(2) MATRIX : DIMENSION ',KZYDIM
-      CALL OUTPUT(WRK(KS2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,1,LUPRI)
+      CALL OUTPUT(WRK(KS2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,-1,LUPRI)
 C
 C CHECK BLOCK STRUCTURE OF E2 AND S2 AND WRITE OUT LARGEST DEVIATIONS
 C
@@ -6415,7 +6452,7 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
       return
       end
 C  /* Deck RSPPMO */
-      SUBROUTINE RSPPMO (WOP,IOFFY,CMO2,LUPRI)
+      SUBROUTINE RSPPMO (WOP,IOFFY,CMO2,IPRINT,LUPRI)
 C
 C     June 2008; PBHT MO overlap diagnostic
 C     Reference:
@@ -6427,7 +6464,7 @@ C
 C     (subroutine based on RSPPRO tuh)
 C
 #include "implicit.h"
-      PARAMETER(PTHRS = 1.D-08)
+      PARAMETER(PTHRS = 1.D-03)
       DIMENSION WOP(*)
       DIMENSION CMO2(NORBT,NORBT,2)
 C
@@ -6438,11 +6475,8 @@ C
 #include "infvar.h"
 
       IPRINT_local = 0
-      CALL HEADER('PBHT MO Overlap Diagnostic',-1)
-      WRITE(LUPRI,'(A/A/)')
-     &  '  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.',
-     &  '             J Chem Phys 128, 044118 (2008)'
       IF (NWOPT.GT.0) THEN
+         CALL HEADER('PBHT MO Overlap Diagnostic',-1)
          WRITE (LUPRI,'(/2X,A)') 'The dominant contributions:'
          WRITE (LUPRI,'(/2X,A/)')
      &      '    I    A    '//
@@ -6454,6 +6488,7 @@ C
             L  = JWOP(2,IG)
             WOP1 = WOP(IG)
             WOP2 = WOP(IOFFY+IG)
+            IF (IPRINT .GT. 4) THEN
             IF (ABS(WOP1).GT.PTHRS .OR. ABS(WOP2).GT.PTHRS) THEN
                WMJGP=(WOP1-WOP2)**2
                CMOMJGP=WMJGP*CMO2(K,L,1)
@@ -6464,12 +6499,20 @@ C
      &            WOP1,WOP2,CMO2(K,L,1),CMO2(K,L,2),WMJGP,CMOMJGP
                END IF
             END IF
+            END IF
+            WMJGP=(WOP1-WOP2)**2.0d0
+            CMOMJGP=WMJGP*CMO2(K,L,1)
+            CMOTOT=CMOTOT+CMOMJGP
+            WOPTOT=WOPTOT+WMJGP
          END DO
          ALAMBDA=CMOTOT/WOPTOT
          IF (IPRINT_local .GT. 0) THEN
             WRITE(LUPRI,*) '   CMOTOT, WOPTOT:',CMOTOT,WOPTOT
          END IF
          WRITE(LUPRI,'(/"@ Overlap diagnostic LAMBDA =",F10.4)') ALAMBDA
+         WRITE(LUPRI,'(/A/A/)')
+     &  '@ Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.',
+     &  '@            J Chem Phys 128, 044118 (2008)'
       END IF
       RETURN
       END

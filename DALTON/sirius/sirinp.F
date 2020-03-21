@@ -16,7 +16,6 @@
 !
 !
 C
-#ifdef OLD_REV_LOG
 !===========================================================================
 !Revision 1.9  2000/05/24 12:39:05  hjj
 !only MAXCIT=3 as default if MC combination with DOSCF or DOMP2
@@ -71,7 +70,6 @@ C
 !-- OPTINP: .COREHOLE keyword + .CORERELAX keyword
 !-- SIRRDI: CORHOL and CORRLX implemented, no check if calc. ok yet!
 !===========================================================================
-#endif
 C  /* Deck sirinp */
       SUBROUTINE SIRINP(WORK,LFREE)
 C
@@ -481,6 +479,7 @@ C
       MP2_LSHIFT      = D0
       MP2_SCALEFAC(1) =  D2 ! scale factor on (ij|ab)
       MP2_SCALEFAC(2) = -D1 ! scale factor on <ij|ab> = (ia|jb)
+      LAMSR           = D0
       MP2_SCALED   = .FALSE.
       MP2_SCS      = .FALSE.
       MP2_SOS      = .FALSE.
@@ -549,6 +548,12 @@ C Use average (approximate) orbital Hessian diagonal
       RESPHP = .FALSE.
       JOLSEN = .FALSE.
       MAXPHP = 0
+!
+!     default CI program used as MCSCF backbone 
+      ci_program = 'SIRIUS-CI'
+
+      !> set default level (no spin-densities requested) for spin-density calculation (works only for LUCITA)
+      spindens_lvl = 0
 C
 C********** Default values section CICINP *****
 C
@@ -612,6 +617,7 @@ C  for non-DFT calcualtions, i.e. standard HF or MCSCF)
 C
       EDFTY   = D0
       ESRDFTY = D0
+      ESRDFT  = D0
 C
 C
 C********** Default values section ORBINP *****
@@ -736,7 +742,7 @@ C     LUW*     Output units for print output (now defined in SIRSET)
       IPRAVE = IPRUSR
       IPRKAP = IPRUSR
       IPRCIX = IPRUSR
-      IPRDIA = IPRUSR
+      IPRDIA = IPRUSR - 1
       IPRSIG = IPRUSR
       IPRDNS = IPRUSR
       IPRRHF = IPRUSR - 1
@@ -1495,7 +1501,12 @@ C
          END IF
          CALL SETORB
       END IF
-C
+
+C     To be able to use spin-dependent functionals for closed-shell Hartree-Fock
+      IF (DFT_SPINDNS .AND. NASHT .EQ. 0) THEN
+         DFT_SPINDNS = .FALSE.
+      END IF
+
 C
 C *** Check if initial occupation for RHF has been defined.
 C
@@ -1628,7 +1639,8 @@ C
 
       IF (MS2 .EQ. -12345) THEN ! MS2 = 2*MS
          IF (MULTS .LE. 0) MULTS = MOD(NACTEL,2) + 1
-         IF (FLAG(27)) THEN ! determinants
+         IF (FLAG(27) .OR. DOMCSRDFT) THEN ! determinants or open-shell MC-srDFT
+            ! MC-srDFT: we need the high-spin MS value for the srDFT part
             MS2 = MULTS - 1 ! MS = max value = S, to minimize risk of converging to wrong spin state
          ELSE
             MS2 = MOD(NACTEL,2) ! MS = 0 or 1/2, for most efficient code
@@ -2013,7 +2025,7 @@ C 37 SIROPT  Dont switch to Broydn update in local region. UPD : genera
 C 38 SIROPT  Dont switch from NEO to NR in local region.   OPT : NEO AL
 C 39 SIROPT  Only NR local optimization, no NEO steps.     OPT : NR ALW
 C 40
-C 41 variuos OPT Optimal orbital trial vector (CALL NEXKAP)OPT : OPTIMA
+C 41 various OPT Optimal orbital trial vector (CALL NEXKAP)OPT : OPTIMA
 C 42
 C 43
 C 44
@@ -2022,7 +2034,7 @@ C 46 SIRCAN  Only NO transformation, inactive and          OPT : NATONL
 C    OPTST,SIRSAV sec. orbitals unchanged (no can. orbs)
 C 47 SIRCAN  temp. - use CICTL, not TRACI)
 C 48 SIRCAN,OPTST,SIRSAV CO's: diag. FD=FC+FV blocks       OPT : FOCKON
-C 49
+C 49 SIRDIIS do not use difference density                 DIIS: DIFDEN
 C 50
 C 51 various Orb. absor. level 1;   inact.-act.,act.-act.  OPT : ABSORB
 C 52 various Orb. absor. level 2; + inact.-sec.            OPT : ABSORB
@@ -2032,10 +2044,10 @@ C 55 NEO,NR  include g(orb) H(diag)  ??
 C 56 var.UPD Fixed Hessian                                 UPD : FIXED
 C 57 UPDINI  Inverse Hess, diag. is initial approx. to     UPD : INVER
 C            inverse Hess
-C 58 CIST    take plus combination of degenerate roots     CIV : PLUS C
+C 58 CIST    Take plus combination of degenerate roots     CIV : PLUS C
 C 59
 C 60
-C 61
+C 61 SIRNEO  Construct E[2] explicitly and quit
 C 62
 C 63
 C 64
@@ -2067,6 +2079,7 @@ C
       PARAMETER (NTBMOD = 27)
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO, lucita_input_provided
+      LOGICAL   ensemble_input_provided
 C needed for lucita: nsym, norb
       DIMENSION NORB(*)
 C
@@ -2075,12 +2088,12 @@ C
 C
       CALL QENTER('SIR_NEWINP')
 C
-      DATA TABMOD/'XXXXXXX','*CONFIG','*OPTIMI','*CI INP','*ORBITA',
-     *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
-     *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
-     *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
-     *            '*AUXILL','*LUCITA','*STEX I','*CUBE  ','*CHOACT',
-     *            '*APSG I','*END OF'/
+      DATA TABMOD/'*END OF','*CONFIG','*OPTIMI','*CI INP','*ORBITA',   !  1: 5
+     *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',   !  6:10
+     *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',   ! 11:15
+     *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',   ! 16:20
+     *            '*AUXILL','*LUCITA','*STEX I','*CUBE  ','*CHOACT',   ! 21:25
+     *            '*APSG I','*ENSEMB'/
 C
 C
 C  ***************************************************
@@ -2089,7 +2102,8 @@ C  ***************************************************
 C
       ALLOPT = .FALSE.
       PTABMO = .FALSE.
-      lucita_input_provided = .false.
+      lucita_input_provided   = .false.
+      ensemble_input_provided = .false.
 C
       WORD = '*GENERA'
       CALL SIR_GENINP(WORD,INPERR,IREST,NUMRUN,ALLOPT)
@@ -2098,9 +2112,9 @@ C
       IF (PROMPT .EQ. '*') THEN
          DO 920 I = 1, NTBMOD
             IF (TABMOD(I) .EQ. WORD) THEN
-               GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
+               GO TO (8000,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-     *                2900,3000,2400,3200,3300,3400,3500,3600,8000), I
+     *                2900,3000,2400,3200,3300,3400,3500,3600,3700), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -2126,7 +2140,6 @@ C
          CALL QUIT('ILLEGAL PROMPT IN SIRIUS INPUT')
       END IF
 C
- 1100  CALL QUIT('Program ERROR in SIR_NEWINP reading SIRIUS input.')
  1200  CALL WAVINP(WORD,INPERR,ALLOPT)
        GO TO 910
  1300  CALL OPTINP(WORD,INPERR,ALLOPT)
@@ -2174,28 +2187,29 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
 !      *LUCITA
 !      this is to keep backwards compatibility - lucita input is now
 !      processed via the new input reader module.
- 3200  lucita_input_provided = .true.
+ 3200  lucita_input_provided = .true.    ! *LUCITA
        call move_to_next_star(word,lucmd)
        GO TO 910
-!      *STEX INPUT
- 3300  CALL STXINP(WORD,INPERR,ALLOPT)
+ 3300  CALL STXINP(WORD,INPERR,ALLOPT)   ! *STEX
        GO TO 910
-!      *CUBE
- 3400  CONTINUE
+ 3400  CONTINUE                          ! *CUBE
 #if defined(BUILD_GEN1INT)
-C added by Bin Gao, to generate cube files to visualize the results
-C March 9, 2012
+C      added by Bin Gao, to generate cube files to visualize the results (March 9, 2012)
        call gen1int_host_cube_init(LUCMD, LUPRI, WORD)
 #else
-       call quit('Sorry, "*CUBE  " not included in this release')
+       call quit('*CUBE not valid because GEN1INT module missing.')
 #endif
        goto 910
-!      *CHOACT
- 3500  CALL CC_ACTINP(WORD,NSYM)
+ 3500  CALL CC_ACTINP(WORD,NSYM)         ! *CHOACT
        GO TO 910
 !      *APSG INPUT
 !3600  CALL APSG_INPUT(WORD,INPERR,ALLOPT)
  3600  CALL QUIT('*APSG INPUT not available in this version.')
+       GO TO 910
+ 3700  ensemble_input_provided = .true.  ! *ENSEMB
+!      this is to keep backwards compatibility - ensemble dft input is now
+!      processed via the new input reader module.
+       call move_to_next_star(word,lucmd)
        GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
@@ -2213,22 +2227,18 @@ C  Here if "*END OF"
          end if
        end if
 
+!      read ensemble dft input if applicable
+       if(ensemble_input_provided)then
+         call read_menu_input('DALTON.INP', lucmd,
+     &                        '*ENSEMB', ensemble_input_provided)
+         if (.not. ensemble_input_provided) then
+         call quit('Oops, read_menu_input could not find *ENSEMB input')
+         end if
+       end if
+
 C
 C ********  END OF READ OF INPUT DATA  **********
 C
-      if(lucita_input_provided)then
-!        LUCITA input has been processed -
-!        complete now the remaining compulsory settings
-!        this is lucita-ci, therefore:
-!        1: ci input
-!        2: mcscf input
-         lucita_cfg_init_input_type = 1
-
-         call define_lucita_orb_spaces(nsym,
-     &                                 lucita_cfg_nr_gas_spaces,
-     &                                 lucita_cfg_init_input_type,
-     &                                 lucita_cfg_init_wave_f_type)
-      end if
 C
 C     We anyway need to process CC default settings
 C
@@ -2247,7 +2257,7 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 35)
+      PARAMETER (NTABLE = 40)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      &          REWORD*20, TITLIN*80, SR_FUNCS*80
       LOGICAL ALLOPT
@@ -2278,13 +2288,14 @@ C
 #if !defined (VAR_NONAMELIST)
       NAMELIST /NMLSIR/ NPATH, MAXMIC
 #endif
-      DATA TABLE /'.CI    ','.FLAGS ','.MCSCF ','.CC    ','.RESTAR',
-     *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
-     *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
-     *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
-     *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',
-     *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
-     *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','.VIRTRU'/
+      DATA TABLE /'.CI    ','.FLAGS ','.MCSCF ','.CC    ','.RESTAR',  !  1: 5
+     *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',  !  6:10
+     *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',  ! 11:15
+     *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',  ! 16:20
+     *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',  ! 21:25
+     *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',  ! 26:30
+     *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','.VIRTRU',  ! 31:35
+     *            '.MULOFA','.DSFAC ','.PVALUE','.HFXFAC','xXXXXXX'/  ! 36:40
 C
       functional_line_read = .false.
 C
@@ -2304,7 +2315,7 @@ C
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,106,117,118,119,120,
      &                   121,122,123,124,125,126,127,128,129,130,
-     &                   131,132,133,134,135), II
+     &                   131,132,133,134,135,136,137,138,139,140), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION' .OR. WORD .EQ. '.ALLOPT') THEN
@@ -2337,7 +2348,7 @@ C *** Option 1 >CI    <  do a CI calculation (before MCSCF)
 C
 C *** Option 2 >FLAGS <  Set Flags directly as in old input
 C     set up control flags and print flags
-C     read namelist $NMLSIR ... $END
+C     read namelist &NMLSIR ... &END
  102  CONTINUE
          CALL IZERO(NPATH,NPDIM)
 #if defined (VAR_NONAMELIST)
@@ -2351,11 +2362,15 @@ C
             IF (IABS(NPATH(I)) .GT. NFLAG) THEN
                INPERR = INPERR + 1
                WRITE (LUPRI,'(/A,I10)')
-     *         ' *** ERROR Sirius .FLAGS, illegal NPATH value:',NPATH(I)
+     &         ' *** ERROR Sirius .FLAGS, illegal NPATH value:',NPATH(I)
             ELSE IF (NPATH(I).LT.0) THEN
                FLAG(-NPATH(I)) = .FALSE.
+               WRITE(LUPRI,'(A,I3,A)') 'INFO: flag',-NPATH(I),
+     &         ' deactivated with .FLAGS'
             ELSE IF (NPATH(I).GT.0) THEN
                FLAG(NPATH(I)) = .TRUE.
+               WRITE(LUPRI,'(A,I3,A)') 'INFO: flag',NPATH(I),
+     &         ' activated with .FLAGS'
             ELSE
                GO TO 299
             END IF
@@ -2365,9 +2380,9 @@ C
 C
 C *** Option 3 >MCSCF <  MCSCF calculation
   103 CONTINUE
-         DOMC = .TRUE.
+         DOMC    = .TRUE.
          FLAG(2) = .TRUE.
-         NUMRUN = NUMRUN + 1
+         NUMRUN  = NUMRUN + 1
       GO TO 100
 C
 C *** Option 4 >CC< We want to do a subsequent Coupled Cluster calculation
@@ -2577,11 +2592,12 @@ C *** Option 25 not used
 C
 C     ... .CISRDFT hybrid
   126 CONTINUE
-         DOCI = .TRUE.
-         FLAG(4) = .TRUE.
+         SRDFTRUN  = .TRUE.
+         DOCI      = .TRUE.
+         FLAG(4)   = .TRUE.
          DOCISRDFT = .TRUE.
          ADDSRI    = .TRUE.
-         THRCIDFT  = 1.D-5
+         THRCIDFT  = 1.D-6
          LUSUPM = -1
 C        ... Disable use of super-matrix integrals,
 C        ... we want to use SIRFCK for generating U_sr integrals.
@@ -2590,6 +2606,7 @@ C        ... we want to use SIRFCK for generating U_sr integrals.
 C
 C     ... .HFSRDFT  Hartree-Fock srDFT hybrid
   127 CONTINUE
+         SRDFTRUN  = .TRUE.
          DOSCF     = .TRUE.
          DOHFSRDFT = .TRUE.
          ADDSRI    = .TRUE.
@@ -2603,6 +2620,7 @@ C        ... we want to use SIRFCK for generating U_sr integrals.
 C
 C     ... .MCSRDFT hybrid
   128 CONTINUE
+         SRDFTRUN  = .TRUE.
          DOMC      = .TRUE.
          DOMCSRDFT = .TRUE.
          FLAG(2)   = .TRUE.
@@ -2635,7 +2653,6 @@ C
 C     .COPFAC (for some srDFT testing)
   132 READ (LUCMD,*) COPFAC
       GO TO 100
-C
 C *** Option 32: .STEX
   133 CONTINUE
          DOSTEX = .TRUE.
@@ -2650,6 +2667,24 @@ C *** Option 35: .VIRTRUNC
   135 CONTINUE
         READ (LUCMD,*) N_in_RN, THR_VIRTRUNC
         DO_VIRTRUNC = .TRUE.
+C
+  136 READ (LUCMD,*) XMULFAC_READIN   ! .MULOFA
+      SRCMULOFAC = .TRUE. 
+      GO TO 100 
+C     Multiplication factor for DS in the localspin model 
+  137 READ (LUCMD,*) DSFAC            ! .DSFAC
+      DSLOCALFAC = .TRUE.
+      GO TO 100
+  138 READ (LUCMD,*) HEAVISIDE_PVALUE ! .PVALUE
+      GO TO 100
+  139 CONTINUE  ! .HFXFAC
+      IF (HFXSET) WRITE(LUPRI,*)
+     &   'Default HFXFAC = ',HFXFAC,' is reset by .HFXFAC input.'
+      READ (LUCMD,*) HFXFAC
+      IF (HFXSET) WRITE(LUPRI,*)
+     &   'New     HFXFAC = ',HFXFAC
+      HFXSET = .TRUE.
+  140 CONTINUE ! not used yet
       GO TO 100
 C
  8000 CONTINUE
@@ -2918,6 +2953,10 @@ C *** Option 9 >RAS2 S<   RAS2 orbital space
       END IF
          MCTYPE = 2
          READ(LUCMD,*,ERR=8010) (NAS2(I),I=1,NSYM)
+         NAS2T = 0
+         do i = 1, NSYM
+           NAS2T = NAS2T + NAS2(i)
+         end do
       GO TO 100
 C
 C *** Option 10 >RAS3 S<   RAS3 orbital space
@@ -3294,7 +3333,7 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 33)
+      PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
       LOGICAL ALLOPT
@@ -3325,7 +3364,7 @@ C
      *            '.NEO AL','.PHPRES','.NO ABS','.NR ALW','.OPTIMA',
      *            '.ORB_TR','.MCAVER','.SIMULT','.THRESH','.OLSEN ',
      *            '.TRACI ','.FOCKDI','.NOTRAC','.CI PHP','.NO ACT',
-     *            '.DETERM','.NATONL','.FOCKON'/
+     *            '.DETERM','.NATONL','.FOCKON','.CI PRO','.xxxxxx'/
 C
 C Internal flags
       IFNSIM = 0
@@ -3345,7 +3384,7 @@ C
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      *                   111,112,113,114,115,116,117,118,119,120,
      *                   121,122,123,124,125,126,127,128,129,130,
-     *                   131,132,133), II
+     *                   131,132,133,134,135), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3633,7 +3672,28 @@ C *** Option 33 >FOCKON< Only FOCK (no no:s ) for TRACI and output
         FLAG(48) = .TRUE.
       GO TO 100
 C
+C *** Option 34 >CI PRO< set CI program to be used as MCSCF backbone
+ 134  CONTINUE
+        ci_program = '         '
+        READ (LUCMD,*) ci_program(1:9)
+      GO TO 100
+      !> xxxxxx
+ 135  CONTINUE
+      GO TO 100
+C
  9000 CONTINUE
+
+!     set default CI program
+      if(ci_program .eq. 'SIRIUS-CI' .or. 
+     &   ci_program .eq. 'LUCITA   ')then
+        write(lupri,'(/a,a9)') ' CI program in use: ',
+     &                           ci_program
+      else   
+        write(lupri,'(/a)') ' wrong CI program entered!'
+        WRITE (LUPRI,9010) ci_program(1:9),'SIRIUS-CI'
+        ci_program = 'SIRIUS-CI'
+      end if
+
       IF (THR_REDFAC .GT. 0.0D0) THEN
 C         ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
@@ -3667,6 +3727,8 @@ C     Fill out rest of IROOT /hjaaj nov 2006
  9009 FORMAT(/' OPTINP WARNING: number of simultaneous vectors,',I3,
      *  ', is greater than maximum,',I3,
      *  T11,'The number is reduced to the maximum.')
+ 9010 FORMAT(/' Input error: .CI PROG has an unknown input value: ',
+     &       a9,'. default value is used instead: ',a9)
       RETURN
 C
       END
@@ -3676,7 +3738,7 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 12)
+      PARAMETER (NTABLE = 13)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
@@ -3692,7 +3754,7 @@ C
 C
       DATA TABLE /'.CINO  ','.CIDENS','.CIROOT','.DISKH2','.THRESH',
      *            '.THRPWF','.WEIGHT','.ZEROEL','.STATE ','.FULLCI',
-     *            '.CISD  ','.MAX IT'/
+     *            '.CISD  ','.MAX IT','.SPDENS'/
 C
 C     ***** PROCESS INPUT FOR CICINP *****
 C
@@ -3706,7 +3768,7 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     *                   111,112) II
+     *                   111,112,113) II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3791,6 +3853,10 @@ C *** Option 12 >MAX IT< Maximum number of iterations in
 C                        CI diagonalization.
   112 CONTINUE
       READ (LUCMD,*) MXCIMA
+      GO TO 100
+C     !> >SPDENS< set level (1-/2-particle) spin density calculation
+  113 CONTINUE
+        READ (LUCMD,*) spindens_lvl
       GO TO 100
 C
  8000 CONTINUE
@@ -5441,28 +5507,28 @@ C          to get here unless someone modifies SIRIUS incorrectly
             IF (WFTYPE .EQ. ' ') WFTYPE='HF-srDFT'
             WRITE (IWUNIT,1053) ' HF-srDFT hybrid calculation.'
             IF ( DORSP ) WRITE (IWUNIT,1050)
-     *      'Time-dependent HF-srDFT calculation (response properties).'
+     &      'Time-dependent HF-srDFT calculation (response properties).'
          ELSE IF (DODFT) THEN
-            IF (WFTYPE .EQ. ' ') WFTYPE='KS-DFT'
-            WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
-            IF ( DORSP ) WRITE (IWUNIT,1050)
-     *         'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
+             IF (WFTYPE .EQ. ' ') WFTYPE='KS-DFT'
+             WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
+             IF ( DORSP ) WRITE (IWUNIT,1050)
+     &           'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
          ELSE
-            IF (WFTYPE .EQ. ' ') WFTYPE='HF'
-            WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
-            IF ( DORSP ) WRITE (IWUNIT,1050)
-     *         'Time-dependent Hartree-Fock calculation '//
-     *         '(random phase approximation).'
+             IF (WFTYPE .EQ. ' ') WFTYPE='HF'
+             WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
+             IF ( DORSP ) WRITE (IWUNIT,1050)
+     &           'Time-dependent Hartree-Fock calculation '//
+     &           '(random phase approximation).'
          END IF
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE
          WRITE (IWUNIT,1050) 'No wave function optimization.'
          IF ( DORSP ) WRITE (IWUNIT,1050)
-     *      'Response calculation.'
+     &      'Response calculation.'
       END IF
       IF (NUMRUN_LOCAL .GT. 0) THEN
          WRITE(IWUNIT,1050)
-     *      'This is a combination run starting with'
+     &      'This is a combination run starting with'
          IF (DOSCF) THEN
             IF (HSROHF) THEN
                WRITE(IWUNIT,1054) 'a restricted, high spin open shell'
@@ -5662,6 +5728,8 @@ C        ... Check for inconsistencies :
      &        '@',SRCFUN,' short range correlation functional'
          IF (SRLOCALSPIN .NE. ' ') WRITE (IWUNIT,'(A,6X,2A)')
      &        '@',SRLOCALSPIN, ' local spin model'
+         IF (DOSRC_PBELO) WRITE(IWUNIT,'(A,1P,D10.2)')
+     &      'HEAVISIDE_PVALUE = ', HEAVISIDE_PVALUE
 
          IF (IWINT.NE.0) WRITE(IWUNIT,'(/5X,A,F10.6)')
      &        'Weighted short range interpolation, COPFAC = ',COPFAC

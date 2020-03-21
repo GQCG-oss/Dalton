@@ -33,7 +33,7 @@
 * Jeppe Olsen, August 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D
+      INTEGER*8 KLJ, KLK, KLXA, KLXB, KLSCR, KLH1D
       INTEGER*8 KLASTR, KLBSTR, KLRJKA, KSVST
       INTEGER*8 KLVIOIO, KLVBLTP, KLVLBT, KLVLEBT, KLVI1BT, KLVIBT
       ! for addressing of WORK
@@ -111,7 +111,6 @@
 *. A bit of scratch
       CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
       CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
-      CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')
       CALL MEMMAN(KLXA  ,NACOB,   'ADDL  ',2,'KLXA  ')
       CALL MEMMAN(KLXB  ,NACOB,   'ADDL  ',2,'KLXB  ')
       CALL MEMMAN(KLSCR ,2*NACOB, 'ADDL  ',2,'KLSCR ')
@@ -129,7 +128,7 @@ C     WRITE(6,*) ' MXNSTR in DIATERM', MXNSTR
       WRITE(6,*) ' DIA0TRM_GAS : IPERTOP ', IPERTOP
 *
       IF(I12.EQ.2)
-     &CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
+     &CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB)
 *. Interchange
       IF(ITASK.EQ.1) THEN
         JTASK = 2
@@ -198,303 +197,6 @@ C     WRITE(6,*) ' NBLOCKT = ', NBLOCKT
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE DIABLK(IASM,IATP,IBSM,IBTP,IFULL,DIAG)
-*
-* Obtain diagonal block of determinant block
-* IASM,IATP,IBSM,IBTP
-*
-*
-*. Type of operator is taken from OPER
-*. Type of CI space is taken from CANDS
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D
-      INTEGER*8 KLSMOS, KLBLTP, KLIOIO, KLSVST, KLRJKA
-      ! for addressing of WORK
-* =====
-*.Input
-* =====
-*
-*./ORBINP/ : NACOB used
-*
-#include "mxpdim.inc"
-#include "orbinp.inc"
-#include "cicisp.inc"
-#include "strbas.inc"
-#include "glbbas.inc"
-#include "cstate.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "csm.inc"
-#include "wrkspc.inc"
-#include "cprnt.inc"
-#include "crun.inc"
-#include "oper.inc"
-*
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
-C     COMMON/OPER/I12,IPERTOP
-      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-*
-* ======
-*.Output
-* ======
-      DIMENSION DIAG(*)
-*
-      CALL QENTER('DIABL')
-*
-      NTEST = 0
-      NTEST = MAX(NTEST,IPRDIA)
-*
-** Specifications of internal space
-*
-      ISM = ICSM
-      ISPC = ICSPC
-*
-      IAGP = IASTFI(ISPC)
-      IBGP = IBSTFI(ISPC)
-      NAEL = NELEC(IAGP)
-      NBEL = NELEC(IBGP)
-*
-      IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' ================'
-        WRITE(6,*) ' DIABLK speaking '
-        WRITE(6,*) ' ================'
-        WRITE(6,*) ' IAGP IBGP NAEL NBEL '
-        WRITE(6,*)   IAGP,IBGP,NAEL,NBEL
-        WRITE(6,*) ' I12,IPERTOP',I12,IPERTOP
-      END IF
-
-      NOCTPA = NOCTYP(IAGP)
-      NOCTPB = NOCTYP(IBGP)
-      MNRS1C = MNR1IC(ISPC)
-      MXRS3C = MXR3IC(ISPC)
-      IF(NTEST.GE.10) THEN
-        write(6,*) ' NOCTPA NOCTPB MNRS1C,MXRS3C'
-        write(6,*)   NOCTPA,NOCTPB,MNRS1C,MXRS3C
-      END IF
-*
-**. Local memory
-*
-      CALL MEMMAN(IDUMMY,IDUMMY,'MARK  ',IDUM,'DIABLK')
-      CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
-      CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
-      CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')
-      CALL MEMMAN(KLXA  ,NACOB,   'ADDL  ',2,'KLXA  ')
-      CALL MEMMAN(KLXB  ,NACOB,   'ADDL  ',2,'KLXB  ')
-      CALL MEMMAN(KLSCR ,2*NACOB, 'ADDL  ',2,'KLSCR ')
-      CALL MEMMAN(KLH1D ,NACOB,   'ADDL  ',2,'KLH1D ')
-      CALL MEMMAN(KLSMOS,NSMST,   'ADDL  ',2,'KLSMOS')
-      CALL MEMMAN(KLBLTP,NSMST,   'ADDL  ',2,'KLSMOS')
-      CALL MEMMAN(KLIOIO,NOCTPA*NOCTPB,   'ADDL  ',2,'KLIOIO')
-      IF(IDC.EQ.3.OR.IDC.EQ.4) THEN
-        CALL MEMMAN(KLSVST,NSMST,   'ADDL  ',2,'KLSVST')
-      ELSE
-        KLSVST = 1
-      END IF
-      MAXA = IMNMX(WORK(KNSTSO(IAGP)),NSMST*NOCTPA,2)
-      CALL MEMMAN(KLRJKA,MAXA,'ADDL  ',2,'KLRJKA')
-*
-** Info on block structure of internal state
-*
-      IF(IDC.EQ.3.OR.IDC.EQ.4)
-     &CALL SIGVST(WORK(KLSVST),NSMST)
-      CALL ZBLTP(ISMOST(1,ISM),NSMST,IDC,WORK(KLBLTP),WORK(KLSVST))
-      CALL QUIT( 'In DIABLK: IAIBCM_GAS call argument list wrong!')
-      CALL IAIBCM_GAS(MNRS1C,MXRS3C,
-     &                NOCTPA,NOCTPB,
-     &     WORK(KEL1(IAGP)),WORK(KEL3(IAGP)),
-     &     WORK(KEL1(IBGP)),WORK(KEL3(IBGP)),WORK(KLIOIO),IPRDIA)
-*
-**. Diagonal of one-body integrals and coulomb and exchange integrals
-*
-      IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1)
-      CALL GT1DIA(WORK(KLH1D))
-      IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1)
-      ECORES = 0.0D0
-      IF(I12.EQ.2)
-     &CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
-*
-      CALL DIABLKS(NAEL,WORK(KOCSTR(IAGP)),NBEL,WORK(KOCSTR(IBGP)),
-     &             NACOB,NSMST,WORK(KLH1D),
-     &             ISMOST(1,ISM),WORK(KLBLTP),
-     &             WORK(KLXA),WORK(KLXB),WORK(KLSCR),WORK(KLJ),
-     &             WORK(KLK),WORK(KNSTSO(IAGP)),WORK(KNSTSO(IBGP)),
-     &             WORK(KLIOIO),NOCTPA,NOCTPB,WORK(KISTSO(IAGP)),
-     &             WORK(KISTSO(IBGP)),ECORES,
-     &             PLSIGN,PSSIGN,IPRDIA,NTOOB,ICISTR,
-     &             WORK(KLRJKA),I12,
-     &             IASM,IATP,IBSM,IBTP,IFULL,DIAG)
-*.Flush local memory
-      CALL MEMMAN(IDUMMY,IDUMMY,'FLUSM ',IDUMMY,'DIABLK')
-      CALL QEXIT('DIABL')
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE DIABLKS(NAEL,IASTR,NBEL,IBSTR,
-     &                  NORB,NSMST,H,
-     &                  ISMOST,IBLTP,XA,XB,SCR,RJ,RK,
-     &                  NSSOA,NSSOB,IOCOC,NOCTPA,NOCTPB,
-     &                  ISSOA,ISSOB,ECORE,
-     &                  PLSIGN,PSSIGN,IPRNT,NTOOB,ICISTR,RJKAA,I12,
-     &                  IASM,IATP,IBSM,IBTP,IFULL,DIAG)
-*
-*
-* Obtain specific block of diagonal
-*
-* ========================
-* General symmetry version
-* ========================
-*
-* Jeppe Olsen, February 1994 , obtained from CIDIA4
-*
-* I12 = 1 => only one-body part
-*     = 2 =>      one+two-body part
-*
-      IMPLICIT REAL*8           (A-H,O-Z)
-      REAL * 8  INPROD
-*.General input
-      DIMENSION NSSOA(NOCTPA,*),NSSOB(NOCTPB,* )
-      DIMENSION ISSOA(NOCTPA,*),ISSOB(NOCTPB,*)
-      DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*)
-      DIMENSION H(NORB)
-*. Specific input
-      DIMENSION IOCOC(NOCTPA,NOCTPB)
-      DIMENSION ISMOST(*),IBLTP(*)
-*. Scratch
-      DIMENSION RJ(NTOOB,NTOOB),RK(NTOOB,NTOOB)
-      DIMENSION XA(NORB),XB(NORB),SCR(2*NORB)
-      DIMENSION RJKAA(*)
-*. Output
-      DIMENSION DIAG(*)
-*
-      NTESTL = 000
-      NTEST = MAX(NTESTL,IPRNT)
-*
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' DIABLKS in action '
-        WRITE(6,*) ' ================= '
-        WRITE(6,*)
-        WRITE(6,*) ' IATP IBTP IASM IBSM '
-        WRITE(6,*)   IATP,IBTP,IASM,IBSM
-      END IF
-*
-      IF( NTEST .GE. 2000 ) THEN
-        WRITE(6,*) ' Diagonal one electron integrals'
-        CALL WRTMT_LU(H,1,NORB,1,NORB)
-        IF(I12.EQ.2) THEN
-          WRITE(6,*) ' Coulomb and exchange integrals '
-          CALL WRTMT_LU(RJ,NORB,NORB,NTOOB,NTOOB)
-          WRITE(6,*)
-          CALL WRTMT_LU(RK,NORB,NORB,NTOOB,NTOOB)
-        END IF
-      END IF
-*
-**3 Diagonal elements according to Handys formulae
-*   (corrected for error)
-*
-*   DIAG(IDET) = HII*(NIA+NIB)
-*              + 0.5 * ( J(I,J)-K(I,J) ) * NIA*NJA
-*              + 0.5 * ( J(I,J)-K(I,J) ) * NIB*NJB
-*              +         J(I,J) * NIA*NJB
-*
-*. K goes to J - K
-      ONE = 1.0D0
-      ONEM = -1.0D0
-      IF(I12.EQ.2)
-     &CALL VECSUM(RK,RK,RJ,ONEM,ONE,NTOOB **2)
-*
-        IF(IFULL.EQ.0.AND.IBLTP(IASM).EQ.2) THEN
-          IREST1 = 1
-        ELSE
-          IREST1 = 0
-        END IF
-*
-          IF(IREST1.EQ.1) THEN
-            MXBTP = IATP
-          ELSE
-            MXBTP = NOCTPB
-          END IF
-*
-*. Construct array RJKAA(*) =   SUM(I) H(I)*N(I) +
-*                           0.5*SUM(I,J) ( J(I,J) - K(I,J))*N(I)*N(J)
-*
-          IOFF =  ISSOA(IATP,IASM)
-          DO IA = IOFF,IOFF+NSSOA(IATP,IASM)-1
-            EAA = 0.0D0
-            DO IEL = 1, NAEL
-              IAEL = IASTR(IEL,IA)
-              EAA = EAA + H(IAEL)
-              IF(I12.EQ.2) THEN
-                DO JEL = 1, NAEL
-                  EAA =   EAA + 0.5D0*RK(IASTR(JEL,IA),IAEL )
-                END DO
-              END IF
-            END DO
-            RJKAA(IA-IOFF+1) = EAA
-          END DO
-*
-          IBSTRT = ISSOB(IBTP,IBSM)
-          IBSTOP = IBSTRT + NSSOB(IBTP,IBSM)-1
-*
-          IDET = 0
-          DO 899 IB = IBSTRT,IBSTOP
-            IBREL = IB - IBSTRT + 1
-*
-*. Array for terms depending only upon IB
-*
-            HB = 0.0D0
-            RJBB = 0.0D0
-            CALL SETVEC(XB,0.0D0,NORB)
-*
-            DO IEL = 1, NBEL
-              IBEL = IBSTR(IEL,IB)
-              HB = HB + H(IBEL )
-*
-              IF(I12.EQ.2) THEN
-                DO  JEL = 1, NBEL
-                  RJBB = RJBB + RK(IBSTR(JEL,IB),IBEL )
-                END DO
-*
-                DO IORB = 1, NORB
-                  XB(IORB) = XB(IORB) + RJ(IORB,IBEL)
-                END DO
-              END IF
-            END DO
-            EB = HB + 0.5D0*RJBB + ECORE
-*
-            IF(IREST1.EQ.1.AND.IATP.EQ.IBTP) THEN
-              IASTRT = ISSOA(IATP,IASM) - 1 + IBREL
-            ELSE
-              IASTRT = ISSOA(IATP,IASM)
-            END IF
-            IASTOP = ISSOA(IATP,IASM) + NSSOA(IATP,IASM) - 1
-            DO 800 IA = IASTRT,IASTOP
-              IDET = IDET + 1
-              X = EB + RJKAA(IA-IOFF+1)
-              DO 890 IEL = 1, NAEL
-                X = X +XB(IASTR(IEL,IA))
-  890         CONTINUE
-              DIAG(IDET) = X
-  800       CONTINUE
-  899     CONTINUE
-*
-          IF(Ntest.ge.1000) THEN
-             WRITE(6,*) ' Next batch of diagonal elements '
-             CALL WRTMT_LU(DIAG,1,IDET,1,IDET)
-          END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE DIATERM2_GAS(FACTOR,ITASK,VEC,NBLOCK,IBLOCK,IOFF,
      &                       JPERT,J12,JDC)
 * = DIATERM_GAS, just J12 added !
@@ -509,7 +211,7 @@ C     COMMON/OPER/I12,IPERTOP
 * Jeppe Olsen, August 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D, KLASTR,
+      INTEGER*8 KLJ, KLK, KLXA, KLXB, KLSCR, KLH1D, KLASTR,
      &          KLBSTR, KLRJKA
 !               for addressing of WORK
 *
@@ -581,7 +283,6 @@ C     END IF
   
       CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
       CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
-      CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')
       CALL MEMMAN(KLXA  ,NACOB,   'ADDL  ',2,'KLXA  ')
       CALL MEMMAN(KLXB  ,NACOB,   'ADDL  ',2,'KLXB  ')
       CALL MEMMAN(KLSCR ,2*NACOB, 'ADDL  ',2,'KLSCR ')
@@ -598,10 +299,10 @@ C!    IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1)
       CALL GT1DIA(WORK(KLH1D))
 C!    IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1)
       IF(J12.EQ.2)
-     &CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
+     &CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB)
 *. Core energy not included
       ECOREP = 0.0D0
-      CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
+      CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB)
 *
       CALL DIATERMS_GAS(NAEL,WORK(KLASTR),NBEL,WORK(KLBSTR),
      &             NACOB,VEC,NSMST,WORK(KLH1D),
@@ -644,8 +345,9 @@ C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
 *
 * Jeppe Olsen, August 1995
 *
+      use lucita_energy_types
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D, KLASTR,
+      INTEGER*8 KLJ, KLK, KLXA, KLXB, KLSCR, KLH1D, KLASTR,
      &          KLBSTR, KLRJKA
 !               for addressing of WORK
 *
@@ -663,9 +365,6 @@ C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
 #include "gasstr.inc"
 #include "glbbas.inc"
 #include "oper.inc"
-*
-C     COMMON/CECORE/ECORE,ECORE_ORIG
-#include "cecore.inc"
 *
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *
@@ -719,7 +418,6 @@ C     COMMON/CECORE/ECORE,ECORE_ORIG
 *. A bit of scratch
       CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
       CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
-      CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')
       CALL MEMMAN(KLXA  ,NACOB,   'ADDL  ',2,'KLXA  ')
       CALL MEMMAN(KLXB  ,NACOB,   'ADDL  ',2,'KLXB  ')
       CALL MEMMAN(KLSCR ,2*NACOB, 'ADDL  ',2,'KLSCR ')
@@ -739,7 +437,7 @@ C     WRITE(6,*) ' MXNSTR in DIATERM', MXNSTR
       END IF
       IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1O),NINT1)
       IF(I12.EQ.2)
-     &CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
+     &CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB)
 *. Core energy not included
       ECOREP = 0.0D0
 *
@@ -750,7 +448,7 @@ C     WRITE(6,*) ' MXNSTR in DIATERM', MXNSTR
         WRITE(6,*) ' ECORE_ORIG, ECORE', ECORE_ORIG,ECORE
       END IF
 *
-      CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
+      CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB)
       CALL DIATERMS_GAS(NAEL,WORK(KLASTR),NBEL,WORK(KLBSTR),
      &             NACOB,VEC,NSMST,WORK(KLH1D),
      &             IDC,WORK(KLXA),WORK(KLXB),WORK(KLSCR),WORK(KLJ),
@@ -1118,7 +816,7 @@ C     REAL * 8  INPROD
       DO IBLK = 1, NBLOCK
 
          if(LUCI_NMPROC .gt. 1)then
-           IF( NPARBLOCK( IBLK ) .ne. LUCI_MYPROC ) GOTO 2425
+           if(nparblock(iblk) .ne. luci_myproc) goto 2425
          end if
 *
         IATP = IBLKFO(1,IBLK)
@@ -1211,19 +909,17 @@ C     REAL * 8  INPROD
              CALL WRTMT_LU(DIAG,1,IDET,1,IDET)
             end if
           END IF
-          IF (LUCI_NMPROC .GT. 1) THEN
+          if(luci_nmproc .gt. 1)then
 #ifdef VAR_MPI
-             CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
-     &                           MPI_REAL8,my_STATUS,IERR)
-C            new offset
-             IDIA_OFFSET = IDIA_OFFSET + IDET
-#else
-             call quit('LUCI_NMPROC .gt. 1 but not VAR_MPI')
+            CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
+     &                             MPI_REAL8,my_STATUS,IERR)
+!           new offset
+            IDIA_OFFSET = IDIA_OFFSET + IDET
 #endif
-          ELSE
-             CALL ITODS(IDET,1,-1,LUDIA)
-             CALL TODSC_LUCI(DIAG,IDET,-1,LUDIA)
-          END IF
+          else
+            CALL ITODS(IDET,1,-1,LUDIA)
+            CALL TODSC_LUCI(DIAG,IDET,-1,LUDIA)
+          end if
           IDET = 0
         END IF
 2425    CONTINUE
@@ -1239,8 +935,7 @@ C            new offset
       END IF
 *
       IF ( ICISTR.GE.2 ) CALL ITODS(-1,1,-1,LUDIA)
-*
-      RETURN
+
       END
 ***********************************************************************
 *                                                                     *
@@ -1261,7 +956,7 @@ C            new offset
 * parallel adaption by S. Knecht - March 2008
 *
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLJ, KLK, KLSCR2, KLXA, KLXB, KLSCR, KLH1D, KLASTR,
+      INTEGER*8 KLJ, KLK, KLXA, KLXB, KLSCR, KLH1D, KLASTR,
      &          KLBSTR, KLRJKA
 !               for addressing of WORK
 * =====
@@ -1332,7 +1027,6 @@ C
       CALL MEMMAN(IDUM,  IDUM,    'MARK  ',IDUM,'GASDIA')
       CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
       CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
-      CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')
       CALL MEMMAN(KLXA  ,NACOB,   'ADDL  ',2,'KLXA  ')
       CALL MEMMAN(KLXB  ,NACOB,   'ADDL  ',2,'KLXB  ')
       CALL MEMMAN(KLSCR ,2*NACOB, 'ADDL  ',2,'KLSCR ')
@@ -1353,7 +1047,7 @@ C     END IF
 **. Diagonal of one-body integrals and coulomb and exchange integrals
 *
       CALL GT1DIA(WORK(KLH1D))
-      CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
+      CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB)
       IF( LUDIA .GT. 0 ) CALL REWINO(LUDIA)
       CALL GASDIAS(NAEL,WORK(KLASTR),NBEL,WORK(KLBSTR),
      &     NACOB,DIAG,NSMST,WORK(KLH1D),

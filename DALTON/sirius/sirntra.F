@@ -19,7 +19,6 @@ C
 
 #define USE_MXMA
 
-#ifdef OLD_REV_LOG
 !===========================================================================
 !MAERKE 940727 ITRSIR=10 og USEDRC (som i .HYPCAL) giver fuldt saet
 ! af Dirac integraler: dvs. alle integraler baade som Coulomb og Dirac !!!!
@@ -33,41 +32,40 @@ C
 !se efter MAERKE
 !NOTE: 891127 LBINTM skal vaere max record paa LUMINT
 !             (bruges i DRCCTL til memory estimate for nxth2m)
-!NOTE: 900103 TRACHK routine which checks CMO, INTSYM, ITRLVL m.m.
+!NOTE: 900103 N_TRACHK routine which checks CMO, INTSYM, ITRLVL m.m.
 !         MAERKE 900307: naeste linjer er fra motra2.l02.u
 !         ?? anvend #include "tralistgs.h"
 !NOTE: 900320 use NCOINT,NE1INT,NE2INT to count integrals written to LUMINT
 !=======================
 !/* Comdeck rev_log */
-!-------- lav TRACHK rutine (se ovenover) 940520/hjaaj !!!!!!!!!!
+!-------- lav N_TRACHK rutine (se ovenover) 940520/hjaaj !!!!!!!!!!
 !-- version n06 --
 !950102-hjaaj
-!TRA2E1: corrected OPHLF3 calculation
+!N_TRA2E1: corrected OPHLF3 calculation
 !-- version n05 --
 !940727-hjaaj
-!TRACTL: delete AOORDINT after transformation if ITRSIR .lt. 0
-!TRALIM: comments on MISH, MASH reset for JTRLVL .gt. 2
+!N_TRACTL: delete AOORDINT after transformation if ITRSIR .lt. 0
+!N_TRALIM: comments on MISH, MASH reset for JTRLVL .gt. 2
 !940520-hjaaj
-!TRA2,TRA2E1: OPHLFx parameter, call DARMOV(LUHLFx) if true to delete
-!   any large temporary files before exit from TRACTL.
+!N_TRA2,N_TRA2E1: OPHLFx parameter, call DARMOV(LUHLFx) if true to delete
+!   any large temporary files before exit from N_TRACTL.
 !-- version n04 --
 !920529-hjaaj:
-!TR2CTL: fixed error in LTUPQ calculation (s/NOCR/NOCQ/)
+!N_TR2CTL: fixed error in LTUPQ calculation (s/NOCR/NOCQ/)
 !        use NOCOUL in LTUPQ calculation
 !-- version m02 --
-!901016-hjaaj: TRA2: a) return immediately if DOTUPQ,DORUPQ,DOUSPQ all
+!901016-hjaaj: N_TRA2: a) return immediately if DOTUPQ,DORUPQ,DOUSPQ all
 !   false; b) changed DORUPQ and DOUSPQ definitions so now always false
 !   if the corresponding integrals not needed for exchange.
-!-- TRACTL: USEDRC reset to true if ITRLVL 1,2,3, or 4
+!-- N_TRACTL: USEDRC reset to true if ITRLVL 1,2,3, or 4
 !900924-hjaaj: define LUAINT as LUORD = LUDA = 14
 !-- changed IBM names from ORDINT,MOLINT to AORDINT,MTWOINT
-!900619-hjaaj: new routine TRALVL for translating from Sirius to
+!900619-hjaaj: new routine N_TRALVL for translating from Sirius to
 !              newtra transformation levels.
-!900320-hjaaj: implemented ICDTRA in TRA2E1
+!900320-hjaaj: implemented ICDTRA in N_TRA2E1
 !900316-hjaaj: added NXTH2D and NX2H2D routines
 !900314-hjaaj: rewritten NX2H2M to outer loop over symmetries.
 !===========================================================================
-#endif
 C /* Deck n_tractl */
       SUBROUTINE N_TRACTL(ITRSIR,CMO,WORK,KWORK)
 C
@@ -145,7 +143,7 @@ C
 C     Translate from SIRIUS convention for transformation level
 C     to the convention used in this program.
 C     
-      CALL TRALVL(JTRSIR,NTRLVL)
+      CALL N_TRALVL(JTRSIR,NTRLVL)
 C
       NOTUVX = .TRUE.
       NOCOUL = .FALSE.
@@ -166,11 +164,11 @@ C
 C
 C     Set TRINP and TRUNIT
 C
-      CALL TRASET(JRDAO, KWORK)
+      CALL N_TRASET(JRDAO, KWORK)
 C
-      CALL TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,VDUMMY,
+      CALL N_TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,VDUMMY,
      &            WORK,KWORK)
-C     CALL TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
+C     CALL N_TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
 C    &            WRK,MEMX)
 C
       IF (IPRFIO .GE. 3) CALL FASTIO('STATUS')
@@ -192,14 +190,14 @@ C
       CALL QEXIT('N_TRACTL')
       RETURN
       END
-C  /* Deck tract2 */
-      SUBROUTINE TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
+C  /* Deck N_tract2 */
+      SUBROUTINE N_TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
      &                  WRK,MEMX)
 C
 C     26-Aug-1989 Hans Joergen Aa. Jensen
 C
 C     Control of second order integral transformation, the work is
-C     done in TR2CTL. Interface to Sirius.
+C     done in N_TR2CTL. Interface to Sirius.
 C
 C    Comments:
 C       hj-890106: INTSYM = symmetry of integrals
@@ -218,36 +216,38 @@ C
 #include "trinp.h"
 #include "inftra.h"
 C
-      CALL QENTER('TRACT2')
+      CALL QENTER('N_TRACT2')
 C
 C     Allocate memory for ICDTRA(MMORBX)
 C
       KFREE  = 1
       LFREE  = MEMX
-      LCDTRA = MMORBX
-      CALL MEMGET2('INTE','ICDTRA',KCDTRA,LCDTRA,WRK,KFREE,LFREE)
-      CALL MEMGET2('INTE','ITRTYP',KTRTYP,MXCORB,WRK,KFREE,LFREE)
+      L_ICDTRA = MMORBX
+      CALL MEMGET2('INTE','ICDTRA',K_ICDTRA,L_ICDTRA,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','ITRTYP',K_ITRTYP,MXCORB,WRK,KFREE,LFREE)
 C
 C     Set MO loop limits for the four integral indices
 C
-      CALL TRALIM(NTRLVL,WRK(KCDTRA),WRK(KTRTYP))
+      CALL N_TRALIM(NTRLVL,WRK(K_ICDTRA),WRK(K_ITRTYP))
 C
 C     Initialize output integral file : LUMINT
 C
-      CALL TRAINI(NTRLVL,CMO,WRK(KCDTRA),WRK(KTRTYP))
+      CALL N_TRAINI(NTRLVL,CMO,WRK(K_ICDTRA),WRK(K_ITRTYP))
 C
 C     Now we are ready for the transformation
 C
-      CALL TR2CTL(NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
-     &            WRK(KCDTRA),WRK(KFREE),LFREE)
+      CALL N_TR2CTL(NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
+     &            WRK(K_ICDTRA),WRK(KFREE),LFREE)
 C
 C
-      CALL QEXIT ('TRACT2')
+      CALL MEMREL('Releasing WORK in N_TRACT2',WRK,
+     &            1,1,KFREE,LFREE)
+      CALL QEXIT ('N_TRACT2')
 C
       RETURN
       END
-C  /* Deck traadr */
-      SUBROUTINE TRAADR(IADRM,IADFRE,IADCMO,IADCDT)
+C  /* Deck N_traadr */
+      SUBROUTINE N_TRAADR(IADRM,IADFRE,IADCMO,IADCDT)
 C
 C  5-Oct-1990 Hans Joergen Aa. Jensen
 C
@@ -522,7 +522,7 @@ C        CALL GSLIST(LISTGS,NLIST,NTRLVL,1,INTSYM,1,MSYM,1,LCMO,1,
 C    &               MFRO,8,MISH,8,MASH,8,MORB,8,MBAS,8,ITRTYP,MXCORB)
          CALL DAFILE(LUMINT,DASREA,LISTGS,NLIST,IAD13)
 #endif
-         CALL TRAADR(IADRM,IADFRE,IADCMO,IADCDT)
+         CALL N_TRAADR(IADRM,IADFRE,IADCMO,IADCDT)
 C        ... retrieve first free address, CMO address,
 C            and ICDTRA address
          IAD13  = IADCDT
@@ -911,7 +911,7 @@ C        CALL GSLIST(LISTGS,NLIST,NTRLVL,1,INTSYM,1,MSYM,1,LCMO,1,
 C    &               MFRO,8,MISH,8,MASH,8,MORB,8,MBAS,8,ITRTYP,MXCORB)
          CALL DAFILE(LUMINT,DASREA,LISTGS,NLIST,IAD13)
 #endif
-         CALL TRAADR(IADRM,IADFRE,IADCMO,IADCDT)
+         CALL N_TRAADR(IADRM,IADFRE,IADCMO,IADCDT)
 C        ... retrieve ICDTRA address in IADCDT
          IAD13  = IADCDT
          CALL DAREAD(LUMINT,ICDTRA,NNORBX,IAD13)
@@ -1106,21 +1106,21 @@ C     Author of two-electron integral transformation routines.
 C
       WRITE(IWUNIT,100)
   100 FORMAT(/T2,'Two-electron integral transformation:'/
-     *   T5,'Byorn Roos,              University of Lund,    Sweden'/,
+     *   T5,'Bjoern Roos,             University of Lund,    Sweden'/,
      *   T5,'Hans Joergen Aa. Jensen, University of Odense,  Denmark')
       RETURN
       END
 #ifdef UNDEF
 C* Comdeck notes and ideas*
 !se MAERKE
-!ABACUS new transf: soerg for alt i TRASET, TRALIM, TRAINI er i orden!
+!ABACUS new transf: soerg for alt i N_TRASET, N_TRALIM, N_TRAINI er i orden!
 !900308-hjaaj: fjerne MCOPT og altid blot kraeve mindst to okkup.?
 ! (forudsat ITRLVL .le. 2); eller teste paa INTSYM? (er det altid ok?).
 !900124-hjaaj: indfoert ITUSYM parameter for spin-orbit integraler!
 !891227-hjaaj: new input: *TRAINP .PRINT .FIOPRI .PRIUNIT .SKIP
 !  .OLDMOLECULE .NOSUPMAT .OPTIONS ...
-!  - REMEMBER change abadtrn.u if change in tr2ctl (everything defined
-!  in TRACTL, TRASET and TRALIM must be define in abadtrn.u)
+!  - REMEMBER change abadtrn.u if change in N_Tr2ctl (everything defined
+!  in N_TRACTL, N_TRASET and N_TRALIM must be define in abadtrn.u)
 !  HUSK IDISKM in IADOUT(*,LIADUT)
 !  - LIADUT = 1297 = 1296 + 1 where IADOUT(*,1297) is used for next
 !  free address
@@ -1130,45 +1130,45 @@ C* Comdeck notes and ideas*
 !  - changed NBAS to MBAS etc.
 !890704-hjaaj: option for appending exchange integral to previously
 !   calculated Coulomb integrals
-!890612-hjaaj TRA2 call of GTUVX does not work if MISH.gt.0 or MFRO.gt.0
+!890612-hjaaj N_TRA2 call of GTUVX does not work if MISH.gt.0 or MFRO.gt.0
 !890611-hjaaj CHECK2 does not work if MISH.gt.0 or MFRO.gt.0
 !890605-hjaaj PROGRAM MOTRA2 gives conflict with NAMELIST MOTRA2
 !/* Comdeck job_log */
-!900314-hjaaj: - written code in TRALIM to determine transf. from ITRLVL
-!900313-hjaaj: - implemented JMO[PQRS]2 and ICDTRA in TR2CTL and TRA2
-!  - major overhaul of TRALIM (modify MFRO,MISH,MASH,
+!900314-hjaaj: - written code in N_TRALIM to determine transf. from ITRLVL
+!900313-hjaaj: - implemented JMO[PQRS]2 and ICDTRA in N_TR2CTL and N_TRA2
+!  - major overhaul of N_TRALIM (modify MFRO,MISH,MASH,
 !  define ITRTYP, define ICDTRA)
-!900124-hjaaj: - ITUSYM in TRINP cdk; define ITUSYM in TRASET;
+!900124-hjaaj: - ITUSYM in TRINP cdk; define ITUSYM in N_TRASET;
 !  s/SQUARE/TRASQ/; added IASYM parameter to TRASQ and calls of TRASQ
-!900102-hjaaj: - TRAINI: added CMO to param. and LUMINT
-!  - TRALIM : defined ICDTRA; - new option NOCOUL;
-!  - TRA2: new local var. DORUPQ, DOUSPQ, DOTUPQ
+!900102-hjaaj: - N_TRAINI: added CMO to param. and LUMINT
+!  - N_TRALIM : defined ICDTRA; - new option NOCOUL;
+!  - N_TRA2: new local var. DORUPQ, DOUSPQ, DOTUPQ
 !891229-hjaaj: - revised symmetry checks for exhange integrals so
 !  INTSYM.ne.1 cases also can be handled.
-!891228-hjaaj: - changed code in TR2CTL to minimize number of temporary
-!  files (LUHLF*); - new routine TRAINI
-!  - split TRA2 in TRA2 and TRA2E1
-!891227-hjaaj: - new routine TRASET
-!  - changed test program motra2 to define inforb,inftap(used in TRASET)
+!891228-hjaaj: - changed code in N_TR2CTL to minimize number of temporary
+!  files (LUHLF*); - new routine N_TRAINI
+!  - split N_TRA2 in N_TRA2 and N_TRA2E1
+!891227-hjaaj: - new routine N_TRASET
+!  - changed test program motra2 to define inforb,inftap(used in N_TRASET)
 !  - GTUVX and allocation of TUVX : NNASHX*NNASHX instead of NNASHY
 !891221-hjaaj: - RDDER2 dummy routine
 !  - Reordered decks in two groups: newtractl.u and chktra2.u
-!  - Worked on deck tractl, was unfinished. Introduced ICDTRA(NNORBX)
+!  - Worked on deck N_tractl, was unfinished. Introduced ICDTRA(NNORBX)
 !891220-hjaaj: transfer INTSYM and ICDTRA(NNORBX) to LUMINT
 !  - #include "dacodes.h"and use symbolic names for DAFILE operations.
 !  - #include "dalistgs.h"for gslist.
 !890826-hjaaj
-!   moved IDATA(352),KEEP(18) to TRUNIT (was local to TR2CTL)
+!   moved IDATA(352),KEEP(18) to TRUNIT (was local to N_TR2CTL)
 !   changed IADOUT(3888) to IADOUT(3,LIADUT), LIADUT = 1296
 !   new IDATA(LIDATA), LIDATA = 1296=36*36 for absolute addressing
 !   changed NSYMP from NSYM*(NSYM+1)/2 to 36 = 8*(8+1)/2 for
 !     absolute addressing, defined NSYMP in TRINFO
-!   changed NCHAIN in TR2CTL to absolute addressing
+!   changed NCHAIN in N_TR2CTL to absolute addressing
 !890825-hjaaj
-!   use local DOEXCH for greater readability in TRA2
-!   changed *URPQ,NOUR into *USPQ,NOUS in /TRINFO/,TR2CTL,TRA2
+!   use local DOEXCH for greater readability in N_TRA2
+!   changed *URPQ,NOUR into *USPQ,NOUS in /TRINFO/,N_TR2CTL,N_TRA2
 !890824-hjaaj
-!   New routine TRALIM; called from TR2CTL
+!   New routine N_TRALIM; called from N_TR2CTL
 !890823-hjaaj-t13
 !   Replaced IEOR with IEOR statement function
 !890705-hjaaj-t13
@@ -1176,7 +1176,7 @@ C* Comdeck notes and ideas*
 !================
 !890620-hjaaj-t12.1
 !   NOEXCH, MCOPT, and MAXMEM options
-!   Test that at least two symmetries occupied in TR2CTL
+!   Test that at least two symmetries occupied in N_TR2CTL
 !================
 !890619-hjaaj-t11.2
 !   NOTUVX option
@@ -1185,7 +1185,7 @@ C* Comdeck notes and ideas*
 !890610-hjaaj-t10.2
 !   Corrected error in CHECK2 (calculation of PQRS address)
 !   Count non-zero integrals in test in CHECK2
-!   Check that LADX ne 0 in TR2CTL
+!   Check that LADX ne 0 in N_TR2CTL
 !890609-hjaaj-t10.1
 !   New module GETH2A for reading AO integrals from Molecule LUINTA
 !     used when VECTOR=UNIT
@@ -1198,14 +1198,14 @@ C* Comdeck notes and ideas*
 !   Introduced FASTIO test output, starting w. STATUS at IPRTRA=10
 !================
 #endif
-C  /* Deck tr2ctl */
-      SUBROUTINE TR2CTL(NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
+C  /* Deck N_Tr2ctl */
+      SUBROUTINE N_TR2CTL(NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
      &                  ICDTRA,WORK,MEMX)
 C
 C     SECOND ORDER TWO-ELECTRON TRANFORMATION PROGRAM. CONTROL SECTION
 C
 C     THIS SUBROUTINE SETS UP THE MEMORY ALLOCATIONS FOR TRA2 AND LOOPS
-C     OVER THE SYMMETRY BLOCKS. TRA2 IS CALLED ONCE FOR EACH SYMMETRY
+C     OVER THE SYMMETRY BLOCKS. N_TRA2 IS CALLED ONCE FOR EACH SYMMETRY
 C     BLOCK OF INTEGRALS. SYMMETRY BLOCKED AO INTEGRALS MUST HAVE BEEN
 C     GENERATED BY INTSORT ON UNIT LUORDA.
 C
@@ -1247,7 +1247,7 @@ C
 C
 
 C
-      CALL QENTER('TR2CTL')
+      CALL QENTER('N_TR2CTL')
 C
 C
 C     SET TIME AT START OF TRANSFORMATION
@@ -1399,7 +1399,7 @@ C
 C           NO AO INTEGRALS AVAILABLE BUT MO INTEGRALS ARE NEEDED
 C           PROBABLY AN ERROR IN INPUT FOR INTSORT
             WRITE (LUPRI,'(/A)')
-     &         ' TR2CTL error, integrals needed but KEEPT .ne. 0'
+     &         ' N_TR2CTL error, integrals needed but KEEPT .ne. 0'
             WRITE(LUPRI,2000)
             WRITE(LUPRI,2100) ISP,ISQ,ISR,ISS,NBP,NBQ,NBR,NBS,
      &                         NOP,NOQ,NOR,NOS
@@ -1412,15 +1412,15 @@ C
           NPQ  = IDATA(NCHAIN,2)
           IF (LADX .LT. 0 .OR. NPQ .LT. 0) THEN
             WRITE (LUPRI,'(/A,I7,A,I7/A,I7)')
-     &         ' TR2CTL error, LADX =',LADX,' for NCHAIN =',NCHAIN,
+     &         ' N_TR2CTL error, LADX =',LADX,' for NCHAIN =',NCHAIN,
      &         '               NPQ  =',NPQ
             WRITE(LUPRI,2000)
             WRITE(LUPRI,2100) ISP,ISQ,ISR,ISS,NBP,NBQ,NBR,NBS,
      &                        NOP,NOQ,NOR,NOS
-            CALL QUIT(' TR2CTL error, LADX .le. 0')
+            CALL QUIT('N_TR2CTL error, LADX .le. 0')
           END IF
 C
-C         Calling sequence for second order transformation TRA2
+C         Calling sequence for second order transformation N_TRA2
 C         for symmetry quadruplet (isp,isq;isr,iss)
 C         First allocate and check memory
 C
@@ -1437,7 +1437,7 @@ C
      *           + MAX(NBR*NBS,NBP*NBQ,NOP*NOR,NOQ*NOR,NOP*NOS,NOQ*NOS)
           LW4    = LW3+MAX(NBR*NOCS,NBS*NOCR)
 C         LX2X3 is buffer space needed by TRRDAO,
-C         LX2X3 is defined in TRASET
+C         LX2X3 is defined in N_TRASET
           LW4    = MAX(LW4, LW2 + LX2X3)
           MEMLFT = MEMX-LW4+1
 C         Core allocation for the sorting areas RUPQ, USPQ, and TUPQ
@@ -1507,10 +1507,10 @@ C
 C
           LW5 = LW4+LUSPQ
           LW6 = LW5+LRUPQ
-          CALL TRA2(CMO,NOTUVX,TUVX,NOCOUL,NOEXCH,ICDTRA,
+          CALL N_TRA2(CMO,NOTUVX,TUVX,NOCOUL,NOEXCH,ICDTRA,
      &              WORK(LW1),WORK(LW2),WORK(LW3),
      &              WORK(LW4),WORK(LW5),WORK(LW6))
-C         CALL TRA2(CMO,NOTUVX,TUVX,NOCOUL,NOEXCH,ICDTRA,
+C         CALL N_TRA2(CMO,NOTUVX,TUVX,NOCOUL,NOEXCH,ICDTRA,
 C    &              X1,X2,X3, USPQ,RUPQ,TUPQ)
           IF (IPRTRA .GE. 2) THEN
              CALL GETTIM(TCPU,TWALL)
@@ -1556,7 +1556,7 @@ C
       END IF
 C
 C
-      CALL QEXIT ('TR2CTL')
+      CALL QEXIT ('N_TR2CTL')
 C
       RETURN
 C
@@ -1566,25 +1566,25 @@ C
       WRITE(LUPRI,9011) (MASH(I),I=1,MSYM)
  9010 FORMAT(/5X,'ERROR IN KEEP PARAMETER FROM INTSORT FILE:  ',8I5)
  9011 FORMAT( 5X,'NOT CONSISTENT WITH OCCUPIED ORBITAL SPACE: ',8I5,
-     &       /5X,'PROGRAM STOP IN SUBROUTINE TR2CTL')
+     &       /5X,'PROGRAM STOP IN SUBROUTINE N_TR2CTL')
       CALL QTRACE(LUPRI)
-      CALL QUIT('TR2CTL, error in KEEP parameter from INTSORT file')
+      CALL QUIT('N_TR2CTL, error in KEEP parameter from INTSORT file')
 C
 C     HERE IF NOT ENOUGH CORE SPACE
 C
   902 WRITE(LUPRI,9020) MEMLFT,LRUPQ,NBR*NOCS,LUSPQ,NBS*NOCR,
      &                   LTUPQ,LTUPQM,LRUPQ+LTUPQ,L2M
- 9020 FORMAT(/' NOT ENOUGH CORE SPACE FOR SORTING IN TRA2'
+ 9020 FORMAT(/' NOT ENOUGH CORE SPACE FOR SORTING IN N_TRA2'
      &       /' TOTAL SORTING SPACE IS',I12,
      &       /' STEP1: AVAILABLE IS',I12,',  NEEDED IS',I12,
      &       /' STEP2:     "       ',I12,',    "      ',I12,
      &       /' STEP3:     "       ',I12,',    "      ',I12,
      &       /' STEP4:     "       ',I12,',    "      ',I12)
       CALL QTRACE(LUPRI)
-      CALL QUIT('TR2CTL, not enough core space for sorting.')
+      CALL QUIT('N_TR2CTL, not enough core space for sorting.')
       END
-C  /* Deck tra2 */
-      SUBROUTINE TRA2(CMO,NOTUVX,TUVX,NOCOUL,NOEXCH,ICDTRA,
+C  /* Deck N_tra2 */
+      SUBROUTINE N_TRA2(CMO,NOTUVX,TUVX,NOCOUL,NOEXCH,ICDTRA,
      &                X1,X2,X3,USPQ,RUPQ,TUPQ)
 C
 C     SECOND ORDER TWO-ELECTRON TRANSFORMATION ROUTINE
@@ -1642,7 +1642,7 @@ C
       LOGICAL   DOTUPQ,DORUPQ,DOUSPQ
 C
 C
-      CALL QENTER('TRA2  ')
+      CALL QENTER('N_TRA2 ')
 C
       LUHLF1 = -1
       LUHLF2 = -1
@@ -1670,7 +1670,7 @@ C           case 2b: (PQ/RS) -> (TA/UB) IF ISQ.GE.ISS AND ISP.NE.ISQ
       END IF
       IF (IPRTRA .GE. 3) THEN
          WRITE (LUPRI,'(/A/A,4I3/)')
-     &      ' ----- Test output from TRA2 -----',
+     &      ' ----- Test output from N_TRA2 -----',
      &      ' ISP,ISQ,ISR,ISS =',ISP,ISQ,ISR,ISS
          WRITE (LUPRI,'(3(5X,A,L10))')
      &      'Do TUPQ :',DOTUPQ,
@@ -1778,7 +1778,7 @@ C
 C       START TRANFORMATION OF THIS PQ PAIR
 C
         IF(ISR.EQ.ISS) THEN
-         CALL TRASQ(X1(IRSST),X2,1,NBS,NBS,ITUSYM)
+         CALL N_TRASQ(X1(IRSST),X2,1,NBS,NBS,ITUSYM)
         ELSE
          CALL DCOPY(NBRS,X1(IRSST),1,X2,1)
         ENDIF
@@ -2003,7 +2003,7 @@ C
        ENDIF
 C
        IF(ISP.EQ.ISQ) THEN
-        CALL TRASQ(TUPQ(IPQST),X2,1,NBQ,NBQ,+1)
+        CALL N_TRASQ(TUPQ(IPQST),X2,1,NBQ,NBQ,+1)
 #ifdef USE_MXMA
         CALL MXMA(X2,       1,NBQ,
      &            CMO(LMOP),1,NBP,
@@ -2070,7 +2070,7 @@ C
       IF (DORUPQ .OR. DOUSPQ) THEN
 C
 C
-         CALL TRA2E1(CMO,X1,X2,USPQ,RUPQ,TUPQ,ICDTRA,OPHLF3,
+         CALL N_TRA2E1(CMO,X1,X2,USPQ,RUPQ,TUPQ,ICDTRA,OPHLF3,
      &                  LUHLF1,LUHLF2,LUHLF3)
 C
 C
@@ -2094,16 +2094,16 @@ C
       IF (OPHLF2) CALL DARMOV(LUHLF2)
       IF (OPHLF3) CALL DARMOV(LUHLF3)
 C
- 9999 CALL QEXIT ('TRA2  ')
+ 9999 CALL QEXIT ('N_TRA2 ')
 C
       RETURN
       END
-C  /* Deck tra2e1 */
-      SUBROUTINE TRA2E1(CMO,X1,X2,USPQ,RUPQ,TUPQ,ICDTRA,OPHLF3,
+C  /* Deck N_tra2e1 */
+      SUBROUTINE N_TRA2E1(CMO,X1,X2,USPQ,RUPQ,TUPQ,ICDTRA,OPHLF3,
      &                  LUHLF1,LUHLF2,LUHLF3)
 C
 C     SECOND ORDER TWO-ELECTRON TRANSFORMATION module for exchange
-C     integrals.  Called from TRA2.
+C     integrals.  Called from N_TRA2.
 C
 C     THIS ROUTINE IS CALLED FOR EACH SYMMETRY BLOCK OF INTEGRALS
 C     (ISP,ISQ,ISR,ISS) WITH ISP.GE.ISQ AND ISR.GE.ISS.
@@ -2142,11 +2142,11 @@ C
 #include "inftra.h"
 #include "inftap.h"
 C
-      CALL QENTER('TRA2E1')
+      CALL QENTER('N_TRA2E1')
 C
 C
       IF (IPRTRA .GT. 50) THEN
-         WRITE (LUPRI,'(/A)') ' Test output from TRA2E1'
+         WRITE (LUPRI,'(/A)') ' Test output from N_TRA2E1'
       END IF
 C
 C
@@ -2195,7 +2195,7 @@ C
          IPQST=1
         ENDIF
         IF(ISP.EQ.ISQ) THEN
-         CALL TRASQ(RUPQ(IPQST),X2,1,NBQ,NBQ,+1)
+         CALL N_TRASQ(RUPQ(IPQST),X2,1,NBQ,NBQ,+1)
         ELSE
          CALL DCOPY(NBPQ,RUPQ(IPQST),1,X2,1)
         ENDIF
@@ -2454,9 +2454,9 @@ C
       IF (INTSYM .NE. 1) THEN
 C     MAERKE hvad med ISQ.EQ.ISR; er det ikke muligt for INTSYM.ne.1?JO
          WRITE (LUPRI,*)
-     &      ' error in TRA2E1 case 2a: INTSYM.ne.1 not implemented'
+     &      ' error in N_TRA2E1 case 2a: INTSYM.ne.1 not implemented'
          CALL QTRACE(LUPRI)
-         CALL QUIT('TRA2E1 error: INTSYM.ne.1 not implemented for '//
+         CALL QUIT('N_TRA2E1 error: INTSYM.ne.1 not implemented for '//
      &             'case 2a')
       END IF
       IF((ISR.NE.ISS.AND.ISP.GE.ISS).AND.NOTU.NE.0) THEN
@@ -2738,10 +2738,10 @@ C
 C     *****************************************************************
 C     *****************************************************************
 C
-C     END OF TRA2E1 TRANSFORMATION FOR THIS SYMMETRY BLOCK
+C     END OF N_TRA2E1 TRANSFORMATION FOR THIS SYMMETRY BLOCK
 C
 C
-      CALL QEXIT ('TRA2E1')
+      CALL QEXIT ('N_TRA2E1')
 C
       RETURN
       END
@@ -2788,8 +2788,8 @@ C
 C
       RETURN
       END
-C  /* Deck trasq */
-      SUBROUTINE TRASQ(A, B,ICB,IRB, NROW, IASYM)
+C  /* Deck N_trasq */
+      SUBROUTINE N_TRASQ(A, B,ICB,IRB, NROW, IASYM)
 C
 C 24-Jan-1990 hjaaj, IASYM option
 C
@@ -2821,8 +2821,8 @@ C
       END IF
       RETURN
       END
-C  /* Deck traini */
-      SUBROUTINE TRAINI(NTRLVL,CMO,ICDTRA,ITRTYP)
+C  /* Deck N_traini */
+      SUBROUTINE N_TRAINI(NTRLVL,CMO,ICDTRA,ITRTYP)
 C
 C Dec 1989 Hans Joergen Aa. Jensen
 C
@@ -2843,7 +2843,7 @@ C
 #include "trunit.h"
 #include "inftap.h"
 C
-      CALL QENTER('TRAINI')
+      CALL QENTER('N_TRAINI')
 C
 C     SET ADDRESS FIELD FOR OUTPUT INTEGRAL FILE
 C     Initialize to -2 which is used as error code
@@ -2876,11 +2876,11 @@ C     MAERKE skal flere med i GSLIST?
       IADOUT(1,LIADUT) = IDISKM
       IDISKM = 0
       CALL DAWRITE(LUMINT,IADOUT,3*LIADUT,IDISKM)
-      CALL QEXIT ('TRAINI')
+      CALL QEXIT ('N_TRAINI')
       RETURN
       END
-C  /* Deck traset */
-      SUBROUTINE TRASET(JRDAO,LWORK)
+C  /* Deck N_traset */
+      SUBROUTINE N_TRASET(JRDAO,LWORK)
 C
 C Dec 1989 Hans Joergen Aa. Jensen
 C Define TRINP and TRUNIT
@@ -2912,7 +2912,7 @@ C     Local variables
 C
       LOGICAL FOPEN
 C
-      CALL QENTER('TRASET')
+      CALL QENTER('N_TRASET')
 C
 C     Transfer information from INFORB to TRINP
 C
@@ -2942,13 +2942,13 @@ C     (AB/TU) = ITUSYM*(AB/UT) = (BA/TU) = ITUSYM*(BA/UT)
 C     ITUSYM = -1 for spin-orbit integrals (JRDAO .EQ. 2)
 C
 C     Transfer unit numbers to TRUNIT
-C     CALL TRASE[02] to obtain KEEP and IDATA in TRUNIT
+C     CALL N_TRASE[02] to obtain KEEP and IDATA in TRUNIT
 C
       IRDAO  = JRDAO
       IF (IRDAO .EQ. 0) THEN
          ITUSYM =  1
          LX2X3  =  0
-         CALL TRASET_0
+         CALL N_TRASET_0
 ! hjaaj Sep 2010: derivative integrals have not been
 !     implemented here for many years: since abadtra.F was
 !     written.
@@ -2958,28 +2958,28 @@ C
 !
       ELSE IF (IRDAO.EQ.2) THEN
          ITUSYM = -1
-         CALL TRASET_2(LX2X3, LWORK)
+         CALL N_TRASET_2(LX2X3, LWORK)
       ELSE IF (IRDAO .EQ. 3) THEN
          ITUSYM = 1
-         CALL TRASET_3(LX2X3, LWORK)
+         CALL N_TRASET_3(LX2X3, LWORK)
       ELSE IF (IRDAO .LT. 0) THEN
          ! do no more, this is called from .FCKTRA routines
       ELSE
-         WRITE (LUPRI,*) 'ERROR TRASET: Illegal IRDAO =',IRDAO
+         WRITE (LUPRI,*) 'ERROR N_TRASET: Illegal IRDAO =',IRDAO
          CALL QTRACE(LUPRI)
-         CALL QUIT('ERROR TRASET: Illegal IRDAO')
+         CALL QUIT('ERROR N_TRASET: Illegal IRDAO')
       END IF
 C
-      CALL QEXIT ('TRASET')
+      CALL QEXIT ('N_TRASET')
       RETURN
       END
-C  /* Deck trase0 */
-      SUBROUTINE TRASET_0
+C  /* Deck N_traset_0 */
+      SUBROUTINE N_TRASET_0
 C
 C 19-Jun-1990 Hans Joergen Aa. Jensen
 C
 C Obtain KEEP and IDATA information from LUORDA
-C (Moved to here from TRACT2)
+C (Moved to here from N_TRACT2)
 C
 #include "implicit.h"
 C
@@ -2998,7 +2998,7 @@ C
 #include "inftra.h"
 #include "inftap.h"
 C
-      CALL QENTER('TRASET_0')
+      CALL QENTER('N_TRASET_0')
 C
 C     RETRIEVE BASE DATA FROM UNIT LUORDA
 C        KEEP(1)     = MSYM
@@ -3054,13 +3054,13 @@ C
          IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A)')
      *   ' Integrals assumed to be totally symmetric.'
       END IF
-      CALL QEXIT('TRASET_0')
+      CALL QEXIT('N_TRASET_0')
       RETURN
       END
-C/*deck  traset_3*/
-      SUBROUTINE TRASET_3( LX2X3, LWORK )
+C/*deck  N_traset_3*/
+      SUBROUTINE N_TRASET_3( LX2X3, LWORK )
 C
-C Sep 2010 Hans Joergen Aa. Jensen (based on TRASET_2 from spin-orbit)
+C Sep 2010 Hans Joergen Aa. Jensen (based on N_TRASET_2 from spin-orbit)
 C
 C Define KEEP and IDATA for AO->MO transformation from AOTWOINT
 C (instead of from AOORDINT)
@@ -3081,7 +3081,7 @@ C
 #include "trhso.h"
 #include "trunit.h"
 C
-      CALL QENTER('TRASET_3')
+      CALL QENTER('N_TRASET_3')
 C
       LX2X3  = 2*600 + 4*600
 C     for BUF(600), IBUF(600), and INDX(4,600) for both i*4 and i*8
@@ -3114,7 +3114,7 @@ C
          IDATA(I,1) = 0
          IDATA(I,2) = NPQ
   200 CONTINUE
-      CALL QEXIT('TRASET_3')
+      CALL QEXIT('N_TRASET_3')
       RETURN
       END
 C /*deck  rdao2*/
@@ -3249,8 +3249,8 @@ C
       MPQOFF = MPQOFF + NPQ
       RETURN
       END
-C  /* Deck tralim */
-      SUBROUTINE TRALIM(NTRLVL,ICDTRA,ITRTYP)
+C  /* Deck N_tralim */
+      SUBROUTINE N_TRALIM(NTRLVL,ICDTRA,ITRTYP)
 C
 C 24-Aug-1989 Hans Joergen Aa. Jensen
 C
@@ -3299,15 +3299,15 @@ C
      &            'only active orbitals               ',
      &            'frozen + inactive + active orbitals'/
 C
-      CALL QENTER('TRALIM')
+      CALL QENTER('N_TRALIM')
       JTRLVL = MOD(NTRLVL,100)
       KTRLVL = NTRLVL/100
 C
       IF (KTRLVL .LT. 0 .OR. KTRLVL .GT. 2) THEN
-         WRITE (LUPRI,*) 'Illegal KTRLVL in TRALIM, KTRLVL,NTRLVL =',
+         WRITE (LUPRI,*) 'Illegal KTRLVL in N_TRALIM, KTRLVL,NTRLVL =',
      &      KTRLVL,NTRLVL
          CALL QTRACE(LUPRI)
-         CALL QUIT('FATAL ERROR TRALIM: Illegal KTRLVL')
+         CALL QUIT('FATAL ERROR N_TRALIM: Illegal KTRLVL')
       END IF
       IF (IPRTRA .GE. 2) THEN
          WRITE (LUPRI,'(/A,I5/2A/)')
@@ -3337,8 +3337,8 @@ C
          IMOL = IMOL + MORB(ISYM) ! last index to transform in this symmetry
 C        ... if 3. order or full integral transformation
 C            then reset MASH(*) to MORB(*) - MFRO(ISYM)
-C            for symmetry quadruplet tests in TR2CTL
-C            and for limits on (c d) summation indices in TRA2
+C            for symmetry quadruplet tests in N_TR2CTL
+C            and for limits on (c d) summation indices in N_TRA2
          IF (JTRLVL .GT. 2) THEN
             MASH(ISYM) = MORB(ISYM) - MFRO(ISYM)
             MISH(ISYM) = 0
@@ -3386,11 +3386,11 @@ C
             END IF
   810    CONTINUE
       END IF
-      CALL QEXIT ('TRALIM')
+      CALL QEXIT ('N_TRALIM')
       RETURN
       END
-C  /* Deck tralvl */
-      SUBROUTINE TRALVL(ITRSIR,NTRLVL)
+C  /* Deck N_tralvl */
+      SUBROUTINE N_TRALVL(ITRSIR,NTRLVL)
 C
 C 19-Jun-1990 Hans Joergen Aa. Jensen
 C
@@ -3424,7 +3424,7 @@ C
       INTEGER ITRSIR, NTRLVL
       INTEGER JTRSIR, JTRLVL, KTRLVL
 C
-      CALL QENTER('TRALVL')
+      CALL QENTER('N_TRALVL')
       ! a: active, o:occupied, g:general in comments for JTRSIR
       JTRSIR = ABS(ITRSIR)
       IF (JTRSIR .EQ. 0) THEN      ! (aa|aa)
@@ -3458,7 +3458,7 @@ C
          CALL QUIT('ERROR: Undefined 2el transformation level')
       END IF
       NTRLVL = 100*KTRLVL + JTRLVL
-      CALL QEXIT('TRALVL')
+      CALL QEXIT('N_TRALVL')
       RETURN
       END
 C  /* Deck trrdao */
@@ -3466,7 +3466,7 @@ C  /* Deck trrdao */
 C
 C 25-Aug-1989 Hans Joergen Aa. Jensen
 C
-C Interface routine to read ao integrals for tra2
+C Interface routine to read ao integrals for N_tra2
 C
 #include "implicit.h"
       DIMENSION X1(NX1), WRK(LWRK)

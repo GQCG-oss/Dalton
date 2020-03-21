@@ -15,6 +15,7 @@ C     MP2_TDA       = .FALSE. ! save info for SOPPA(TDA)
 C     MP2_NO_OCCVIR = .FALSE. ! ignore occ-vir block of MP2 density matrix
 C     SRMP2_SELFCONSISTENT = .FALSE. ! self-consistent iterations on occ-vir block of srMP2 density matrix
 C     SRMP2_SRINTS  = .FALSE. ! calculate both sr-sr and lr-lr MP2 energies - advanced option for study of MP2 energy contributions
+C     LAMSR                   ! fraction of srHFX and lr-sr MP2 coupling in the RSDHf energy 
 C
 C     DCPT2       : degeneracy corrected PT2
 C     SAVE_MP2WF1 : calculate and save MP2 coefficients on SIRIFC

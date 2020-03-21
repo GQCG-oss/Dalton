@@ -23,7 +23,7 @@ cat > cc_rsp_gammadirect.info <<'%EOF%'
    Molecule:         HF in C2
    Wave Function:    CCSD / 6-31G**
    Test Purpose:     Second hyperpolarizability (cubic response):
-                     - Parallel isotropic average (gamma_||) 
+                     - Parallel isotropic average (gamma_|| ) 
                      - A & B coefficients  (2. and 4. order disp.
                        coefficients)
                      - Explicitly use symmetry of linear molecules
@@ -57,7 +57,7 @@ cat > cc_rsp_gammadirect.dal <<'%EOF%'
 .TITLE
   second hyperpolarizability for the HF molecule
   for a CCS wavefunction compute:
-  - parallel isotropic average (gamma_||) 
+  - parallel isotropic average (gamma_|| ) 
   - A & B coefficients  (2. and 4. order disp. coefficients)
   - use explicitly symmetry of linear molecules
 .CC

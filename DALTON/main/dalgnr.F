@@ -405,7 +405,8 @@ C
       CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'ini HERMIT')
       NEWPRP = .TRUE.
       NEWMAT = .TRUE.
-      GRDONE = .FALSE.
+      DFTGRID_DONE = .FALSE.
+      DFTGRID_DONE_OLD = .FALSE.
 C     ... we need new grid for numerical integrations when new geometry
 C
 C     ***************************************************************
@@ -732,8 +733,10 @@ C
 !   major modules in Dalton, the WRKDLM is checked with BNDCHK (which is
 !   in this file). /HJAaJ, Jan. 2011
 !
+      ! DIMENSION WORK(0:LMWORK)
+
       DIMENSION CORBKP(3*MXCENT)
-      LOGICAL NEWWLK, EX
+      LOGICAL   NEWWLK, EX, lucita_done
       CHARACTER FILENM*12, WORD*7
 
 #include "trkoor.h"
@@ -1407,7 +1410,7 @@ C       where CHIVAL .ge. 0, and CHIVAL.eq.0 is normal 1/R12
 C     For ERFEXP true:
 C       g(R12) = g_erfexp(R12)
 C              = g_erf(R12) - 2*CHIVAL/SQRT(PI) * EXP(-CHIVAL**2*R12**2/3.0D0)
-      ERFEXP = .FALSE.
+      ERFEXP(0:2) = .FALSE.
 C
 C     IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
 C                             ELSE calculate g(R12) listed above
@@ -1816,6 +1819,10 @@ Cholesky
 Cholesky
 C
       WRITE (LUPRI,'(1X,A)') SEPARATOR
+C
+C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
+C              '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
+C              '*READIN', '*QMNPMM'
 C
 C     Initialize for REAINP and READIN (reading of .mol input file)
       IPREAD_ini = IPRUSR + 1

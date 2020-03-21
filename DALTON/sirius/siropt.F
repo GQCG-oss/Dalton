@@ -34,7 +34,7 @@ C Revisions
 C   6-Aug-1984/16-May-1984 - hjaaj
 C  14-May-1985 - hjaaj (update     -- sirupd)
 C  10-Nov-1985 - hjaaj (absorption -- sirorb)
-C  14-May-1986 - hjaaj (nr eq's    -- sirnr)
+C  14-May-1986 - hjaaj (nr eq.s    -- sirnr)
 C
 C Purpose: Control MCSCF optimization.
 C
@@ -243,7 +243,7 @@ C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
          KFQ = KSRHYB
       END IF
       KFCAC  = KFQ    + NASHT*NORBT
-      KCREF  = KFCAC  + NNASHX
+      KCREF  = KFCAC  + NDV*NNASHX ! FCAC, FSAC for DFT_SPINDNS
       KH2AC  = KCREF  + NCONF
       KWRK12 = KH2AC  + NNASHX*NNASHX
 C.. 1.2.1 .. (GRAD,SOLGRD,WR_SIRIFC)
@@ -280,7 +280,7 @@ C.. 1.4 .. (SIRUPD)
 C..
       NCONF4 = MAX(4,NCONF)
 C
-C     Get CI information if active orbitals
+C     Get CI information if active orbitals (and ci_program .eq. SIRIUS-CI)
 C
       IF (.NOT.RHF_CALC)
      &   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK10),LWRK10,0)
@@ -433,7 +433,7 @@ C        ... flag(34) = (int.transf. not needed in optimization)
 C
 C *** Retrieve CI coefficients:
 C
-      CALL RDCREF(WRK(KCREF))
+      CALL RDCREF(WRK(KCREF),.true.)
 C
 C         --- Normalize CI vector (i.e. CREF)
 C         6-Dec-1984-hjaaj: SIRSAV changed so CREF normally normalized now
@@ -508,15 +508,15 @@ C
       END IF
       IF (.NOT.UPDATE) THEN
          CALL GRAD (WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
-     *              WRK(KPV),WRK(KFC),WRK(KFV),WRK(KFQ),WRK(KFCAC),
-     *              WRK(KH2AC),WRK(KGTOT),EMY,EACTIV,
+     &              WRK(KPV),WRK(KFC),WRK(KFV),WRK(KFQ),WRK(KFCAC),
+     &              WRK(KH2AC),WRK(KGTOT),EMY,EACTIV,
      &              WRK(KWRKG),LWRKG)
 C        CALL GRAD (CREF,CMO,INDXCI,DV,PV,FC,FV,FQ,
 C    *              FCAC,H2AC,G,EMY,EACTIV,WRK,LFREE)
       ELSE
          CALL UPDGRD(0,WRK(KCREF),WRK(KCMO),WRK(KDV),WRK(KPV),
-     *               WRK(KGTOT),EMY,EACTIV,WRK(KFC),WRK(KFV),WRK(KFQ),
-     *               DUMMY,WRK(KCINDX),WRK(KWRKG),LWRKG)
+     &               WRK(KGTOT),EMY,EACTIV,WRK(KFC),WRK(KFV),WRK(KFQ),
+     &               DUMMY,WRK(KCINDX),WRK(KWRKG),LWRKG)
 C        CALL UPDGRD(IGRTYP,REF1,CMO1,DV,PV,GRD,EMY,
 C    *               EACTIV,FC,FV,DIAOR,INDXCI,WRK,LFREE)
       END IF
@@ -600,7 +600,8 @@ chj   END IF
       IF (USE_PELIB()) WRITE (LUW4,1021) ESOLT
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
       IF (LUPRI.NE.LUW4) THEN
-         IF (SOLVNT.OR.PCM) WRITE (LUPRI,1016) ESOLT
+         IF (SOLVNT) WRITE (LUPRI,1016) ESOLT
+         IF (PCM)    WRITE (LUPRI,1019) ESOLT
          IF (QM3) WRITE (LUPRI,1017) EQM3
          IF (QMMM) WRITE (LUPRI,1017) ESOLT
          IF (USE_PELIB()) WRITE(LUPRI,1021) ESOLT
@@ -626,6 +627,9 @@ chj   END IF
          call sirpop('MCITER',WRK(KDV),WRK(KWRKG),LWRKG)
       END IF
 
+      ! next line is debug print for impatient developers ;-)
+      ! print *,'MCITER',ITMAC,EMCSCF,GNORM(1:3)
+
 C
 C
       IF (SOLVNT .AND. IPRI6 .GT. 1) THEN
@@ -649,14 +653,20 @@ C
       IF (P4FLAG(15) .AND. NCONF .GT. 1) THEN
 CHJ: in future version maybe CALL PRWF here (and above for CREF)
          PTEST = MAX(1.D-10,GNORM(1)*THRCGR)
-         WRITE (LUW4,3010) ITMAC, PTEST
+         WRITE (LUW4,3000) ITMAC
          CALL PRVEC(NCONF,WRK(KGTOT),1,-PTEST,200,LUW4)
          CALL PRMGN(NCONF,WRK(KGTOT),1,12,LUW4)
 #if defined (VAR_OLDCODE) || defined (VAR_SECSEC)
+         WRITE (LUW4,3010) ITMAC, PTEST
          DO 301 I = 1,NCONF
             GCI = WRK((KGTOT-1)+I)
             IF (ABS(GCI) .GE. PTEST) WRITE (LUW4,3011) I,GCI
   301    CONTINUE
+ 3010 FORMAT(//' Configuration gradient iteration no.',I3,
+     *        /' ---------------------------------------'
+     *       //' Cutoff for print:',1P,D10.2,
+     *       //' Configuration no.           value'
+     *        /' -----------------           -----')
  3011 FORMAT(I16,F20.10)
 #endif
       END IF
@@ -671,11 +681,8 @@ CHJ: in future version maybe CALL PRWF here (and above for CREF)
          END IF
          CALL PRKAP (NWOPT,WRK(KGTOT+NCONF),PRFAC,LUW4)
       END IF
- 3010 FORMAT(//' Configuration gradient iteration no.',I3,
-     *        /' ---------------------------------------'
-     *       //' Cutoff for print:',1P,D10.2,
-     *       //' Configuration no.           value'
-     *        /' -----------------           -----')
+ 3000 FORMAT(//' Configuration gradient iteration no.',I3,
+     *        /' ---------------------------------------')
  3020 FORMAT(//' Orbital gradient iteration no.',I3,
      *        /' ---------------------------------')
 C
@@ -1552,6 +1559,7 @@ C
 C     =7 : Start using MC update information ('UPDSAVE' in SIRSAV)
 C end if
 C
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
 C
       DIMENSION INDXCI(*),WRK(LFREE)
@@ -1700,8 +1708,6 @@ C
 C        single configuration has always natural orbitals
          IF (CNOLBL .EQ. 'ONLYNO') THEN
             TRCNO  = .FALSE.
-         ELSE
-            CNOLBL = 'ONLYFD'
          END IF
          GO TO 9000
       END IF
@@ -1743,7 +1749,7 @@ C
          IF (LW22 .LT. 0) CALL ERRWRK('OPTST.CICTL',-KW22,LFREE)
 C
 C      A  single configuration will already have natural orbitals
-         IF (MAXCIT .EQ. 0) THEN
+         IF (MAXCIT .LE. 0) THEN
             IF (CNOLBL .EQ. 'ONLYNO') THEN
                TRCNO  = .FALSE.
             ELSE IF (CNOLBL .NE. 'TRTOFC') THEN
@@ -1836,8 +1842,6 @@ C
 C
 C
       GO TO 9000
-C
-C *** ICSTRT = 4, 5, 6, or 7 ***
 C     (See what codes means at beginning of this subroutine)
 C
 C === start guess should already be on LUIT1 (SIRIUS.RST)
@@ -2067,6 +2071,13 @@ C                  NEO calculation, e.g. for double core hole.
                JCVECS = JCVECS + NCONF
  9010       CONTINUE
          END IF
+!        set logical flag for new reference CI vector in WRK(KCREF) - 
+!        in the interface to lucita we use this info to save/broadcast the new
+!        reference vector on lucita internal sequential/parallel MPI-I/O files
+         vector_exchange_type1                      = 1
+         vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+
+     &                             vector_exchange_type1) = .true.
+
          CALL SIRCNO(CNOLBL,NCVECS,ICREF,WRK(KCVECS),
      *               WRK(KCMO),WRK(KAOCC),INDXCI,WRK(KW31),1,LW31)
 C        CALL SIRCNO(KEYCNO,NCVECS,ICREF,CREF,CMO,AOCC,
@@ -2222,6 +2233,7 @@ C
       END IF
       ISTEP = 0
       DEACT = EMCSCF - EMCOLD
+
       IF ( ABS(DEPRED/EMCSCF).GT.THDE ) THEN
          RATIO = DEACT / DEPRED
          IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1100) DEACT,DEPRED,RATIO
@@ -2624,6 +2636,7 @@ C   INFPRI : ?
 C CBGETDIS : IADH2
 C   CBIREA : LMULBS
 C   R12INT : R12CAL
+C dftcom.h : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -2647,6 +2660,7 @@ C
 #include "qmmm.h"
 #include "qm3.h"
 #include "gnrinf.h"
+#include "dftcom.h"
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
 C
@@ -2765,7 +2779,6 @@ C
 C
 C
       WRITE (LUSIFC) LAB123,LBSIFC
-C     ... the label LBSIFC is initialized in block data sbdtap
       WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
      &               ISTATE,ISPIN,NACTEL,LSYM,MS2
       IF (MCTYPE .EQ. 0 .AND. HSROHF) THEN
@@ -2773,6 +2786,7 @@ C     ... the label LBSIFC is initialized in block data sbdtap
       ELSE
          MCTYPE_IFC = MCTYPE
       END IF
+      IF (DFT_SPINDNS) MCTYPE_IFC = MCTYPE_IFC + 1000
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
      &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
      &               NSYM,MULD2H, NRHF,NFRO,
@@ -2782,6 +2796,11 @@ C     ... the label LBSIFC is initialized in block data sbdtap
 C
 C 880920-hjaaj: later write label here for orbitals
 C
+      IF (DFT_SPINDNS) THEN
+         NDV = 2  ! DV, DS; singlet and triplet active density matrices
+      ELSE
+         NDV = 1
+      END IF
       NC4    = MAX(4,NCONF)
       NW4    = MAX(4,NWOPT)
       NWH4   = MAX(4,NWOPH)
@@ -2794,7 +2813,7 @@ C
 C
       CALL WRITT (LUSIFC,NCMOT4,CMO) ! rec no. 3
       CALL WRITT (LUSIFC,NC4,CREF)   ! rec no. 4
-      CALL WRITT (LUSIFC,MMASHX,DV)  ! rec no. 5
+      CALL WRITT (LUSIFC,NDV*MMASHX,DV)  ! rec no. 5;  DV, (DS)
 C Write Fock matrix.
       CALL WRITT (LUSIFC,M2ORBT,WRK(KFOCK)) ! rec no. 6
       CALL WRITT (LUSIFC,M2ASHY,PV)  ! rec no. 7
@@ -2803,10 +2822,11 @@ C Write Fock matrix.
          CALL DZERO(WRK(KFOCK),NNORBT)
          CALL WRITT (LUSIFC,MMORBT,WRK(KFOCK))
       ELSE
-         CALL WRITT (LUSIFC,MMORBT,FV) ! rec. no. 9
+         CALL WRITT (LUSIFC,NDV*MMORBT,FV) ! rec. no. 9;  FC, (FS)
       END IF
 C
-      CALL WRITT (LUSIFC,MMASHX,FCAC) ! rec. no. 10
+      CALL WRITT (LUSIFC,NDV*MMASHX,FCAC) ! rec. no. 10;  FCAC, (FSAC)
+
       IF (IADH2 .GE. 0) THEN
 #if defined (VAR_NEWCODE)
 ... 27-Jun-1987/hjaaj -- noget lignende : MAERKE

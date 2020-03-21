@@ -5708,7 +5708,6 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "nuclei.h"
 C
       PARAMETER (D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0)
       PARAMETER (DFAC = D4*GFAC*PI/D3)
@@ -5717,6 +5716,7 @@ C
 #include "onecom.h"
 #include "lmns.h"
 #include "symmet.h"
+#include "nuclei.h"
 C
 
       INT = 0
@@ -7735,12 +7735,12 @@ C  /* Deck dsotra */
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "nuclei.h"
       LOGICAL FULMAT, ANTI, DOATOM(*), SAMECD, TRIANG, TRICR, EXP1EL
       DIMENSION SHLINT(KCKTAB,NSHINT), SOINT(NELMNT,NOPTYP),
      &          INTADR(*), DMAT(*)
 #include "onecom.h"
 #include "symmet.h"
+#include "nuclei.h"
 
       FULMAT = .TRUE.
 C

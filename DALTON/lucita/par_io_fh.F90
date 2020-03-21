@@ -43,6 +43,7 @@ contains
   subroutine setup_file_io_model(communicator_io_group,          &
                                  nr_files,                       &
                                  fh_array,                       &
+                                 fh_offset,                      &
                                  group_id,                       &
                                  group_io_size,                  &
                                  file_identification,            &
@@ -60,19 +61,21 @@ contains
 !    for a detailed description of the I/O model see references:
 !    S. Knecht, H. J. Aa. Jensen, and T. Fleig
 !       JCP, 128, 014108 (2008)
-!       JCP, 132, 014108 (2008)
+!       JCP, 132, 014108 (2010)
 !
 !*******************************************************************************
      integer,           intent(in)    :: communicator_io_group
      integer,           intent(in)    :: nr_files
      integer,           intent(inout) :: fh_array(nr_files)
+     integer,           intent(in)    :: fh_offset
      integer,           intent(in)    :: group_id
      integer,           intent(in)    :: group_io_size
      integer,           intent(in)    :: print_unit
      character (len=5), intent(in)    :: file_identification
 !-------------------------------------------------------------------------------
-     integer                          :: i  
-     integer                          :: j  
+     integer                          :: i
+     integer                          :: i_relative
+     integer                          :: j
      integer(kind=MPI_INTEGER_KIND)   :: file_info_obj
      integer(kind=MPI_INTEGER_KIND)   :: comm_iogrp_mpi
      integer(kind=MPI_INTEGER_KIND)   :: fh_array_mpi
@@ -103,8 +106,10 @@ contains
  
       do i = 1, nr_files
 
+        i_relative = i + fh_offset
+
 !       step a. setup individual file identifier
-        call int2char_converter(i,fstring)
+        call int2char_converter(i_relative,fstring)
 
 !       step b. determine full file name
         write(flabel,'(a5,a4,a1,a4)') file_identification,fstring,'.',gstring
@@ -126,7 +131,7 @@ contains
   end subroutine setup_file_io_model
 !*******************************************************************************
 
-  subroutine close_file_io_model(nr_files,                &
+  subroutine close_file_io_model(number_of_files,         &
                                  fh_offset,               &
                                  fh_array)                 
 !*******************************************************************************
@@ -134,15 +139,15 @@ contains
 !    purpose: close MPI-I/O files and "nullify" file handles.
 !
 !*******************************************************************************
-     integer, intent(in )   :: nr_files
+     integer, intent(in )   :: number_of_files
      integer, intent(in )   :: fh_offset
-     integer, intent(inout) :: fh_array(nr_files+fh_offset)
+     integer, intent(inout) :: fh_array(*)!(nr_files+fh_offset)
 !-------------------------------------------------------------------------------
      integer                :: i
      integer(kind=MPI_INTEGER_KIND)   :: fh_array_mpi
 !-------------------------------------------------------------------------------
 
-      do i = 1, nr_files
+      do i = 1, number_of_files
         fh_array_mpi = fh_array(i+fh_offset)
         call mpi_file_close(fh_array_mpi,ierr)
       end do
@@ -185,8 +190,9 @@ contains
      integer, intent(out)                       :: gvec_tblock_gnrl
      integer(kind=MPI_OFFSET_KIND), intent(out) :: gvec_offset_real
      integer(kind=MPI_OFFSET_KIND), intent(out) :: gvec_offset_cplx
-     integer(kind=MPI_OFFSET_KIND), intent(out) :: file_offset_array(nr_files+file_offset_off)
-     integer(kind=MPI_OFFSET_KIND), intent(in)  :: file_offset_fac(nr_files+file_offset_off)
+     integer(kind=MPI_OFFSET_KIND), intent(out) :: file_offset_array(*)!(nr_files+file_offset_off)
+!    integer(kind=MPI_OFFSET_KIND), intent(in)  :: file_offset_fac(*)!(nr_files+file_offset_off)
+     integer                      , intent(in)  :: file_offset_fac(*)!(nr_files+file_offset_off)
      logical, intent(in )                       :: complex_algebra
 !-------------------------------------------------------------------------------
      integer                                    :: i

@@ -47,7 +47,7 @@ C  Major surgery Aug 26 1996 by T.Saue
 C
 C  Written by Trygve Helgaker and Henrik Koch  93-93 ??
 C
-C  All IFCTYP's added and partly optimized Nov. 1994 by
+C  All IFCTYPs added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************

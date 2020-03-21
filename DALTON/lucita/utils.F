@@ -15,11 +15,57 @@
 !  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+!**********************************************************************
+      subroutine symmetrize_transition_density_matrix(xmat,ndim,
+     &                                                print_lvl)
+!**********************************************************************
+      implicit none
+#include "priunit.h"
+      real(8), intent(inout) :: xmat(ndim,ndim,ndim,ndim)
+      integer, intent(in)    :: ndim
+      integer, intent(in)    :: print_lvl
+!----------------------------------------------------------------------
+      integer                :: i, j, k, l
+      real(8)                :: value
+!----------------------------------------------------------------------
+      
+      do j = 1, ndim
+        do i = 1, j
+          do l = 1, ndim
+            do k = 1, l
+              if(j == i)then
+                value         = xmat(i,j,k,l) + xmat(i,j,l,k)
+                xmat(i,j,k,l) = value
+                xmat(i,j,l,k) = value
+              else if(j > i)then
+                value         = xmat(i,j,k,l) + xmat(j,i,l,k)
+                if(l > k)then
+#ifdef LUCI_DEBUG
+                  write(lupri,*) ' special: i,j,k,l ==> value ',
+     &                                      i,j,k,l,value
+                  write(lupri,*) ' special: xmat(i,j,k,l)',xmat(i,j,k,l)
+                  write(lupri,*) ' special: xmat(i,j,l,k)',xmat(i,j,l,k)
+                  write(lupri,*) ' special: xmat(j,i,l,k)',xmat(j,i,l,k)
+                  write(lupri,*) ' special: xmat(j,i,k,l)',xmat(j,i,k,l)
+#endif
+                  xmat(j,i,l,k) = value + xmat(j,i,k,l)
+                  xmat(i,j,k,l) = value + xmat(i,j,l,k)
+                else
+                  xmat(i,j,k,l) = value
+                  xmat(j,i,l,k) = value
+                end if
+              end if
+#ifdef LUCI_DEBUG
+              write(lupri,*) 'i,j,k,l ==> value ',i,j,k,l,value
+#endif
+            end do
+          end do
+        end do
+      end do
+
+      end
+!**********************************************************************
+
       SUBROUTINE CHAR_TO_INTEGER(CHAR_X,INT_X)
 
 *     Convert an integer number given as a string into
@@ -43,7 +89,7 @@
       WRITE (*,*) ' THE LAST LINE PROCESSED WAS:'
       WRITE (*,*) CHAR_X
       WRITE (*,*)
-      CALL QUIT('Input error in CHAR_TO_INTEGER')
+      CALL QUIT(16)
 
 200   WRITE (*,*)
       WRITE (*,*) ' *** ERROR IN INPUT ***'
@@ -52,67 +98,8 @@
       WRITE (*,*)
       WRITE (*,*) ' FORTRAN I/O STATUS = ',IOS
       WRITE (*,*)
-      CALL QUIT('Input error in CHAR_TO_INTEGER')
+      CALL QUIT(16)
 
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE CHAR_TO_INTEGER_MOLUC(CHAR_X,INT_X)
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      CHARACTER*72 CHAR_X
-      INTEGER FLLNGTH
-      CHARACTER*10 SCRFLL
-      CHARACTER*6 SCRFL
-
-*
-#include "units.inc"
-#include "parluci.h"
-      
-
-*
-      NTESTL = 0
-      if (NTESTL.ge.1) then
-        write(6,*) ' INFO FROM CHAR_TO_INTEGER'
-        write(6,'(A)') ' CHARACTER INPUT ', CHAR_X
-      end if
-*
-      LU_INTERNAL = LUSC_INT
-      SCRFL ="LUSCDL"
-*
-      IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
-         WRITE (SCRFLL,'(A6,A1,I1)') SCRFL,'.',LUCI_MYPROC
-         FLLNGTH=8
-      ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
-         WRITE (SCRFLL,'(A6,A1,I2)') SCRFL,'.',LUCI_MYPROC
-         FLLNGTH=9
-      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
-         WRITE (SCRFLL,'(A6,A1,I3)') SCRFL,'.',LUCI_MYPROC
-         FLLNGTH=10
-      ELSE
-         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
-      ENDIF
-
-      Open(Unit=LU_INTERNAL,
-     &     File=SCRFLL(1:FLLNGTH),
-     &     Status='NEW',
-     &     Form='FORMATTED')
-*
-      REWIND(LU_INTERNAL)
-      WRITE(LU_INTERNAL,'(A)') CHAR_X
-      REWIND(LU_INTERNAL)
-      READ(LU_INTERNAL,*) INT_X
-*
-      Close(Unit=LU_INTERNAL,
-     &      Status='DELETE')
-*
-      if (NTESTL.ge.1) then
-        write(6,*) ' INTEGER OUTPUT ', INT_X
-      end if
-*
       END
 ***********************************************************************
 *                                                                     *
@@ -142,7 +129,7 @@
       WRITE (*,*) ' THE LAST LINE PROCESSED WAS:'
       WRITE (*,*) CHAR_X
       WRITE (*,*)
-      CALL QUIT('Input error in CHAR_TO_REAL')
+      CALL QUIT(16)
 
 200   WRITE (*,*)
       WRITE (*,*) ' *** ERROR IN INPUT ***'
@@ -151,7 +138,7 @@
       WRITE (*,*)
       WRITE (*,*) ' FORTRAN I/O STATUS = ',IOS
       WRITE (*,*)
-      CALL QUIT('Input error in CHAR_TO_REAL')
+      CALL QUIT(16)
 
       END
 ***********************************************************************
@@ -235,8 +222,12 @@
 * IELMNT of this array
 *
       INTEGER vector(*)
-*
-#include "SysDef.inc"
+#ifdef VAR_INT64
+      integer, parameter :: rtoi = 1
+#else
+      integer, parameter :: rtoi = 2
+#endif
+
 *. offset when vector is integer array
       IIOFF = 1 + RtoI * (IROFF-1)
       IFRMR = vector(IIOFF-1+IELMNT)
@@ -253,7 +244,7 @@
 *     Find smallest (MINMAX=1) or largest (MINMAX=2)
 *     absolute value of elements in integer vector IVEC
 *
-      DIMENSION IVEC(1)
+      DIMENSION IVEC(*)
 
 #include "priunit.h"
 *

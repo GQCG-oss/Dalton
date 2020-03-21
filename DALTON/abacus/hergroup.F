@@ -274,7 +274,10 @@ C
       ENDIF
    50 CONTINUE
 
-      IF(IND.NE.MAXREP) CALL QUIT('SYMGRP: IND.NE.MAXREP!')
+      IF(IND.NE.MAXREP)then
+        write(lupri,*) ' ind, maxrep',ind,maxrep
+        CALL QUIT('SYMGRP: IND.NE.MAXREP!')
+      END IF
 C
 C     Classify group
 C     ==============

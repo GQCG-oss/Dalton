@@ -23,7 +23,7 @@ cat > cc_rsp_gamma3.info <<'%EOF%'
    Molecule:         N2 in D2h
    Wave Function:    CC2 / cc-pVDZ
    Test Purpose:     Second hyperpolarizabilities (cubic response):
-                     - Parallel isotropic average (gamma_||) 
+                     - Parallel isotropic average (gamma_|| ) 
                      - Explicitly use symmetry of linear molecules
                      - Check frozen core 
 %EOF%

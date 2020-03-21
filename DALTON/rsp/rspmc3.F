@@ -16,13 +16,12 @@
 !
 !
 C
-#ifdef REV_LOG
-===========================================================================
-Revision 1.2  2000/05/24 19:04:06  hjj
-new getref calls with appropriate NDREF instead of NCREF
-(fixing error for triplet with CSF)
-===========================================================================
-#endif
+!===========================================================================
+!Revision 1.2  2000/05/24 19:04:06  hjj
+!new getref calls with appropriate NDREF instead of NCREF
+!(fixing error for triplet with CSF)
+!===========================================================================
+
       SUBROUTINE MELONE(PRPMO,IOPSYM,DEN1,OVLAP,ONETOT,IPRONE,PRPLBL)
 C
 C CALCULATE AVERAGE VALUE OF ONE ELECTRON OPERATOR

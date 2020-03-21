@@ -58,6 +58,7 @@ C        =4 save MC information, after SIRCAN
 C        =5 save CI information, after CICTL
 C        =6 save MC optimization information, when N-R used.
 C
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
 C
       CHARACTER*(*) KEYWRD
@@ -116,6 +117,7 @@ C
          ISTATE = 1
       END IF
       DOCNO = FLAG(15)
+!     write(lupri,*) ' sirsav... keywrd ==> ',keywrd
       IF (KEYWRD .EQ. 'NEOSAVE') THEN
          ICTL = 1
          NRS  = MIN (NROOTS,NREDL,NCONF)
@@ -268,6 +270,16 @@ C
      *      ' *** Gamma, level shift :',GAMMA,SHFLVL,
      *      '  -  Beta,  "a1"        :',BETA,EVEC(JEVEC+1)
       END IF
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      WRITE (lupri,'(//3(/A,F15.10),/2(/A,2F15.10),/)')
+     *      ' *** Step length  :',STPLEN,
+     *      '  -  CI step      :',STPC,
+     *      '  -  Orbital step :',STPO,
+     *      ' *** Gamma, level shift :',GAMMA,SHFLVL,
+     *      '  -  Beta,  "a1"        :',BETA,EVEC(JEVEC+1)
+#undef LUCI_DEBUG
+#endif
 C
 C     Prepare for 2:
 C
@@ -282,6 +294,7 @@ C     NRS  = number of CI vectors to be written to LUIT1
          FAC0 = D0
 C        ... to avoid compiler messages
       END IF
+!     write(lupri,*) ' nsim, fac0 ==> ',nsim,fac0
       DOXKAP = .TRUE.
       KBVEC  = 1
       KY     = KBVEC + MAX(NCONF,NWOPT)
@@ -317,6 +330,8 @@ CHJ- husk at fjerne dette "DOXKAP" senere ...
             CALL QTRACE(LUERR)
             CALL QUIT('SIRSAV: illegal IBNDX value')
          END IF
+!        write(lupri,*) ' bla bla 0 ==> lyvec',lyvec
+!        call wrtmatmn(wrk(kbvec),1,lyvec,1,lyvec,lupri)
          DO 1300 J = 1,NSIM
             JEVEC = (JOFF+J-1)*NREDL + K
             FAC = EVEC(JEVEC)
@@ -333,6 +348,8 @@ C
                END IF
             END IF
             CALL DAXPY(LYVEC,FAC,WRK(KBVEC),1,WRK(JYVEC),1)
+!           write(lupri,*) ' bla bla 1'
+!           call wrtmatmn(wrk(jyvec),1,lyvec,1,lyvec,lupri)
             JYVEC = JYVEC + NVAR
  1300    CONTINUE
  1200 CONTINUE
@@ -373,6 +390,8 @@ C
             DO 1405 I = 1,NWOPT
                WRK(KYJ + NCONF + I) = WRK(KYJ + NCONF + I) - XKAP(I)
  1405       CONTINUE
+!           write(lupri,*) ' bla bla 3 ==> nv4',nv4
+!           call wrtmatmn(wrk(kyj),1,nv4,1,nv4,lupri)
             CALL WRITT(LUIT1,NV4,WRK(KYJ))
          ELSE
             CALL WRITT(LUIT1,NC4,WRK(KYJ))
@@ -434,38 +453,76 @@ C
 C        (calculate the NROOTS specified in input)
 C        NRS   = number of CI vectors to be written to LUIT1
 C
+         WRITE (LUIT1) LAB123(1), STAKEY, RSTKEY, TABLE(3)
          KBVEC = 1
          KY    = KBVEC + NCONF
          NSIM  = (LFREE/NCONF)-1
          NSIM  = MIN(NSIM,NRS)
          JOFF  = 0
+         if(ci_program .eq. 'SIRIUS-CI')then
+ 5100      CONTINUE
+           REWIND LUIT3
+           CALL DZERO(WRK(KY),NSIM*NCONF)
+           DO 5200 K=1,NREDL
+             CALL READT(LUIT3,NCONF,WRK(KBVEC))
+             DO 5300 J=1,NSIM
+               JEVEC = (JOFF+J-1)*NREDL + K
+               CALL DAXPY(NCONF,EVEC(JEVEC),WRK(KBVEC),1,
+     *                    WRK(KY+(J-1)*NCONF),1)
+ 5300        CONTINUE
+ 5200      CONTINUE
 C
-         WRITE (LUIT1) LAB123(1), STAKEY, RSTKEY, TABLE(3)
- 5100    CONTINUE
-         REWIND LUIT3
-         CALL DZERO(WRK(KY),NSIM*NCONF)
-         DO 5200 K=1,NREDL
-           CALL READT(LUIT3,NCONF,WRK(KBVEC))
-           DO 5300 J=1,NSIM
-             JEVEC = (JOFF+J-1)*NREDL + K
-             CALL DAXPY(NCONF,EVEC(JEVEC),WRK(KBVEC),1,
-     *                  WRK(KY+(J-1)*NCONF),1)
- 5300      CONTINUE
- 5200    CONTINUE
-C
-C        We now have eigenvectors no. JOFF+1 to JOFF+NSIM.
-         DO 5400 J = 1,NSIM
-            DN = DNRM2(NCONF,WRK(KY+(J-1)*NCONF),1)
-            IF (DN.NE.D1) THEN
+C          We now have eigenvectors no. JOFF+1 to JOFF+NSIM.
+           DO 5400 J = 1,NSIM
+              DN = DNRM2(NCONF,WRK(KY+(J-1)*NCONF),1)
+              IF (DN.NE.D1) THEN
+                 DN = D1 / DN
+                 CALL DSCAL(NCONF,DN,WRK(KY+(J-1)*NCONF),1)
+              END IF
+!#define DEBUG_TRICK
+#ifdef DEBUG_TRICK
+             call dzero(wrk(ky+(j-1)*nconf),nconf)
+             xxx = 1.0d0
+!            xxx = nconf
+!            xxx = 1.0d0/sqrt(xxx)
+!            call setvec(wrk(ky+(j-1)*nconf),xxx,nconf)
+             wrk(ky+1+(j-1)*nconf) = xxx
+             
+#endif
+              CALL WRITT(LUIT1,NC4,WRK(KY+(J-1)*NCONF))
+ 5400      CONTINUE
+           JOFF = JOFF + NSIM
+           NSIM = MIN(NSIM,NRS-JOFF)
+           IF (NSIM.GT.0) GO TO 5100
+
+         else if(ci_program .eq. 'LUCITA   ')then
+!          final ci c-vectors provided by LUCITA - just store them on disk
+           rewind luit3
+           do j = 1, nrs
+             call readt(luit3,nconf,wrk(kbvec))
+             DN = DNRM2(NCONF,wrk(kbvec+(j-1)*nconf),1)
+#ifdef LUCI_DEBUG
+             do i = 1, nconf
+               write(lupri,*) 'print element #i ==> ',i,
+     &                         wrk(kbvec+i-1+(j-1)*nconf)
+             end do
+             write(lupri,*) 'normalization factor ==> ',dn
+#endif
+!            no renormalization...
+!            dn = 1.0d0
+             IF(DN.NE.D1) THEN
                DN = D1 / DN
-               CALL DSCAL(NCONF,DN,WRK(KY+(J-1)*NCONF),1)
-            END IF
-            CALL WRITT(LUIT1,NC4,WRK(KY+(J-1)*NCONF))
- 5400    CONTINUE
-         JOFF = JOFF + NSIM
-         NSIM = MIN(NSIM,NRS-JOFF)
-         IF (NSIM.GT.0) GO TO 5100
-C
+               CALL DSCAL(NCONF,DN,wrk(kbvec+(j-1)*nconf),1)
+             END IF
+
+#ifdef DEBUG_TRICK
+             call dzero(wrk(kbvec+(j-1)*nconf),nconf)
+             xxx = 1.0d0
+             wrk(kbvec+1+(j-1)*nconf) = xxx
+#endif
+             call writt(luit1,nc4,wrk(kbvec+(j-1)*nconf))
+           end do
+         end if ! ci_program switch
 C
 C        save orbitals with label NEWORB
 C
@@ -610,6 +667,13 @@ C           search for "STARTVEC"
 C        ... case: one configuration
             WRK(KCVECS) = D1
          END IF
+!        set logical flag for new reference CI vector in WRK(KCREF) - 
+!        in the interface to lucita we use this info to save/broadcast the new
+!        reference vector on lucita internal sequential/parallel MPI-I/O files
+         vector_exchange_type1                      = 1
+         vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+
+     &                             vector_exchange_type1) = .true.
+
          IF (FLAG(48)) THEN
             CNOLBL = 'ONLYFD'
          ELSE IF (FLAG(46)) THEN
@@ -743,7 +807,7 @@ C Print XKAP, if so requested.
 C
       IF (P6FLAG(29) .AND. NWOPT .GT. 0) THEN
          WRITE (LUPRI,'(/A/A)') ' MO_ROTATE: Orbital rotation vector',
-     *                         ' -------------------------------'
+     *                          ' ----------------------------------'
          IF (IPRI6.GT.100) THEN
             PRFAC = 0.0D0
          ELSE

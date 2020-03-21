@@ -23,8 +23,7 @@ C
 ***********************************************************************
       SUBROUTINE ABTOR2(SKII,CKJJ,NKA,NIB,NJB,NKB,RHO2B,
      &                  NI,NJ,NK,NL,MAXK,
-     &                  KBIB,XKBIB,KBJB,XKBJB,IKORD,
-     &                  MXTSOB)
+     &                  KBIB,XKBIB,KBJB,XKBJB,IKORD)
 *
 * Obtain contributions alpha-beta contributions to two-particle
 * density matrix
@@ -42,19 +41,6 @@ C
       DIMENSION KBIB(MAXK,*),XKBIB(MAXK,*)
       DIMENSION KBJB(MAXK,*),XKBJB(MAXK,*)
 *. Scratch
-CTF   PARAMETER(MXTSOB=40)
-* Is now defined in mxpdim.inc !!
-* Caution: If XIJILS (now commented out) shall be used again,
-*          it must be included in the parameter list and
-*          passed all the way down from densi2.
-*
-C     DIMENSION XIJILS(MXTSOB)
-      IF(NI.GT.MXTSOB.OR.NJ.GT.MXTSOB.OR.NK.GT.MXTSOB
-     &   .OR.NL.GT.MXTSOB) THEN
-         WRITE(6,*) ' SKICKJ : Too many orbs : NI > MXTSOB '
-         WRITE(6,*) ' NI, MXTSOB ',MAX(NI,NJ,NK,NL),MXTSOB
-         Call Abend2( ' Redim MXTSOB in SKICKJ' )
-      END IF
 *
       IF(IKORD.NE.0) THEN
         WRITE(6,*) ' ABTOR2 : IKORD .NE. 0 '
@@ -370,381 +356,136 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE DENSI2(I12,RHO1,RHO2,L,R,LUL,LUR,EXPS2)
+      SUBROUTINE ADTOR2S(RHO2S,RHO2TS,ITYPE,
+     &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
 *
-* Density matrices between L and R
+* Add contributions to two electron density matrix spin-density matrix
+* RHO2SS ( i.e. RHO2AA or RHO2B) or RHO2AB
 *
-* I12 = 1 => only one-body density
-* I12 = 2 => one- and two-body-density matrices
+* Jeppe Olsen, Adapted from ADTOR2, Sept. 2004 
 *
-* Jeppe Olsen,      Oct 94
-* GAS modifications Aug 95
-* Two body density added, '96
 *
-* Table-Block driven, June 97
-*
-* Two-body density is stored as 
-*     rho2(ijkl)=<l!e(ij)e(kl)-delta(jk)e(il)!r>
-*                ijkl = ij*(ij-1)/2+kl, ij.ge.kl
-*
-* If the twobody density matrix is calculated, then also the
-* expectation value of the spin is evaluated.
-* The latter is realized as
-* S**2
-*      = S+S- + Sz(Sz-1)
-*      = -Sum(ij) a+i alpha a+j beta a i beta a j alpha + Nalpha +
-*        1/2(N alpha - N beta))(1/2(N alpha - Nbeta) - 1)
-*
+* Itype = 1 => alpha-alpha or beta-beta loop
+*              input is in form Rho2ts(ik,jl), i.ge.k, j.ge.l
+* Itype = 2 => alpha-beta loop
+*              input is in form Rho2ts(ij,kl)
+*               
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KSTSTS, KSTSTD, KCONSPA, KCONSPB, KCB, KSB
-      INTEGER*8 KINSCR, KSIOIO, KCIOIO, KC2, KSSCR, KCSCR
-      INTEGER*8 KI1, KI2, KI3, KI4, KXI1S, KXI2S, KXI3S, KXI4S
-      INTEGER*8 KSBLTP, KCBLTP, KSVST
-      INTEGER*8 KRHO1S, KRHO1P, KXNATO, KRHO1SM, KXNATSM, KOCCSM
-      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR
-      INTEGER*8 KLLBTL, KLLEBTL, KLI1BTL, KLIBTL, KLSCLFCL
-      INTEGER*8 KLLBTR, KLLEBTR, KLI1BTR, KLIBTR, KLSCLFCR
-      ! for addressing of WORK
-      REAL*8 INPRDD
-*
-* =====
 *.Input
-* =====
+      DIMENSION RHO2TS(*)
+*. Input and output
+      DIMENSION RHO2S(*)
 *
-*.Definition of L and R is picked up from CANDS
-* with L being S and  R being C
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
+      NTEST = 00
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Welcome to ADTOR2S '
+        WRITE(6,*) ' ==================='
+        WRITE(6,*) ' NI NJ NK NL = ', NI,NJ,NK,NL
+        WRITE(6,*) ' IOFF JOFF KOFF LOFF =',IOFF,JOFF,KOFF,LOFF
+        WRITE(6,*) ' ITYPE = ',ITYPE
 *
-#include "mxpdim.inc"
-#include "orbinp.inc"
-#include "cicisp.inc"
-#include "strbas.inc"
-#include "cstate.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "csm.inc"
-#include "wrkspc.inc"
-#include "crun.inc"
-#include "cgas.inc"
-#include "gasstr.inc"
-#include "cprnt.inc"
-#include "spinfo.inc"
-#include "glbbas.inc"
-*
-      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
-      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
-     &              ADSXA(MXPOBS,2*MXPOBS),
-     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
-#include "lucinp.inc"
-#include "clunit.inc"
-*. Scratch for string information
-      COMMON/HIDSCR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
-*. Specific input
-      REAL*8 L
-      DIMENSION L(*),R(*)
-*.Output
-      DIMENSION RHO1(*),RHO2(*)
-      IF( I12 .eq. 0 ) RETURN
-*     before I forget it :
-      CALL QENTER('DENSI')
-      IDUM = 0
-      CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'DENSI ')
-      ZERO = 0.0D0
-      CALL DZERO(RHO1,NACOB ** 2 )
-      IF(I12.EQ.2)
-     &CALL DZERO(RHO2,NACOB ** 2 *(NACOB**2+1)/2)
-*
-C?     WRITE(6,*) ' ISSPC ICSPC in DENSI2 ',ISSPC,ICSPC
-*
-* Info for this internal space
-*
-* Info for this internal space
-*. type of alpha and beta strings
-      IATP = 1
-      IBTP = 2
-*. alpha and beta strings with an electron removed
-      IATPM1 = 3
-      IBTPM1 = 4
-*. alpha and beta strings with two electrons removed
-      IATPM2 = 5
-      IBTPM2 = 6
-*
-      JATP = 1
-      JBTP = 2
-*. Number of supergroups
-      NOCTPA = NOCTYP(IATP)
-      NOCTPB = NOCTYP(IBTP)
-*. Offsets for supergroups
-      IOCTPA = IBSPGPFTP(IATP)
-      IOCTPB = IBSPGPFTP(IBTP)
-*
-      NAEL = NELEC(IATP)
-      NBEL = NELEC(IBTP)
-*
-      ILSM = ISSM
-      IRSM = ICSM
-* string sym, string sym => sx sym
-* string sym, string sym => dx sym
-      CALL MEMMAN(KSTSTS,NSMST ** 2,'ADDL  ',2,'KSTSTS')
-      CALL MEMMAN(KSTSTD,NSMST ** 2,'ADDL  ',2,'KSTSTD')
-      CALL STSTSM(WORK(KSTSTS),WORK(KSTSTD),NSMST)
-*. connection matrices for supergroups
-      CALL MEMMAN(KCONSPA,NOCTPA**2,'ADDL  ',1,'CONSPA')
-      CALL MEMMAN(KCONSPB,NOCTPB**2,'ADDL  ',1,'CONSPB')
-      CALL SPGRPCON(IOCTPA,NOCTPA,NGAS,MXPNGAS,NELFSPGP,
-     &              WORK(KCONSPA),IPRCIX)
-      CALL SPGRPCON(IOCTPB,NOCTPB,NGAS,MXPNGAS,NELFSPGP,
-     &              WORK(KCONSPB),IPRCIX)
-*. Largest block of strings in zero order space
-      MAXA0 = IMNMX(WORK(KNSTSO(IATP)),NSMST*NOCTYP(IATP),2)
-      MAXB0 = IMNMX(WORK(KNSTSO(IBTP)),NSMST*NOCTYP(IBTP),2)
-      MXSTBL0 = MXNSTR
-*. Largest number of strings of given symmetry and type
-      MAXA = 0
-      IF(NAEL.GE.1) THEN
-        MAXA1 = IMNMX(WORK(KNSTSO(IATPM1)),NSMST*NOCTYP(IATPM1),2)
-        MAXA = MAX(MAXA,MAXA1)
+        IF(ITYPE.EQ.1) THEN
+          IF(IOFF.EQ.KOFF) THEN
+            NROW = NI*(NI+1)/2
+          ELSE
+            NROW = NI*NK
+          END IF
+          IF(JOFF.EQ.LOFF) THEN
+            NCOL = NJ*(NJ+1)/2
+          ELSE
+            NCOL = NJ*NL
+          END IF
+        ELSE IF (ITYPE.EQ.2) THEN
+          NROW = NI*NJ
+          NCOL = NK*NL
+        END IF  
+        IF(ITYPE.EQ.1) THEN
+          WRITE(6,*) ' Input matrix in the form (IK,JL) '
+        ELSE
+          WRITE(6,*) ' Input matrix in the form (IJ,KL) '
+        END IF
+        CALL WRTMAT(RHO2TS,NROW,NCOL,NROW,NCOL)
       END IF
-      IF(NAEL.GE.2) THEN
-        MAXA1 = IMNMX(WORK(KNSTSO(IATPM2)),NSMST*NOCTYP(IATPM2),2)
-        MAXA = MAX(MAXA,MAXA1)
-      END IF
-      MAXB = 0
-      IF(NBEL.GE.1) THEN
-        MAXB1 = IMNMX(WORK(KNSTSO(IBTPM1)),NSMST*NOCTYP(IBTPM1),2)
-        MAXB = MAX(MAXB,MAXB1)
-      END IF
-      IF(NBEL.GE.2) THEN
-        MAXB1 = IMNMX(WORK(KNSTSO(IBTPM2)),NSMST*NOCTYP(IBTPM2),2)
-        MAXB = MAX(MAXB,MAXB1)
-      END IF
-      MXSTBL = MAX(MAXA,MAXB)
-      IF (IPRDEN.GE.10) WRITE(6,*)
-     &' Largest block of strings with given symmetry and type',MXSTBL
-*. Largest number of resolution strings and spectator strings
-*  that can be treated simultaneously
-*. replace with MXINKA !!!
-CTF
-* MAXI and MAXK should not be zero, which might happen in very small cases.
-* Set to one then.
-      MAXI = max(1,MIN(MXINKA,MXSTBL))
-      MAXK = max(1,MIN(MXINKA,MXSTBL))
-*Largest active orbital block belonging to given type and symmetry
-CTF
-* Using local MXTSOB_L (MXTSOB is now a list parameter!)
-      MXTSOB_L = 0
-      DO IOBTP = 1, NGAS
-        DO IOBSM = 1, NSMOB
-          MXTSOB_L = MAX(MXTSOB_L,NOBPTS(IOBTP,IOBSM))
+*
+      IF(ITYPE.EQ.1) THEN
+*
+* =======================================
+*     Alpha-alpha or beta-beta term
+* =======================================
+*
+*
+       IJOFF = (JOFF-1)*NORB+IOFF
+       KLOFF = (LOFF-1)*NORB+LOFF
+        DO I = 1, NI
+          DO J = 1, NJ
+            IF(IOFF.EQ.KOFF) THEN 
+              KMAX = I
+            ELSE 
+              KMAX = NK
+            END IF
+            DO K = 1, KMAX
+              IF(LOFF.EQ.JOFF) THEN
+               LMAX = J
+              ELSE
+               LMAX = NL
+              END IF
+              DO L = 1, LMAX
+                IF(IOFF.NE.KOFF) THEN
+                  IKIND = (K-1)*NI+I
+                  NIK = NI*NK
+                ELSE
+                  IKIND = I*(I-1)/2 + K
+                  NIK = NI*(NI+1)/2
+                END IF
+                IK_OUT = (I+IOFF-1)*(I+IOFF-2)/2 + K + KOFF - 1
+                IF(JOFF.NE.LOFF) THEN
+                  JLIND = (L-1)*NJ+J
+                ELSE
+                  JLIND = J*(J-1)/2+L
+                END IF
+                JL_OUT = (J+JOFF-1)*(J+JOFF-2)/2 + L + LOFF - 1
+                IKJL_OUT = (JL_OUT-1)*NORB*(NORB+1)/2 + IK_OUT
+                IKJL_IN = (JLIND-1)*NIK+IKIND
+                RHO2S(IKJL_OUT) = RHO2S(IKJL_OUT)
+     &                      + RHO2TS(IKJL_IN)
+              END DO
+            END DO
+          END DO
+        END DO
+      ELSE IF(ITYPE.EQ.2) THEN
+*
+* ====================
+*     Alpha-beta term
+* ====================
+*
+      DO I = 1, NI
+       DO J = 1, NJ
+         DO K = 1, NK
+           DO L = 1, NL
+             IJKLT = (L-1)*NJ*NK*NI+(K-1)*NJ*NI + (J-1)*NI + I
+             IKLJ_OUT = (J+JOFF-2)*NORB**3+(L+LOFF-2)*NORB**2
+     &                + (K+KOFF-2)*NORB   +(I+IOFF-1)
+             RHO2S(IKLJ_OUT) = RHO2S(IKLJ_OUT) + RHO2TS(IJKLT)
+            END DO
+          END DO
         END DO
       END DO
-      MAXIJ = MXTSOB_L ** 2
-*.Local scratch arrays for blocks of C and sigma
-      IF (IPRDEN.GE.10) write(6,*) ' DENSI2 : MXSB MXTSOB_L MXSOOB ',
-     &       MXSB,MXTSOB_L,MXSOOB
-      IF (IPRDEN.GE.10) WRITE(6,*) ' ICISTR,LBLOCK ',ICISTR,LBLOCK
-      IF(ICISTR.EQ.1) THEN
-        CALL MEMMAN(KCB,LBLOCK,'ADDL  ',2,'KCB   ')
-        CALL MEMMAN(KSB,LBLOCK,'ADDL  ',2,'KSB   ')
+*
       END IF
-*.SCRATCH space for block of two-electron density matrix
-* A 4 index block with four indeces belonging OS class
-      INTSCR = MXTSOB_L ** 4
-      IF (IPRDEN.GE.10)
-     &   WRITE(6,*) ' Density scratch space ',INTSCR
-      CALL MEMMAN(KINSCR,INTSCR,'ADDL  ',2,'INSCR ')
 *
-*. Arrays giving allowed type combinations '
-      CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
-      CALL MEMMAN(KCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
-      CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
-     &                IGSOCCX,NOCTPA,NOCTPB,
-     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
-     &                MXPNGAS,NGAS,WORK(KSIOIO),IPRDIA)
-      CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
-     &                IGSOCCX,NOCTPA,NOCTPB,
-     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
-     &                MXPNGAS,NGAS,WORK(KCIOIO),IPRDIA)
-*. Scratch space for CJKAIB resolution matrices
-      CALL MXRESCPH(WORK(KCIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &     NSMST,NSTFSMSPGP,MXPNSMST,
-     &     NSMOB,MXPNGAS,NGAS,NOBPTS,IPRCIX,MAXK,
-     &     NELFSPGP,
-     &     MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK,
-     &     IPHGAS,NHLFSPGP,MNHL,IADVICE)
-      IF (IPRDEN.GE.10) THEN
-        WRITE(6,*) ' DENSI12 :  : MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
-     &                            MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
-      END IF
-      LSCR2 = MAX(MXCJ,MXCIJA,MXCIJB)
-      IF (IPRDEN.GE.10)
-     &    WRITE(6,*) ' Space for resolution matrices ',LSCR2
-      LSCR12 = MAX(LBLOCK,2*LSCR2)
-*. It is assumed that the third block already has been allocated, so
-      KC2 = KVEC3
-      IF(IPRCIX.GE.2)
-     &WRITE(6,*) ' Space for resolution matrices ',LSCR12
-      KSSCR = KC2
-      KCSCR = KC2 + LSCR2
-*
-*. Space for annihilation/creation mappings
-      MAXIK = MAX(MAXI,MAXK)
-      LSCR3 = MAX(MXADKBLK,MAXIK*MXTSOB_L*MXTSOB_L,MXSTBL0)
-      CALL MEMMAN(KI1,  LSCR3       ,'ADDL  ',1,'I1    ')
-      CALL MEMMAN(KI2,  LSCR3       ,'ADDL  ',1,'I2    ')
-      CALL MEMMAN(KI3,  LSCR3       ,'ADDL  ',1,'I3    ')
-      CALL MEMMAN(KI4,  LSCR3       ,'ADDL  ',1,'I4    ')
-      CALL MEMMAN(KXI1S,LSCR3       ,'ADDL  ',2,'XI1S  ')
-      CALL MEMMAN(KXI2S,LSCR3       ,'ADDL  ',2,'XI2S  ')
-      CALL MEMMAN(KXI3S,LSCR3       ,'ADDL  ',2,'XI3S  ')
-      CALL MEMMAN(KXI4S,LSCR3       ,'ADDL  ',2,'XI4S  ')
-*. Arrays giving block type
-      CALL MEMMAN(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
-      CALL MEMMAN(KCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
-*. Arrays for additional symmetry operation
-      IF(IDC.EQ.3.OR.IDC.EQ.4) THEN
-        CALL MEMMAN(KSVST,NSMST,'ADDL  ',2,'SVST  ')
-        CALL SIGVST(WORK(KSVST),NSMST)
-      ELSE
-         KSVST = 1
-      END IF
-      CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP),WORK(KSVST))
-      CALL ZBLTP(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP),WORK(KSVST))
-*.0 OOS arrayy
-      NOOS = NOCTPA*NOCTPB*NSMST
-* scratch space containing active one body
-      CALL MEMMAN(KRHO1S,NACOB ** 2,'ADDL  ',2,'RHO1S ')
-*. For natural orbitals
-      CALL MEMMAN(KRHO1P,NACOB*(NACOB+1)/2,'ADDL  ',2,'RHO1P ')
-      CALL MEMMAN(KXNATO,NACOB **2,'ADDL  ',2,'XNATO ')
-*. Natural orbitals in symmetry blocks
-      CALL MEMMAN(KRHO1SM,NACOB ** 2,'ADDL  ',2,'RHO1S ')
-      CALL MEMMAN(KXNATSM,NACOB ** 2,'ADDL  ',2,'RHO1S ')
-      CALL MEMMAN(KOCCSM,NACOB ,'ADDL  ',2,'RHO1S ')
-*
-*. Space for one block of string occupations and two arrays of
-*. reordering arrays
-      LZSCR = (MAX(NAEL,NBEL)+3)*(NOCOB+1) + 2 * NOCOB
-      LZ    = (MAX(NAEL,NBEL)+2) * NOCOB
-      CALL MEMMAN(KLZSCR,LZSCR,'ADDL  ',1,'KLZSCR')
-      DO K12 = 1, 1
-        CALL MEMMAN(KLOCSTR(K12),MAX_STR_OC_BLK,'ADDL  ',1,'KLOCS ')
-      END DO
-      DO I1234 = 1, 2
-        CALL MEMMAN(KLREO(I1234),MAX_STR_SPGP,'ADDL  ',1,'KLREO ')
-        CALL MEMMAN(KLZ(I1234),LZ,'ADDL  ',1,'KLZ   ')
-      END DO
-*. Arrays for partitioning of Left vector = sigma
-      NTTS = MXNTTS
-      CALL MEMMAN(KLLBTL ,NTTS  ,'ADDL  ',1,'LBT_L  ')
-      CALL MEMMAN(KLLEBTL,NTTS  ,'ADDL  ',1,'LEBT_L ')
-      CALL MEMMAN(KLI1BTL,NTTS  ,'ADDL  ',1,'I1BT_L ')
-      CALL MEMMAN(KLIBTL ,8*NTTS,'ADDL  ',1,'IBT_L  ')
-      CALL MEMMAN(KLSCLFCL,NTTS, 'ADDL  ',2,'SCLF_L')
-      ITTSS_ORD = 2
-      CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
-     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
-     &     WORK(KSIOIO),ISMOST(1,ISSM),
-     &     NBATCHL,WORK(KLLBTL),WORK(KLLEBTL),
-     &     WORK(KLI1BTL),WORK(KLIBTL),0,ITTSS_ORD)
-*. Number of BLOCKS
-        NBLOCKL = IFRMR(WORK(KLI1BTL),1,NBATCHL)
-     &         + IFRMR(WORK(KLLBTL),1,NBATCHL) - 1
-*. Arrays for partitioning of Right  vector = C
-      NTTS = MXNTTS
-      CALL MEMMAN(KLLBTR ,NTTS  ,'ADDL  ',1,'LBT_R  ')
-      CALL MEMMAN(KLLEBTR,NTTS  ,'ADDL  ',1,'LEBT_R ')
-      CALL MEMMAN(KLI1BTR,NTTS  ,'ADDL  ',1,'I1BT_R ')
-      CALL MEMMAN(KLIBTR ,8*NTTS,'ADDL  ',1,'IBT_R  ')
-      CALL MEMMAN(KLSCLFCR,NTTS, 'ADDL  ',2,'SCLF_R')
-      ITTSS_ORD = 2
-      CALL PART_CIV2(IDC,WORK(KCBLTP),WORK(KNSTSO(IATP)),
-     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
-     &     WORK(KCIOIO),ISMOST(1,ICSM),
-     &     NBATCHR,WORK(KLLBTR),WORK(KLLEBTR),
-     &     WORK(KLI1BTR),WORK(KLIBTR),0,ITTSS_ORD)
-*. Number of BLOCKS
-        NBLOCKR = IFRMR(WORK(KLI1BTR),1,NBATCHR)
-     &         + IFRMR(WORK(KLLBTR),1,NBATCHR) - 1
-C?      WRITE(6,*) ' DENSI2T :NBLOCKR =',NBLOCKR
-
-      IF(ICISTR.EQ.1) THEN
-         WRITE(6,*) ' Sorry, ICISTR = 1 is out of fashion'
-         WRITE(6,*) ' Switch to ICISTR = 2 - or reprogram '
-         Call Abend2( ' DENSI2T : ICISTR = 1 in use ' )
-      ELSE IF(ICISTR.GE.2) THEN
-        S2_TERM1 = 0.0D0
-        CALL GASDN2(I12,RHO1,RHO2,L,R,L,R,WORK(KC2),
-     &       WORK(KCIOIO),WORK(KSIOIO),ISMOST(1,ICSM),
-     &       ISMOST(1,ISSM),WORK(KCBLTP),WORK(KSBLTP),NACOB,
-     &       WORK(KNSTSO(IATP)),WORK(KISTSO(IATP)),
-     &       WORK(KNSTSO(IBTP)),WORK(KISTSO(IBTP)),
-     &       NAEL,IATP,NBEL,IBTP,IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &       NSMST,NSMOB,NSMSX,NSMDX,MXPNGAS,NOBPTS,IOBPTS,
-     &       MAXK,MAXI,LBLOCK,LBLOCK,WORK(KCSCR),WORK(KSSCR),
-     &       SXSTSM,WORK(KSTSTS),WORK(KSTSTD),SXDXSX,
-     &       ADSXA,ASXAD,NGAS,NELFSPGP,IDC,
-     &       WORK(KI1),WORK(KXI1S),WORK(KI2),WORK(KXI2S),
-     &       WORK(KI3),WORK(KXI3S),WORK(KI4),WORK(KXI4S),WORK(KINSCR),
-     &       MXPOBS,IPRDEN,WORK(KRHO1S),LUL,LUR,
-     &       PSSIGN,PSSIGN,WORK(KRHO1P),WORK(KXNATO),
-     &       NBATCHL,WORK(KLLBTL),WORK(KLLEBTL),WORK(KLI1BTL),
-     &       WORK(KLIBTL),
-     &       NBATCHR,WORK(KLLBTR),WORK(KLLEBTR),WORK(KLI1BTR),
-     &       WORK(KLIBTR),WORK(KCONSPA),WORK(KCONSPB),
-     &       WORK(KLSCLFCL),WORK(KLSCLFCR),S2_TERM1,IUSE_PH,IPHGAS,
-     &       MXTSOB)
-C     KLLBTR  KLLEBTR KLI1BTR KLIBTR
-      END IF
-C?    WRITE(6,*) ' Memcheck in densi2 after GASDN2'
-C?    CALL MEMCHK
-*
-*
-*. Add terms from hole-hole commutator
-      IF(IUSE_PH.EQ.1) THEN
-*. Overlap between left and right vector
-       XLR = INPRDD(L,R,LUR,LUL,1,-1)
-       CALL RHO1_HH(RHO1,XLR)
-      END IF
-* Natural Orbitals
-      CALL LNATORB(RHO1,NSMOB,NTOOBS,NACOBS,NINOBS,
-     &             IREOST,WORK(KXNATO),
-     &             WORK(KRHO1SM),WORK(KOCCSM),NACOB,
-     &             WORK(KRHO1P),IPRDEN)
-*
-      IF (IPRDEN.GE.5) THEN
-        WRITE(6,*) ' One-electron density matrix '
-        WRITE(6,*) ' ============================'
-        CALL WRTMT_LU(RHO1,NTOOB,NTOOB,NTOOB,NTOOB)
-        IF(I12.EQ.2) THEN
-          WRITE(6,*) ' Two-electron density '
-          CALL PRSYM(RHO2,NACOB**2)
+      IF(NTEST.GE.1000) THEN
+        IF(ITYPE.EQ.1)  THEN
+          WRITE(6,*) ' Updated two-body spin-SS density matrix '
+          NDIM = NORB*(NORB+1)/2
+        ELSE 
+          WRITE(6,*) ' Updated two-body spin AB density matrix '
+          NDIM = NORB**2
         END IF
+        CALL WRTMAT(RHO2S,NDIM,NDIM,NDIM,NDIM)
       END IF
-*
-      IF (I12.EQ.2) THEN
-* <L!S**2|R>
-        EXPS2 = S2_TERM1 + NAEL +
-     &          0.5*(NAEL-NBEL)*(0.5*(NAEL-NBEL)-1)
-        IF(IPRDEN.GT.0) THEN
-          WRITE(6,*) ' Term 1 to S2 ', S2_TERM1
-          WRITE(6,*) ' Expectation value of S2 ', EXPS2
-        END IF
-      ELSE
-        EXPS2 = 0.0D0
-      END IF
-
-*. Eliminate local memory
-      CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'DENSI ')
-      CALL QEXIT('DENSI')
-C     WRITE(6,*) ' Leaving DENSI '
+!
       RETURN
-      END
+      END 
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -814,6 +555,8 @@ C     WRITE(6,*) ' Leaving DENSI '
 * Symmetry-occupation-occupation blocks
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
+#include "dummy.h"
 *.General input
       INTEGER ICOCOC(NOCTPA,NOCTPB),ISOCOC(NOCTPA,NOCTPB)
       INTEGER ICSMOS(NSMST),ISSMOS(NSMST)
@@ -849,28 +592,30 @@ C     WRITE(6,*) ' Leaving DENSI '
 *.Output
       DIMENSION RHO1(*),RHO2(*)
       DIMENSION RHO1P(*),XNATO(*)
+      integer :: rhotype_local
 *
       CALL QENTER('GASDN')
-      NTEST = 00
+!     NTEST = 100 ! debug
+      NTEST = 000 ! no debug
       NTEST = MAX(NTEST,IPRNT)
       IF(NTEST.GE.20) THEN
-        WRITE(6,*) ' ================='
-        WRITE(6,*) ' GASDN2 speaking :'
-        WRITE(6,*) ' ================='
-        WRITE(6,*)
-        WRITE(6,*) ' NACOB,MAXK,NGAS,IDC,MXPOBS',
+        WRITE(lupri,*) ' ================='
+        WRITE(lupri,*) ' GASDN2 speaking :'
+        WRITE(lupri,*) ' ================='
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' NACOB,MAXK,NGAS,IDC,MXPOBS',
      &             NACOB,MAXK,NGAS,IDC,MXPOBS
-        WRITE(6,*) ' LUL, LUR ', LUL,LUR
+        WRITE(lupri,*) ' LUL, LUR ', LUL,LUR
       END IF
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Initial L vector '
+        WRITE(lupri,*) ' Initial L vector '
         IF(LUL.EQ.0) THEN
           CALL WRTRS2(L,ISSMOS,ISBLTP,ISOCOC,NOCTPA,NOCTPB,
      &                NSSOA,NSSOB,NSMST)
         ELSE
           CALL WRTVCD(L,LUL,1,-1)
         END IF
-        WRITE(6,*) ' Initial R vector '
+        WRITE(lupri,*) ' Initial R vector '
         IF(LUR.EQ.0) THEN
           CALL WRTRS2(R,ICSMOS,ICBLTP,ICOCOC,NOCTPA,NOCTPB,
      &                NSSOA,NSSOB,NSMST)
@@ -884,7 +629,7 @@ C     WRITE(6,*) ' Leaving DENSI '
 *. Obtain L blocks
         NBLKL = LBATL(IBATCHL)
         IF(NTEST.GE.200)
-     &    WRITE(6,*) ' Left batch, number of blocks',IBATCHL,NBLKL
+     &    WRITE(lupri,*) ' Left batch, number of blocks',IBATCHL,NBLKL
         DO IIL  = 1,NBLKL
           IL  = I1BATL(IBATCHL)-1+IIL
           IATP = IBLOCKL(1,IL)
@@ -893,10 +638,10 @@ C     WRITE(6,*) ' Leaving DENSI '
           IBSM = IBLOCKL(4,IL)
           IOFF = IBLOCKL(5,IL)
           IF(NTEST.GE.200)
-     &    WRITE(6,*) 'IATP IBTP IASM IBSM',IATP,IBTP,IASM,IBSM
+     &    WRITE(lupri,*) 'IATP IBTP IASM IBSM',IATP,IBTP,IASM,IBSM
           ISCALE = 0
           IF(NTEST.GE.200)
-     &    WRITE(6,*) 'IOFF ',IOFF
+     &    WRITE(lupri,*) 'IOFF ',IOFF
           CALL GSTTBL(L,SB(IOFF),IATP,IASM,IBTP,IBSM,ISOCOC,
      &                NOCTPA,NOCTPB,NSSOA,NSSOB,PSL,ISOOSC,IDC,
      &                PSL,LUL,C2,NSMST,ISCALE,SCLFAC_L(IL))
@@ -907,7 +652,7 @@ C     WRITE(6,*) ' Leaving DENSI '
 *. Read R blocks into core
         NBLKR = LBATR(IBATCHR)
         IF(NTEST.GE.200)
-     &    WRITE(6,*) ' Right batch, number of blocks',IBATCHR,NBLKR
+     &    WRITE(lupri,*) ' Right batch, number of blocks',IBATCHR,NBLKR
         DO IIR  = 1,NBLKR
           IR  = I1BATR(IBATCHR)-1+IIR
           JATP = IBLOCKR(1,IR)
@@ -916,7 +661,7 @@ C     WRITE(6,*) ' Leaving DENSI '
           JBSM = IBLOCKR(4,IR)
           JOFF = IBLOCKR(5,IR)
           IF(NTEST.GE.200)
-     &    WRITE(6,*) ' JATP JBTP JASM JBSM ',JATP,JBTP,JASM,JBSM
+     &    WRITE(lupri,*) ' JATP JBTP JASM JBSM ',JATP,JBTP,JASM,JBSM
 *. Read R blocks into core
 *
 *. Only blocks interacting with current batch of L are read in
@@ -964,10 +709,10 @@ C             CALL IWRTMA(IBLOCKR(1,IR),4,1,4,1)
 *
           IF(NTEST.GE.100) THEN
             IF(INTERACT.EQ.1) THEN
-              WRITE(6,*) ' TTSS for C block read in  '
+              WRITE(lupri,*) ' TTSS for C block read in  '
               CALL IWRTMA(IBLOCKR(1,IR),4,1,4,1)
             ELSE
-              WRITE(6,*) ' TTSS for C block skipped  '
+              WRITE(lupri,*) ' TTSS for C block skipped  '
               CALL IWRTMA(IBLOCKR(1,IR),4,1,4,1)
             END IF
           END IF
@@ -1047,19 +792,22 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
                      SCLFAC = FACTOR*SCLFAC_L(IL)*SCLFAC_R(IR)
                      IF(INTERACT.EQ.1.AND.SCLFAC.NE.0.0D0) THEN
                      IF(NTEST.GE.20) THEN
-                       WRITE(6,*) ' RSDNBB will be called for '
-                       WRITE(6,*) ' L block : '
-                       WRITE(6,'(A,5I5)')
+                       WRITE(lupri,*) ' RSDNBB will be called for '
+                       WRITE(lupri,*) ' L block : '
+                       WRITE(lupri,'(A,5I5)')
      &                 ' IIASM IIBSM IIATP IIBTP',
      &                   IIASM,IIBSM,IIATP,IIBTP
-                       WRITE(6,*) ' R  block : '
-                       WRITE(6,'(A,5I5)')
+                       WRITE(lupri,*) ' R  block : '
+                       WRITE(lupri,'(A,5I5)')
      &                 ' JASM JBSM JATP JBTP',
      &                   JASM,JBSM,JATP,JBTP
-                       WRITE(6,*) ' IOFF,JOFF ', IOFF,JOFF
-                       WRITE(6,*) ' SCLFAC = ', SCLFAC
+                       WRITE(lupri,*) ' IOFF,JOFF ', IOFF,JOFF
+                       WRITE(lupri,*) ' SCLFAC = ', SCLFAC
                      END IF
-                     CALL GSDNBB2(I12,RHO1,RHO2,
+                     rhotype_local = 1 ! set dummy default rhotype here: this 
+!                                        dens-m way here is not active anymore anyway...
+                call quit('no spin density implemented')
+                     CALL GSDNBB2(I12,RHO1,RHO2,rhotype_local,
      &                    IIASM,IIATP,IIBSM,IIBTP,
      &                    JASM,JATP,JBSM,JBTP,NGAS,
      &                    NELFSPGP(1,IOCTPA-1+IIATP),
@@ -1070,15 +818,15 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
      &                    SB(IOFF),CB(JOFF),C2,
      &                    ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX,
      &                    MXPNGAS,NOBPTS,IOBPTS,MAXI,MAXK,
-     &                    SSCR,CSCR,
+     &                    SSCR,CSCR,vdummy,vdummy,
      &                    I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                    X,NSMOB,NSMST,NSMSX,NSMDX,
      &                    NIIA,NIIB,NJA,NJB,MXPOBS,
      &                    IPRNT,NACOB,RHO1S,SCLFAC,
      &                    S2_TERM1,IUSE_PH,IPHGAS,
-     &                    MXTSOB)
-                          IF(NTEST.GE.500) THEN
-                            write(6,*) ' Updated rho1 '
+     &                    -1)
+                          IF(NTEST.GE.100) THEN
+                            write(lupri,*) ' Updated rho1 '
                             call WRTMT_LU(rho1,nacob,nacob,nacob,nacob)
                           END IF
 *
@@ -1216,7 +964,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 * Obtain element of two-electron density matrix
 * Currently stored without symmetry
 *
-*. 2-electron density is assumed stored in wotk(krho2)
+*. 2-electron density is assumed stored in work(krho2)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
@@ -1266,7 +1014,8 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
      &                  NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &                  SSCR,CSCR,I1,XI1S,I2,XI2S,H,
      &                  NSMOB,NSMST,NSMSX,MXPOBS,RHO1S,SCLFAC,
-     &                  IUSE_PH,IPHGAS)
+     &                  IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB,
+     &                  SRHO1a,SRHO1b)
 *
 * Contributions to one electron density matrix from column excitations
 *
@@ -1329,7 +1078,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
       INTEGER ISEL(NGAS),ICEL(NGAS)
       DIMENSION CB(*),SB(*)
 *.Output
-      DIMENSION RHO1(*)
+      DIMENSION RHO1(*), SRHO1(*), SRHO1a(*), SRHO1b(*)
 *.Scratch
       DIMENSION SSCR(*),CSCR(*),RHO1S(*)
       DIMENSION I1(*),XI1S(*)
@@ -1341,7 +1090,14 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
       DIMENSION IJ_OFF(2)
       DIMENSION ISCR(2)
       DIMENSION ICGRP(16),ISGRP(16)
+#include "priunit.h"
 *
+*. Add or subtract for spindensity
+      IF(IAB.EQ.1) THEN
+        XAB = 1.0D0
+      ELSE
+        XAB = -1.0D0
+      END IF
 *.Local arrays
       NTEST = 000
       IF(NTEST.GE.1000) THEN
@@ -1357,6 +1113,15 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 *
         WRITE(6,*) ' GSBBD1, sclfac ',SCLFAC
       END IF
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      WRITE(lupri,*) ' GSBBD1: C'
+      CALL WRTMATMN(CB,nacob,nacob,nacob,nacob,lupri)
+      WRITE(lupri,*) ' GSBBD1: S'
+      CALL WRTMATMN(SB,nacob,nacob,nacob,nacob,lupri)
+#undef LUCI_DEBUG
+#endif
 *
       IFRST = 1
       JFRST = 1
@@ -1385,6 +1150,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
         IJ_AC(2) = 1
         IJ_TP(1) = ITYP
         IJ_TP(2) = JTYP
+!       write(lupri,*) 'iuse_ph ==> ',iuse_ph
         IF(IUSE_PH.EQ.1) THEN
           CALL ALG_ROUTERX(IAOC,JAOC,NOP,IJ_TP,IJ_AC,IJ_REO,SIGNIJ)
         ELSE
@@ -1454,7 +1220,7 @@ C          GET_SPGP_INF(ISPGP,ITP,IGRP)
           ELSE
               NKAEFF = NKASTR
           END IF
-C         WRITE(6,*) ' NKAEFF NKASTR', NKAEFF,NKASTR
+!         WRITE(lupri,*) ' NKAEFF NKASTR', NKAEFF ,NKASTR
 
 *. Loop over partitionings of N-1 strings
             KBOT = 1-MAXK
@@ -1471,9 +1237,12 @@ C         WRITE(6,*) ' NKAEFF NKASTR', NKAEFF,NKASTR
 
 *. This is the place to start over partitioning of I strings
               DO 701 IPART = 1, NIPART
-                IBOT = (IPART-1)*MAXI+1
-                ITOP = MIN(IBOT+MAXI-1,NROW)
+
+                IBOT  = (IPART-1)*MAXI+1
+                ITOP  = MIN(IBOT+MAXI-1,NROW)
                 NIBTC = ITOP - IBOT + 1
+                NKI   = LKABTC*NIBTC
+
 * Obtain CSCR(I,K,JORB) = SUM(J)<K!A JORB!J>C(I,J)
                 DO JJORB = 1,IJ_DIM(2)
                   ICGOFF = 1 + (JJORB-1)*LKABTC*NIBTC
@@ -1486,28 +1255,36 @@ C         WRITE(6,*) ' NKAEFF NKASTR', NKAEFF,NKASTR
 *.Gather S Block
                   ISGOFF = 1 + (IIORB-1)*LKABTC*NIBTC
                   CALL MATCG(SB,SSCR(ISGOFF),NROW,NIBTC,IBOT,
-     &                   LKABTC,I2(KBOT+(IIORB-1)*NKASTR),
-     &                   XI2S(KBOT+(IIORB-1)*NKASTR) )
+     &                       LKABTC,I2(KBOT+(IIORB-1)*NKASTR),
+     &                       XI2S(KBOT+(IIORB-1)*NKASTR) )
                 END DO
 *
-                IF(NTEST.GE.1000) THEN
-                 WRITE(6,*) ' CSCR and SSCR '
-                 CALL WRTMT_LU(CSCR,IJ_DIM(2),NKI,IJ_DIM(2),NKI)
-                 CALL WRTMT_LU(SSCR,IJ_DIM(1),NKI,IJ_DIM(1),NKI)
-                END IF
 *
-*. And then the hard  work
-                NKI = LKABTC*NIBTC
-                FACTORC = 0.0D0
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+                ntest = 1000
+                IF(NTEST.GE.1000) THEN
+                 WRITE(lupri,*) ' GSBBD1: CSCR and SSCR '
+                 CALL WRTMATMN(CSCR,IJ_DIM(2),NKI,IJ_DIM(2),NKI,lupri)
+                 CALL WRTMATMN(SSCR,IJ_DIM(1),NKI,IJ_DIM(1),NKI,lupri)
+                END IF
+#endif
+
+!               ... and then the hard  work
+                FACTORC  = 0.0D0
                 FACTORAB = 1.0D0
+
                 CALL MATML7(RHO1S,SSCR,CSCR,IJ_DIM(1),IJ_DIM(2),NKI,
      &               IJ_DIM(1),NKI,IJ_DIM(2),FACTORC,FACTORAB,1)
-*
+
+#ifdef LUCI_DEBUG
                 IF(NTEST.GE.100) THEN
-                  WRITE(6,*) ' Block to one-body density '
-                  CALL WRTMT_LU(RHO1S,IJ_DIM(1),IJ_DIM(2),
-     &                              IJ_DIM(1),IJ_DIM(2))
+                  WRITE(lupri,*) ' Block to one-body density '
+                  CALL WRTMATMN(RHO1S,IJ_DIM(1),IJ_DIM(2),
+     &                              IJ_DIM(1),IJ_DIM(2),lupri)
                 END IF
+#endif
 *. Scatter out to complete matrix
                 DO JJORB = 1, IJ_DIM(2)
                   JORB = IJ_OFF(2)-1+JJORB
@@ -1516,7 +1293,27 @@ C         WRITE(6,*) ' NKAEFF NKASTR', NKAEFF,NKASTR
                     RHO1((JORB-1)*NACOB+IORB) =
      &              RHO1((JORB-1)*NACOB+IORB) +
      &              RHO1S((JJORB-1)*IJ_DIM(1)+IIORB)
+                    IF(IDOSRHO1.EQ.1) THEN  
+                      SRHO1((JORB-1)*nacob+IORB) =
+     &                SRHO1((JORB-1)*nacob+IORB) +
+     &                XAB*RHO1S((JJORB-1)*IJ_DIM(1)+IIORB)   
+                      if(iab == 1)then
+                        SRHO1a((JORB-1)*nacob+IORB) =
+     &                  SRHO1a((JORB-1)*nacob+IORB) +
+     &                  RHO1S((JJORB-1)*IJ_DIM(1)+IIORB)   
+                      else if(iab == 2)then
+                        SRHO1b((JORB-1)*nacob+IORB) =
+     &                  SRHO1b((JORB-1)*nacob+IORB) +
+     &                  RHO1S((JJORB-1)*IJ_DIM(1)+IIORB)   
+                      end if
+                    end if
                   END DO
+#ifdef LUCI_DEBUG
+                  WRITE(lupri,*) ' one-body density after scatter'
+                  CALL WRTMATMN(RHO1,nacob,nacob,nacob,nacob,lupri)
+#undef LUCI_DEBUG
+                  ntest = 0
+#endif
                 END DO
 *               /\ End of hard work
 
@@ -1530,7 +1327,6 @@ C         WRITE(6,*) ' NKAEFF NKASTR', NKAEFF,NKASTR
   900 CONTINUE
  1001 CONTINUE
 *
-C!    Call Abend2( ' enforrced stop in RSBBD1 ' )
       RETURN
       END
 ***********************************************************************
@@ -1543,7 +1339,8 @@ C!    Call Abend2( ' enforrced stop in RSBBD1 ' )
      &                  ADSXA,SXSTST,STSTSX,SXDXSX,MXPNGAS,
      &                  NOBPTS,IOBPTS,MAXI,MAXK,
      &                  SSCR,CSCR,I1,XI1S,I2,XI2S,X,
-     &                  NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC)
+     &                  NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC,
+     &                  IDOSRHO2,RHO2SS)
 *
 * Contributions to two-electron density matrix from column excitations
 *
@@ -1579,6 +1376,7 @@ C!    Call Abend2( ' enforrced stop in RSBBD1 ' )
 * Output
 * ======
 * RHO2 : Updated density block
+! RHO2SS : Updated alpha-alpha ( or beta-beta) 2e- spindensity (if IDOSRHO2=1)
 *
 * =======
 * Scratch
@@ -1593,6 +1391,7 @@ C!    Call Abend2( ' enforrced stop in RSBBD1 ' )
 * Jeppe Olsen, Fall of 96
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 *. General input
       INTEGER ADSXA(MXPOBS,2*MXPOBS),SXSTST(NSMSX,NSMST),
      &        STSTSX(NSMST,NSMST), SXDXSX(2*MXPOBS,4*MXPOBS)
@@ -1601,7 +1400,7 @@ C!    Call Abend2( ' enforrced stop in RSBBD1 ' )
       INTEGER ISEL(NGAS),ICEL(NGAS)
       DIMENSION CB(*),SB(*)
 *.Output
-      DIMENSION RHO2(*)
+      DIMENSION RHO2(*), RHO2SS(*)
 *.Scatch
       DIMENSION SSCR(*),CSCR(*)
       DIMENSION I1(MAXK,*),XI1S(MAXK,*),I2(MAXK,*),XI2S(MAXK,*)
@@ -1638,10 +1437,11 @@ C     INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
         JTYP = JTP(IDXTP)
         KTYP = KTP(IDXTP)
         LTYP = LTP(IDXTP)
-        IF(NTEST.GE.1000)
-     &  write(6,*) ' ITYP JTYP KTYP LTYP ', ITYP,JTYP,KTYP,LTYP
+!       IF(NTEST.GE.1000)
+!       write(lupri,*) ' ITYP JTYP KTYP LTYP ', ITYP,JTYP,KTYP,LTYP
         DO 1950 IKOBSM = 1, NSMOB
           JLOBSM = SXDXSX(IKOBSM,IDXSM)
+           
           IF(JLOBSM.EQ.0) GOTO 1950
 *. types + symmetries defined => K strings are defined
           KFRST = 1
@@ -1662,6 +1462,8 @@ C     INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
           JOFF = IOBPTS(JTYP,JSM)
           KOFF = IOBPTS(KTYP,KSM)
           LOFF = IOBPTS(LTYP,LSM)
+!         write(lupri,'(a,6i6)') 'ni,nk,nj,nl,ioff,joff',
+!    &    ni,nk,nj,nl,ioff,joff
 *
           IF(IOFF.LT.KOFF) GOTO 1930
           IF(JOFF.LT.LOFF) GOTO 1930
@@ -1704,10 +1506,13 @@ C     INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
                     JLSM = 0
                   END IF
 *. Obtain all double excitations from this group of K strings
-                  CALL QENTER('ADADS')
+!                 CALL QENTER('ADADS')
                   I12 = 1
                   K12 = 1
                   IONE = 1
+!                 write(lupri,*) 'ada round 1',nj,nl
+!                 write(lupri,'(a,12i4)') 'input to adast_gas',
+!    &            ione,JSM,JTYP,NJ,LSM,LTYP,NL,I12,K12,ICCTP,ICCSM,IGRP
                   CALL ADADST_GAS(IONE,JSM,JTYP,NJ,
      &                            IONE,LSM,LTYP,NL,
      &                        ICCTP,ICCSM,IGRP,
@@ -1716,13 +1521,15 @@ C     INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
                   JFRST = 0
                   KFRST = 0
 *
-                  CALL QEXIT('ADADS')
+!                                write(lupri,*) 'this nkbtc',nkbtc
+!                 IF(NKBTC.EQ.0) write(lupri,*) 'skip nkbtc',nkbtc
+!                 CALL QEXIT('ADADS')
                   IF(NKBTC.EQ.0) GOTO 1930
 *. Loop over jl in TS classes
                   J = 0
                   L = 1
 *
-                  CALL QENTER('MATCG')
+!                 CALL QENTER('MATCG')
                   DO  IJL = 1, NJL
                     CALL NXTIJ(J,L,NJ,NL,JLSM,NONEW)
                     I1JL = (L-1)*NJ+J
@@ -1745,7 +1552,7 @@ C                   JLOFF = (JLBOFF-1+IJL-1)*NKBTC*NIBTC+1
      &                            I1(1,I1JL),XI1S(1,I1JL))
                     END IF
                   END DO
-                  CALL QEXIT ('MATCG')
+!                 CALL QEXIT ('MATCG')
 *
 *
 * =========================================================
@@ -1770,6 +1577,7 @@ CT                CALL QENTER('ADADS')
                   IONE = 1
                   IF(IFRST.EQ.1) KFRST = 1
                   ONE = 1.0D0
+!                 write(lupri,*) 'ada round 2',ni,nk
                   CALL ADADST_GAS(IONE,ISM,ITYP,NI,
      &                            IONE,KSM,KTYP,NK,
      &                        ISCTP,ISCSM,IGRP,
@@ -1870,6 +1678,11 @@ C    &                  NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
      &                    NACOB)
 C                  ADTOR2(RHO2,RHO2T,ITYPE,
 C    &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
+               IF(IDOSRHO2.EQ.1) THEN
+*. and add to spin-density 
+              CALL ADTOR2S(RHO2SS,X,1,NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,
+     &                    nacob)
+               END IF
 
  1930       CONTINUE
  1940     CONTINUE
@@ -1892,7 +1705,7 @@ C    &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
      &                  I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,X,
      &                  NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,IUSEAB,
      &                  CJRES,SIRES,NORB,NTESTG,SCLFAC,S2_TERM1,
-     &                  MXTSOB)
+     &                  IDOSRHO2,RHO2AB)
 *
 * alpha-beta contribution to two-particle density matrix
 * from given c-block and s-block.
@@ -1951,7 +1764,7 @@ C    &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
 *.Input
       DIMENSION CB(*),SB(*)
 *. Output
-      DIMENSION RHO2(*)
+      DIMENSION RHO2(*), RHO2AB(*)
 *.Scratch
       DIMENSION I1(*),XI1S(*),I2(*),XI2S(*)
       DIMENSION I3(*),XI3S(*),I4(*),XI4S(*)
@@ -2078,7 +1891,7 @@ C?              WRITE(6,*) ' Loop 1930, KSM LSM ',KSM,LSM
 C               WRITE(6,*) ' Before call to ABTOR2'
                 CALL ABTOR2(SIRES,CJRES,LKABTC,NIB,NJB,
      &               NKBSTR,X,NI,NJ,NK,NL,NKBSTR,
-     &               I4,XI4S,I2,XI2S,IKORD,MXTSOB)
+     &               I4,XI4S,I2,XI2S,IKORD)
 *. contributions to Rho2(ij,kl) has been obtained, scatter out
 C?              WRITE(6,*) ' Before call to ADTOR2'
 C?              WRITE(6,*) ' RHO2B (X) matrix '
@@ -2091,7 +1904,9 @@ C?              call WRTMT_LU(x,ni*nj,nk*nl,ni*nj,nk*nl)
                       IJ = (J-1)*NI+I
                       JI = (I-1)*NJ+J
                       NIJ = NI*NJ
+!                     write(6,*) 's2_term1 ... before',s2_term1
                       S2_TERM1 = S2_TERM1-X((JI-1)*NIJ+IJ)
+!                     write(6,*) 's2_term1 ... after',s2_term1
                     END DO
                   END DO
                 END IF
@@ -2099,6 +1914,10 @@ C?              call WRTMT_LU(x,ni*nj,nk*nl,ni*nj,nk*nl)
      &
                 CALL ADTOR2(RHO2,X,2,
      &                NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
+                IF(IDOSRHO2.EQ.1) THEN
+                  CALL ADTOR2S(RHO2AB,X,2,
+     &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,norb)
+                END IF 
 C?              write(6,*) ' updated density matrix '
 C?              call prsym(rho2,NORB*NORB)
 
@@ -2120,7 +1939,7 @@ C?              call prsym(rho2,NORB*NORB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GSDNBB2(I12,RHO1,RHO2,
+      SUBROUTINE GSDNBB2(I12,RHO1,RHO2,rhotype,
      &                  IASM,IATP,IBSM,IBTP,JASM,JATP,JBSM,JBTP,
      &                  NGAS,IAOC,IBOC,JAOC,JBOC,
      &                  NAEL,NBEL,
@@ -2128,10 +1947,14 @@ C?              call prsym(rho2,NORB*NORB)
      &                  SB,CB,C2,
      &                  ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX,
      &                  MXPNGAS,NOBPTS,IOBPTS,MAXI,MAXK,
-     &                  SSCR,CSCR,I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
+     &                  SSCR,CSCR,scatS,scatC,
+     &                  I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                  X,NSMOB,NSMST,NSMSX,NSMDX,
-     &                  NIA,NIB,NJA,NJB,MXPOBS,IPRNT,NACOB,RHO1S,
-     &                  SCLFAC,S2_TERM1,IUSE_PH,IPHGAS,MXTSOB)
+     &                  NIA,NIB,NJA,NJB,MXPOBS,IPRNT,NACOB,RHO1S, 
+     &                  SCLFAC,S2_TERM1,IUSE_PH,IPHGAS,itrsp_once,
+     &                  IDOSRHO1,SRHO1,
+     &                  SRHO1a,SRHO1b,
+     &                  IDOSRHO2,RHO2AA,RHO2AB,RHO2BB)
 *
 * Contributions to density matrix from sigma block (iasm iatp, ibsm ibtp ) and
 * C block (jasm jatp , jbsm, jbtp)
@@ -2193,43 +2016,50 @@ C?              call prsym(rho2,NORB*NORB)
       INTEGER  ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX
 *. Input
       DIMENSION CB(*),SB(*)
+      integer, intent(in) :: rhotype
 *. Output
       DIMENSION RHO1(*),RHO2(*)
+      DIMENSION RHO2BB(*),RHO2AA(*), RHO2AB(*)
+      DIMENSION SRHO1(*), SRHO1a(*), SRHO1b(*)
 *. Scratch
-      DIMENSION SSCR(*),CSCR(*)
+      DIMENSION SSCR(*),CSCR(*),scatS(*),scatC(*)
       DIMENSION  I1(*),XI1S(*),I2(*),XI2S(*),I3(*),XI3S(*),I4(*),XI4S(*)
       DIMENSION C2(*)
+      integer, intent(in) :: itrsp_once
+#include "priunit.h"
 *
       CALL QENTER('GSDNB')
-      NTEST = 000
+!     NTEST = 1000 ! debug
+      NTEST = 000 ! no debug
       NTEST = MAX(NTEST,IPRNT)
       NTESTO= NTEST
+
       IF(NTEST.GE.200) THEN
-        WRITE(6,*) ' =================='
-        WRITE(6,*) ' GSDNBB2 :  R block '
-        WRITE(6,*) ' ==================='
-        CALL WRTMT_LU(CB,NJA,NJB,NJA,NJB)
-        WRITE(6,*) ' ==================='
-        WRITE(6,*) ' GSDNBB2 :  L block '
-        WRITE(6,*) ' ==================='
-        CALL WRTMT_LU(SB,NIA,NIB,NIA,NIB)
+        WRITE(lupri,*) ' =================='
+        WRITE(lupri,*) ' GSDNBB2 :  R block '
+        WRITE(lupri,*) ' ==================='
+        CALL WRTMATMN(CB,NJA,NJB,NJA,NJB,LUPRI)
+        WRITE(lupri,*) ' ==================='
+        WRITE(lupri,*) ' GSDNBB2 :  L block '
+        WRITE(lupri,*) ' ==================='
+        CALL WRTMATMN(SB,NIA,NIB,NIA,NIB,LUPRI)
 *
-        WRITE(6,*)
-        WRITE(6,*) ' Occupation of alpha strings in L '
-        CALL IWRTMA(IAOC,1,NGAS,1,NGAS)
-        WRITE(6,*)
-        WRITE(6,*) ' Occupation of beta  strings in L '
-        CALL IWRTMA(IBOC,1,NGAS,1,NGAS)
-        WRITE(6,*)
-        WRITE(6,*) ' Occupation of alpha strings in R '
-        CALL IWRTMA(JAOC,1,NGAS,1,NGAS)
-        WRITE(6,*)
-        WRITE(6,*) ' Occupation of beta  strings in R '
-        CALL IWRTMA(JBOC,1,NGAS,1,NGAS)
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Occupation of alpha strings in L '
+        CALL IWRTMAMN(IAOC,1,NGAS,1,NGAS,LUPRI)
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Occupation of beta  strings in L '
+        CALL IWRTMAMN(IBOC,1,NGAS,1,NGAS,LUPRI)
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Occupation of alpha strings in R '
+        CALL IWRTMAMN(JAOC,1,NGAS,1,NGAS,LUPRI)
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Occupation of beta  strings in R '
+        CALL IWRTMAMN(JBOC,1,NGAS,1,NGAS,LUPRI)
 *
-        WRITE(6,*) ' MAXI,MAXK,NSMOB',MAXI,MAXK,NSMOB
+        WRITE(lupri,*) ' MAXI,MAXK,NSMOB',MAXI,MAXK,NSMOB
 *
-        WRITE(6,*) 'SCLFAC =',SCLFAC
+        WRITE(lupri,*) 'SCLFAC =',SCLFAC
       END IF
       IACTIVE = 0
 *
@@ -2239,7 +2069,13 @@ C?              call prsym(rho2,NORB*NORB)
 *  beta contribution to RHO1
 * =============================
 *
-C?      WRITE(6,*) ' GSBBD1 will be called (beta)'
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+        WRITE(lupri,*) ' GSBBD1 will be called (beta)'
+        WRITE(lupri,*) ' no transpose: rhotype ==>   ',rhotype
+#undef LUCI_DEBUG
+#endif
+        iab = 2
         CALL GSBBD1(RHO1,NACOB,IBSM,IBTP,JBSM,JBTP,IJBGRP,NIA,
      &       NGAS,IBOC,JBOC,
      &       SB,CB,
@@ -2247,7 +2083,12 @@ C?      WRITE(6,*) ' GSBBD1 will be called (beta)'
      &       NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &       SSCR,CSCR,I1,XI1S,I2,XI2S,X,
      &       NSMOB,NSMST,NSMSX,MXPOBS,RHO1S,SCLFAC,
-     &       IUSE_PH,IPHGAS)
+     &       IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB,
+     &       SRHO1a,SRHO1b)
+        IF(NTEST.GE.1000) THEN
+          WRITE(lupri,*) ' Rho1 after GSBBD1, b '
+          CALL WRTMAT(RHO1,nacob,nacob,nacob,nacob)
+        END IF
 C?      WRITE(6,*) ' GSBBD1 was called '
 C?      WRITE(6,*) ' Memory check '
 C?      CALL MEMCHK
@@ -2263,7 +2104,12 @@ C?        WRITE(6,*) ' GSBBD2A will be called (beta)'
      &         ADSXA,SXSTST,STSTSX,SXDXSX,MXPNGAS,
      &         NOBPTS,IOBPTS,MAXI,MAXK,
      &         SSCR,CSCR,I1,XI1S,I2,XI2S,X,
-     &         NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC)
+     &         NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC,
+     &         IDOSRHO2,RHO2BB)
+        IF(NTEST.GE.1000) THEN
+          WRITE(lupri,*) ' Rho2 after GSBBD2a, bb '
+          CALL PRSYM(RHO2,nacob**2)
+        END IF
 C?        WRITE(6,*) ' GSBBD2A was called '
 *
 C              GSBBD2A(RHO2,NACOB,ISCSM,ISCTP,ICCSM,ICCTP,IGRP,NROW,
@@ -2281,38 +2127,80 @@ C    &         NSMOB,NSMST,NSMSX,MXPOBS)
 *  alpha contribution to RHO1
 * =============================
 *
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+        WRITE(lupri,*) ' GSBBD1 will be called (alpha)'
+        WRITE(lupri,*) ' rhotype ==>                 ',rhotype
+#undef LUCI_DEBUG
+#endif
+
         CALL TRPMT3(CB,NJA,NJB,C2)
-        CALL COPVEC(C2,CB,NJA*NJB)
-        CALL TRPMT3(SB,NIA,NIB,C2)
-        CALL COPVEC(C2,SB,NIA*NIB)
-C?        WRITE(6,*) ' GSBBD1 will be called (alpha)'
+        CALL DCOPY(NJA*NJB,C2,1,CB,1)
+#ifdef LUCI_DEBUG
+          WRITE(lupri,*) ' CB after transpose'
+          call wrtmatmn(cb,nja,njb,nja,njb,lupri)
+#endif
+        if(itrsp_once == 0)then
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+          WRITE(lupri,*) ' SB before          transpose'
+          call wrtmatmn(sb,nia,nib,nia,nib,lupri)
+#endif
+!         call lmemchk('scats1')
+          CALL TRPMT3(SB,NIA,NIB,scatS)
+!         write(lupri,*) 'nia, nib',nia,nib,nia*nib
+!         call lmemchk('scats2')
+        else
+!         call lmemchk('scats3')
+          CALL DCOPY(NIA*NIB,SB,1,scatS,1)
+!         call lmemchk('scats4')
+        end if
+#ifdef LUCI_DEBUG
+          WRITE(lupri,*) ' ingoing scatS'
+          call wrtmatmn(scatS,nia,nib,nia,nib,lupri)
+#undef LUCI_DEBUG
+#endif
+!         call lmemchk('scats5')
+
+        iab = 1
         CALL GSBBD1(RHO1,NACOB,IASM,IATP,JASM,JATP,IJAGRP,NIB,
-     &       NGAS,IAOC,JAOC,SB,CB,
+     &       NGAS,IAOC,JAOC,scatS,CB,
      &       ADSXA,SXSTST,STSTSX,MXPNGAS,
      &       NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &       SSCR,CSCR,I1,XI1S,I2,XI2S,X,
      &       NSMOB,NSMST,NSMSX,MXPOBS,RHO1S,SCLFAC,
-     &       IUSE_PH,IPHGAS)
+     &       IUSE_PH,IPHGAS,IDOSRHO1,SRHO1,IAB,
+     &       SRHO1a,SRHO1b)
+!         call lmemchk('scats6')
 C?        WRITE(6,*) ' GSBBD1 was called '
+        IF(NTEST.GE.1000) THEN
+          WRITE(lupri,*) ' Rho1 after GSBBD1, a '
+          CALL WRTMAT(RHO1,nacob,nacob,nacob,nacob)
+        END IF
         IF(I12.EQ.2.AND.NAEL.GE.2) THEN
 *
 * ===================================
 *  alpha-alpha contribution to RHO2
 * ===================================
 *
+!         call lmemchk('scats7')
 C?        WRITE(6,*) ' GSBBD2A will be called (alpha)'
           CALL GSBBD2A(RHO2,NACOB,IASM,IATP,JASM,JATP,IJAGRP,NIB,
-     &         NGAS,IAOC,JAOC,SB,CB,
+     &         NGAS,IAOC,JAOC,scatS,CB,
      &         ADSXA,SXSTST,STSTSX,SXDXSX,MXPNGAS,
      &         NOBPTS,IOBPTS,MAXI,MAXK,
      &         SSCR,CSCR,I1,XI1S,I2,XI2S,X,
-     &         NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC)
+     &         NSMOB,NSMST,NSMSX,MXPOBS,SCLFAC,
+     &         IDOSRHO2,RHO2AA)
+!         call lmemchk('scats8')
 C?        WRITE(6,*) ' GSBBD2A was called '
         END IF
         CALL TRPMT3(CB,NJB,NJA,C2)
-        CALL COPVEC(C2,CB,NJA*NJB)
-        CALL TRPMAT(SB,NIB,NIA,C2)
-        CALL COPVEC(C2,SB,NIB*NIA)
+        CALL DCOPY(NJA*NJB,C2,1,CB,1)
+        IF(NTEST.GE.1000) THEN
+          WRITE(lupri,*) ' Rho2 after GSBBD2a, aa '
+          CALL PRSYM(RHO2,nacob**2)
+        END IF
       END IF
 *
 * ===================================
@@ -2322,22 +2210,50 @@ C?        WRITE(6,*) ' GSBBD2A was called '
       IF(I12.EQ.2.AND.NAEL.GE.1.AND.NBEL.GE.1) THEN
 *. Routine uses transposed blocks
         CALL TRPMT3(CB,NJA,NJB,C2)
-        CALL COPVEC(C2,CB,NJA*NJB)
-        CALL TRPMT3(SB,NIA,NIB,C2)
-        CALL COPVEC(C2,SB,NIA*NIB)
+        CALL DCOPY(NJA*NJB,C2,1,CB,1)
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+        WRITE(lupri,*) ' CB after transpose ab'
+        call wrtmatmn(cb,nja,njb,nja,njb,lupri)
+#endif
+        if(itrsp_once == 0)then
+#ifdef LUCI_DEBUG
+          WRITE(lupri,*) ' SB before          transpose ab'
+          call wrtmatmn(sb,nia,nib,nia,nib,lupri)
+#endif
+!         call lmemchk('scats9')
+          CALL TRPMT3(SB,NIA,NIB,scatS)
+!         call lmemchk('scats10')
+        else
+!         call lmemchk('scats11')
+          CALL DCOPY(NIA*NIB,SB,1,scatS,1)
+!         call lmemchk('scats12')
+        end if
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+          WRITE(lupri,*) ' ingoing scatS'
+          call wrtmatmn(scatS,nia,nib,nia,nib,lupri)
+#undef LUCI_DEBUG
+#endif
+!         call lmemchk('scats13')
 C?      WRITE(6,*) ' GSBBD2B will be called '
         IUSEAB = 0
         CALL GSBBD2B(RHO2,IASM,IATP,IBSM,IBTP,NIA,NIB,
      &                    JASM,JATP,JBSM,JBTP,NJA,NJB,
      &                    IJAGRP,IJBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
-     &                    SB,CB,ADSXA,STSTSX,MXPNGAS,
+     &                    scatS,CB,ADSXA,STSTSX,MXPNGAS,
      &                    NOBPTS,IOBPTS,MAXK,
      &                    I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,X,
      &                    NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,IUSEAB,
      &                    SSCR,CSCR,NACOB,NTEST,SCLFAC,S2_TERM1,
-     &                    MXTSOB)
+     &                    IDOSRHO2,RHO2AB)
+!         call lmemchk('scats14')
+        IF(NTEST.GE.1000) THEN
+          WRITE(lupri,*) ' Rho2 after GSBBD2b, ab '
+          CALL PRSYM(RHO2,nacob**2)
+        END IF
 C?      WRITE(6,*) ' GSBBD2B was called '
-     &
 C     GSBBD2B(RHO2,IASM,IATP,IBSM,IBTP,NIA,NIB,
 C    &                        JASM,JATP,JBSM,JBTP,NJA,NJB,
 C    &                  IAGRP,IBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -2345,12 +2261,10 @@ C    &                  SB,CB,ADSXA,STSTSX,MXPNGAS,
 C    &                  NOBPTS,IOBPTS,MAXK,
 C    &                  I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,X,
 C    &                  NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,IUSEAB,
-C    &                  CJRES,SIRES,NORB,NTEST,
-C    &                  MXTSOB)
+C    &                  CJRES,SIRES,NORB,NTEST
+C    &                  )
         CALL TRPMT3(CB,NJB,NJA,C2)
-        CALL COPVEC(C2,CB,NJA*NJB)
-        CALL TRPMAT(SB,NIB,NIA,C2)
-        CALL COPVEC(C2,SB,NIB*NIA)
+        CALL DCOPY(NJA*NJB,C2,1,CB,1)
       END IF
 *
       CALL QEXIT('GSDNB')
@@ -2435,8 +2349,9 @@ C?      write(6,*) ' next pair of vectors loaded '
 * Do the densi
           LEQR = 0
 C?        WRITE(6,*) ' Calling DENSI2 '
-          CALL DENSI2(I12,WORK(KLDEN1),WORK(KLDEN2),VEC1,VEC2,
-     &                LUSC1,LUSC2,EXPS2)
+!         CALL DENSI2(I12,WORK(KLDEN1),WORK(KLDEN2),VEC1,VEC2,
+!    &                LUSC1,LUSC2,EXPS2)
+         call quit('*** PERTDN is disabled in this lucita version. ***')
           WRITE(6,*) ' Home from DENSI2 '
 C         WRITE(6,*) ' Densities fresh from DENSI2 '
 C         CALL WRTMT_LU(WORK(KLDEN1),NTOOB,NTOOB,NTOOB,NTOOB)
@@ -2457,7 +2372,8 @@ CTOBE     END IF
 CTOBE   END IF
       END DO
 *
-      NTEST = 100
+!     NTEST = 100
+      NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Density matrix of order in perturbation ', N
         WRITE(6,*) ' ==========================================='
@@ -2569,365 +2485,85 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE TRADEN(I12,RHO1,RHO2,NL,NR,LUL,LUR)
+      SUBROUTINE TEST_RHO2S(RHO2,RHO2AA,RHO2AB,RHO2BB,NORB,luwrt)
 *
-* Transition density matrices between the NL states stored on LUL
-* and the NR states stored on LUR
-* Density matrices between L and R stored on LU
+* Test two-body spin-density matrices by assembling 
+* the standard two-body matrix from these and compare
 *
-* I12 = 1 => only one-bodydensity
-* I12 = 2 => one- and two-body-density matrices
-*
-* Jeppe Olsen, July 97 (from densi2)
-*
+* Jeppe Olsen, sitting in Oak Ridge, Sept. 2004
 *
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KSTSTS, KSTSTD, KCONSPA, KCONSPB, KCB, KSB
-      INTEGER*8 KINSCR, KSIOIO, KCIOIO, KLL, KLR, KC2, KSSCR, KCSCR
-      INTEGER*8 KI1, KI2, KI3, KI4, KXI1S, KXI2S, KXI3S, KXI4S
-      INTEGER*8 KSBLTP, KCBLTP, KSVST
-      INTEGER*8 KRHO1S, KRHO1P, KXNATO, KRHO1SM, KXNATSM, KOCCSM
-      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR
-      INTEGER*8 KLLBTL, KLLEBTL, KLI1BTL, KLIBTL, KLSCLFCL
-      INTEGER*8 KLLBTR, KLLEBTR, KLI1BTR, KLIBTR, KLSCLFCR
-      ! for addressing of WORK
 *
-* =====
-*.Input
-* =====
+      DIMENSION RHO2(*),RHO2AA(*),RHO2AB(*), RHO2BB(*)
 *
-*.Definition of L and R is picked up from CANDS
-* with L being S and  R being C
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
+*. Remember the form of the various densities : 
 *
-#include "mxpdim.inc"
-#include "orbinp.inc"
-#include "cicisp.inc"
-#include "strbas.inc"
-#include "cstate.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "csm.inc"
-#include "wrkspc.inc"
-#include "crun.inc"
-#include "cgas.inc"
-#include "gasstr.inc"
-#include "cprnt.inc"
-#include "spinfo.inc"
-#include "glbbas.inc"
+* RHO2(ij,kl) = sum_(s,s') <L!a+is a+ks' als' aj s!R> (ij.ge.kl)
+* RHO2AA(iklj) = <L!a+iaa+ka aja ala!R> (i.ge.k, j.ge.l)
+* RHO2BB(iklj) = <L!a+iba+kb ajb alb!R> (i.ge.k, j.ge.l)
+* RHO2AB(iklj) = <L!a+iaa+kb alb aja!R> ( no restrictions)
 *
-      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
-      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
-     &              ADSXA(MXPOBS,2*MXPOBS),
-     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
-*./LUCINP/
-*. Used : NSMOB
-#include "lucinp.inc"
-#include "clunit.inc"
-*. Scratch for string information
-      COMMON/HIDSCR/KLOCSTR(4),KLREO(4),KLZ(4),KLZSCR
-*.Output
-      DIMENSION RHO1(*),RHO2(*)
-*. Before I forget it :
-      CALL QENTER('TRADN')
-      IDUM = 0
-      CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'TRADEN')
-      ZERO = 0.0D0
-      CALL SETVEC(RHO1,ZERO ,NL*NR*NACOB ** 2 )
-      IF(I12.EQ.2)
-     &CALL SETVEC(RHO2,ZERO ,NL*NR*NACOB ** 2 *(NACOB**2+1)/2)
+!     WRITE(luwrt,*) ' Welcome to test of 2e-spindensities '
+!     WRITE(luwrt,*) ' =================================== '
 *
-* Info for this internal space
+      NERROR = 0
+      THRES = 1.0D-10
+      DO J = 1, NORB
+        DO L = 1, J
+          DO I = 1, NORB
+            IF(J.EQ.L) THEN
+              MAXK = I
+            ELSE
+              MAXK = NORB
+            END IF
+            DO K = 1, MAXK
+*. address in rho2
+              IJ = (J-1)*NORB + I
+              KL = (L-1)*NORB + K
+              IJKL_RHO2 = IJ*(IJ-1)/2 + KL
+*. addresses in rho2ab
+              IKLJ_RHO2AB = (J-1)*NORB**3 + (L-1)*NORB**2
+     &                    + (K-1)*NORB    +  I
+              KIJL_RHO2AB = (L-1)*NORB**3 + (J-1)*NORB**2
+     &                    + (I-1)*NORB    + K
+*. adress in rho2ss
+              IF(I.GT.K) THEN
+                IK = I*(I-1)/2 + K
+                SIGN = -1.0D0
+              ELSE
+                IK = K*(K-1)/2 + I
+                SIGN = 1.0D0
+              END IF
+C             LJ = L*(L-1)/2 + J
+              LJ = J*(J-1)/2 + L
+              IKLJ_RHO2SS = (LJ-1)*NORB*(NORB+1)/2 + IK
 *
-* Info for this internal space
-*. type of alpha and beta strings
-      IATP = 1
-      IBTP = 2
-*. alpha and beta strings with an electron removed
-      IATPM1 = 3
-      IBTPM1 = 4
-*. alpha and beta strings with two electrons removed
-      IATPM2 = 5
-      IBTPM2 = 6
-*
-      JATP = 1
-      JBTP = 2
-*. Number of supergroups
-      NOCTPA = NOCTYP(IATP)
-      NOCTPB = NOCTYP(IBTP)
-*. Offsets for supergroups
-      IOCTPA = IBSPGPFTP(IATP)
-      IOCTPB = IBSPGPFTP(IBTP)
-*
-      NAEL = NELEC(IATP)
-      NBEL = NELEC(IBTP)
-*
-      ILSM = ISSM
-      IRSM = ICSM
-* string sym, string sym => sx sym
-* string sym, string sym => dx sym
-      CALL MEMMAN(KSTSTS,NSMST ** 2,'ADDL  ',2,'KSTSTS')
-      CALL MEMMAN(KSTSTD,NSMST ** 2,'ADDL  ',2,'KSTSTD')
-      CALL STSTSM(WORK(KSTSTS),WORK(KSTSTD),NSMST)
-*. connection matrices for supergroups
-      CALL MEMMAN(KCONSPA,NOCTPA**2,'ADDL  ',1,'CONSPA')
-      CALL MEMMAN(KCONSPB,NOCTPB**2,'ADDL  ',1,'CONSPB')
-      CALL SPGRPCON(IOCTPA,NOCTPA,NGAS,MXPNGAS,NELFSPGP,
-     &              WORK(KCONSPA),IPRCIX)
-      CALL SPGRPCON(IOCTPB,NOCTPB,NGAS,MXPNGAS,NELFSPGP,
-     &              WORK(KCONSPB),IPRCIX)
-*. Largest block of strings in zero order space
-      MAXA0 = IMNMX(WORK(KNSTSO(IATP)),NSMST*NOCTYP(IATP),2)
-      MAXB0 = IMNMX(WORK(KNSTSO(IBTP)),NSMST*NOCTYP(IBTP),2)
-      MXSTBL0 = MXNSTR
-*. Largest number of strings of given symmetry and type
-      MAXA = 0
-      IF(NAEL.GE.1) THEN
-        MAXA1 = IMNMX(WORK(KNSTSO(IATPM1)),NSMST*NOCTYP(IATPM1),2)
-        MAXA = MAX(MAXA,MAXA1)
-      END IF
-      IF(NAEL.GE.2) THEN
-        MAXA1 = IMNMX(WORK(KNSTSO(IATPM2)),NSMST*NOCTYP(IATPM2),2)
-        MAXA = MAX(MAXA,MAXA1)
-      END IF
-      MAXB = 0
-      IF(NBEL.GE.1) THEN
-        MAXB1 = IMNMX(WORK(KNSTSO(IBTPM1)),NSMST*NOCTYP(IBTPM1),2)
-        MAXB = MAX(MAXB,MAXB1)
-      END IF
-      IF(NBEL.GE.2) THEN
-        MAXB1 = IMNMX(WORK(KNSTSO(IBTPM2)),NSMST*NOCTYP(IBTPM2),2)
-        MAXB = MAX(MAXB,MAXB1)
-      END IF
-      MXSTBL = MAX(MAXA,MAXB)
-      IF(IPRDEN.GE.2 ) WRITE(6,*)
-     &' Largest block of strings with given symmetry and type',MXSTBL
-*. Largest number of resolution strings and spectator strings
-*  that can be treated simultaneously
-*. replace with MXINKA !!!
-      MAXI = MIN(MXINKA,MXSTBL)
-      MAXK = MIN(MXINKA,MXSTBL)
-*Largest active orbital block belonging to given type and symmetry
-      MXTSOB_L = 0
-      DO IOBTP = 1, NGAS
-        DO IOBSM = 1, NSMOB
-          MXTSOB_L = MAX(MXTSOB_L,NOBPTS(IOBTP,IOBSM))
+              RHO2_1 = RHO2(IJKL_RHO2)
+              RHO2_2 = RHO2AB(IKLJ_RHO2AB)
+     &               + RHO2AB(KIJL_RHO2AB)
+     &               + SIGN*RHO2AA(IKLJ_RHO2SS)
+     &               + SIGN*RHO2BB(IKLJ_RHO2SS)
+              IF(ABS(RHO2_1-RHO2_2).GT.THRES) THEN
+                NERROR = NERROR + 1
+                WRITE(luwrt,*) ' Problem with spinden '
+                WRITE(luwrt,*) ' I,J,K,L= ', I,J,K,L
+                WRITE(luwrt,*) ' element from RHO2 and from RHO2S ',
+     &          RHO2_1,RHO2_2
+                WRITE(luwrt,*) ' term from RHO2AB =',
+     &          RHO2AB(IKLJ_RHO2AB)+ RHO2AB(KIJL_RHO2AB)
+                WRITE(luwrt,*) ' term from RHO2SS ',
+     &          SIGN*(RHO2AA(IKLJ_RHO2SS)+RHO2BB(IKLJ_RHO2SS))
+                WRITE(luwrt,*) ' IKLJ_RHO2SS = ', IKLJ_RHO2SS
+              END IF
+            END DO
+          END DO
         END DO
       END DO
-      MAXIJ = MXTSOB_L ** 2
-*.Local scratch arrays for blocks of C and sigma
-      IF(IPRDEN.GE.2) write(6,*) ' DENSI2 : MXSB MXTSOB_L MXSOOB ',
-     &       MXSB,MXTSOB_L,MXSOOB
-      IF(IPRDEN.GE.2)
-     &WRITE(6,*) ' ICISTR,LBLOCK ',ICISTR,LBLOCK
-      IF(ICISTR.EQ.1) THEN
-        CALL MEMMAN(KCB,LBLOCK,'ADDL  ',2,'KCB   ')
-        CALL MEMMAN(KSB,LBLOCK,'ADDL  ',2,'KSB   ')
+*
+      if(nerror > 0)then
+        WRITE(luwrt,*) ' Number of differences between RHO2 and RHO2S',
+     &               NERROR 
       END IF
-*.SCRATCH space for block of two-electron density matrix
-* A 4 index block with four indeces belonging OS class
-      INTSCR = MXTSOB_L ** 4
-      IF(IPRDEN.GE.2)
-     &WRITE(6,*) ' Density scratch space ',INTSCR
-      CALL MEMMAN(KINSCR,INTSCR,'ADDL  ',2,'INSCR ')
-*
-*. Arrays giving allowed type combinations '
-      CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
-      CALL MEMMAN(KCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
-      write(6,*) ' TRADEN : ISSPC,ICSPC : ',ISSPC,ICSPC
-      CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
-     &                IGSOCCX,NOCTPA,NOCTPB,
-     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
-     &                MXPNGAS,NGAS,WORK(KSIOIO),IPRDIA)
-      CALL IAIBCM_GAS(LCMBSPC(ICSPC),ICMBSPC(1,ICSPC),
-     &                IGSOCCX,NOCTPA,NOCTPB,
-     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
-     &                MXPNGAS,NGAS,WORK(KCIOIO),IPRDIA)
-*. Scratch space for CJKAIB resolution matrices
-      CALL MXRESC(WORK(KCIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &            NSMST,NSTFSMSPGP,MXPNSMST,
-     &            NSMOB,MXPNGAS,NGAS,NOBPTS,IPRCIX,MAXK,
-     &            NELFSPGP,
-     &            MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK)
-      IF(IPRDEN.GE.2) THEN
-        WRITE(6,*) ' DENSI12 :  : MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
-     &                     MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
-      END IF
-      LSCR2 = MAX(MXCJ,MXCIJA,MXCIJB,MXCIJAB)
-      IF(IPRDEN.GE.2)
-     &WRITE(6,*) ' Space for resolution matrices ',LSCR2
-*. Allocation of blocks of vector
-      CALL MEMMAN(KLL,LBLOCK,'ADDL  ',2,'KLL   ')
-      CALL MEMMAN(KLR,LBLOCK,'ADDL  ',2,'KLR   ')
-      LSCR12 = MAX(LBLOCK,2*LSCR2)
-      KC2 = KVEC3
-      CALL MEMMAN(KC2,LSCR12,'ADDL  ',2,'KC2   ')
-      IF(IPRCIX.GE.2)
-     &WRITE(6,*) ' Space for resolution matrices ',LSCR12
-      KSSCR = KC2
-      KCSCR = KC2 + LSCR2
-*
-*. Space for annihilation/creation mappings
-      MAXIK = MAX(MAXI,MAXK)
-      LSCR3 = MAX(MXADKBLK,MAXIK*MXTSOB_L*MXTSOB_L,MXSTBL0)
-      CALL MEMMAN(KI1,  LSCR3       ,'ADDL  ',1,'I1    ')
-      CALL MEMMAN(KI2,  LSCR3       ,'ADDL  ',1,'I2    ')
-      CALL MEMMAN(KI3,  LSCR3       ,'ADDL  ',1,'I3    ')
-      CALL MEMMAN(KI4,  LSCR3       ,'ADDL  ',1,'I4    ')
-      CALL MEMMAN(KXI1S,LSCR3       ,'ADDL  ',2,'XI1S  ')
-      CALL MEMMAN(KXI2S,LSCR3       ,'ADDL  ',2,'XI2S  ')
-      CALL MEMMAN(KXI3S,LSCR3       ,'ADDL  ',2,'XI3S  ')
-      CALL MEMMAN(KXI4S,LSCR3       ,'ADDL  ',2,'XI4S  ')
-*. Arrays giving block type
-      CALL MEMMAN(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
-      CALL MEMMAN(KCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
-*. Arrays for additional symmetry operation
-      IF(IDC.EQ.3.OR.IDC.EQ.4) THEN
-        CALL MEMMAN(KSVST,NSMST,'ADDL  ',2,'SVST  ')
-        CALL SIGVST(WORK(KSVST),NSMST)
-      ELSE
-         KSVST = 1
-      END IF
-      write(6,*) ' ISSM ICSM IDC ',ISSM,ICSM,IDC
-      CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP),WORK(KSVST))
-      CALL ZBLTP(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP),WORK(KSVST))
-*.0 OOS arrayy
-      NOOS = NOCTPA*NOCTPB*NSMST
-* scratch space containing active one body
-      CALL MEMMAN(KRHO1S,NACOB ** 2,'ADDL  ',2,'RHO1S ')
-*. For natural orbitals
-      CALL MEMMAN(KRHO1P,NACOB*(NACOB+1)/2,'ADDL  ',2,'RHO1P ')
-      CALL MEMMAN(KXNATO,NACOB **2,'ADDL  ',2,'XNATO ')
-*. Natural orbitals in symmetry blocks
-      CALL MEMMAN(KRHO1SM,NACOB ** 2,'ADDL  ',2,'RHO1S ')
-      CALL MEMMAN(KXNATSM,NACOB ** 2,'ADDL  ',2,'RHO1S ')
-      CALL MEMMAN(KOCCSM,NACOB ,'ADDL  ',2,'RHO1S ')
-*
-*. Space for two  blocks of string occupations and arrays of
-*. reordering arrays
-      LZSCR = (MAX(NAEL,NBEL)+1)*(NOCOB+1) + 2 * NOCOB
-      LZ    = (MAX(NAEL,NBEL)) * NOCOB
-      CALL MEMMAN(KLZSCR,LZSCR,'ADDL  ',1,'KLZSCR')
-*. Space for two blocks of string occupations and four arrays of
-*. reordering arrays
-      LZSCR = (MAX(NAEL,NBEL)+1)*(NOCOB+1) + 2 * NOCOB
-      CALL MEMMAN(KLZSCR,LZSCR,'ADDL  ',1,'KLZSCR')
-      LZ    = (MAX(NAEL,NBEL)) * NOCOB
-      DO K12 = 1, 2
-        CALL MEMMAN(KLOCSTR(K12),MAX_STR_OC_BLK,'ADDL  ',1,'KLOCS ')
-      END DO
-      DO I1234 = 1, 4
-        CALL MEMMAN(KLREO(I1234),MAX_STR_SPGP,'ADDL  ',1,'KLREO ')
-        CALL MEMMAN(KLZ(I1234),LZ,'ADDL  ',1,'KLZ   ')
-      END DO
-*. Arrays for partitioning of Left vector = sigma
-      NTTS = MXNTTS
-      CALL MEMMAN(KLLBTL ,NTTS  ,'ADDL  ',1,'LBT_L  ')
-      CALL MEMMAN(KLLEBTL,NTTS  ,'ADDL  ',1,'LEBT_L ')
-      CALL MEMMAN(KLI1BTL,NTTS  ,'ADDL  ',1,'I1BT_L ')
-      CALL MEMMAN(KLIBTL ,8*NTTS,'ADDL  ',1,'IBT_L  ')
-      CALL MEMMAN(KLSCLFCL,NTTS, 'ADDL  ',2,'SCLF_L')
-      ITTSS_ORD = 2
-      CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
-     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
-     &     WORK(KSIOIO),ISMOST(1,ISSM),
-     &     NBATCHL,WORK(KLLBTL),WORK(KLLEBTL),
-     &     WORK(KLI1BTL),WORK(KLIBTL),0,ITTSS_ORD)
-*. Number of BLOCKS
-        NBLOCKL = IFRMR(WORK(KLI1BTL),1,NBATCHL)
-     &         + IFRMR(WORK(KLLBTL),1,NBATCHL) - 1
-*. Arrays for partitioning of Right  vector = C
-      NTTS = MXNTTS
-      CALL MEMMAN(KLLBTR ,NTTS  ,'ADDL  ',1,'LBT_R  ')
-      CALL MEMMAN(KLLEBTR,NTTS  ,'ADDL  ',1,'LEBT_R ')
-      CALL MEMMAN(KLI1BTR,NTTS  ,'ADDL  ',1,'I1BT_R ')
-      CALL MEMMAN(KLIBTR ,8*NTTS,'ADDL  ',1,'IBT_R  ')
-      CALL MEMMAN(KLSCLFCR,NTTS, 'ADDL  ',2,'SCLF_R')
-      ITTSS_ORD = 2
-      CALL PART_CIV2(IDC,WORK(KCBLTP),WORK(KNSTSO(IATP)),
-     &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
-     &     WORK(KCIOIO),ISMOST(1,ICSM),
-     &     NBATCHR,WORK(KLLBTR),WORK(KLLEBTR),
-     &     WORK(KLI1BTR),WORK(KLIBTR),0,ITTSS_ORD)
-*. Number of BLOCKS
-        NBLOCKR = IFRMR(WORK(KLI1BTR),1,NBATCHR)
-     &         + IFRMR(WORK(KLLBTR),1,NBATCHR) - 1
-        WRITE(6,*) ' DENSI2T :NBLOCKR =',NBLOCKR
-      WRITE(6,*) ' Memcheck in densi2 before GASDN2'
-      CALL LMEMCHK('densi2 before GASDN2')
-*
-      WRITE(6,*) ' LUL LUR = ',LUL,LUR
-      WRITE(6,*) ' LUSC1 LUSC2 ',LUSC1,LUSC2
-      CALL REWINO(LUL)
-      LENRHO1 = NTOOB ** 2
-      ITRADEN = 0
-      DO IL = 1, NL
-        IF(IL.EQ.1) THEN
-          LULEFF = LUL
-        ELSE
-          LULEFF = LUSC1
-          CALL REWINO(LULEFF)
-          CALL COPVCD(LUL,LULEFF,WORK(KLL),0,LBLK)
-        END IF
-        CALL REWINO(LUR)
-        DO IR = 1, NR
-          ITRADEN = ITRADEN + 1
-          IF(IR.EQ.1) THEN
-            LUREFF = LUR
-          ELSE
-            LUREFF = LUSC2
-            CALL REWINO(LUREFF)
-            CALL COPVCD(LUR,LUREFF,WORK(KLL),0,LBLK)
-          END IF
-*
-          WRITE(6,*) ' Transition density will be called for : '
-          WRITE(6,*) '             Left  state : ', IL
-          WRITE(6,*) '             Right state : ', IR
-*
-      IF(ICISTR.EQ.1) THEN
-         WRITE(6,*) ' Sorry, ICISTR = 1 is out of fashion'
-         WRITE(6,*) ' Switch to ICISTR = 2 - or reprogram '
-         Call Abend2( ' DENSI2T : ICISTR = 1 in use ' )
-      ELSE IF(ICISTR.GE.2) THEN
-        CALL GASDN2(I12,RHO1(1+(ITRADEN-1)*LENRHO1),RHO2,
-     &       WORK(KLL),WORK(KLR),
-     &       WORK(KLL),WORK(KLR),WORK(KC2),
-     &       WORK(KCIOIO),WORK(KSIOIO),ISMOST(1,ICSM),
-     &       ISMOST(1,ISSM),WORK(KCBLTP),WORK(KSBLTP),NACOB,
-     &       WORK(KNSTSO(IATP)),WORK(KISTSO(IATP)),
-     &       WORK(KNSTSO(IBTP)),WORK(KISTSO(IBTP)),
-     &       NAEL,IATP,NBEL,IBTP,IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &       NSMST,NSMOB,NSMSX,NSMDX,MXPNGAS,NOBPTS,IOBPTS,
-     &       MAXK,MAXI,LBLOCK,LBLOCK,WORK(KCSCR),WORK(KSSCR),
-     &       SXSTSM,WORK(KSTSTS),WORK(KSTSTD),SXDXSX,
-     &       ADSXA,ASXAD,NGAS,NELFSPGP,IDC,
-     &       WORK(KI1),WORK(KXI1S),WORK(KI2),WORK(KXI2S),
-     &       WORK(KI3),WORK(KXI3S),WORK(KI4),WORK(KXI4S),WORK(KINSCR),
-     &       MXPOBS,IPRDEN,WORK(KRHO1S),LULEFF,LUREFF,
-     &       PSSIGN,PSSIGN,WORK(KRHO1P),WORK(KXNATO),
-     &       NBATCHL,WORK(KLLBTL),WORK(KLLEBTL),WORK(KLI1BTL),
-     &       WORK(KLIBTL),
-     &       NBATCHR,WORK(KLLBTR),WORK(KLLEBTR),WORK(KLI1BTR),
-     &       WORK(KLIBTR),WORK(KCONSPA),WORK(KCONSPB),
-     &       WORK(KLSCLFCL),WORK(KLSCLFCR),S2_TERM1,IUSE_PH,IPHGAS,
-     &       MXTSOB)
-      END IF
-*
-      END DO
-*     ^ End of loop over right states
-      END DO
-*     ^ End of loop over left states
-*
-      CALL LMEMCHK('TRADEN')
-*
-*. Eliminate local memory
-      CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'TRADEN')
-      CALL QEXIT('TRADN')
-      WRITE(6,*) ' Leaving TRADEN'
-      RETURN
+
       END
+

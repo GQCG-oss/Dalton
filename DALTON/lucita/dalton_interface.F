@@ -23,460 +23,18 @@ C
 * Stefan Knecht May 08 - Dec 10.                                      *
 *                                                                     *
 ***********************************************************************
-**********************************************************************
-*                                                                    *
-*          DALTON - LUCITA interface May 2008, HJAaJ                 *
-*                                                                    *
-*          based on                                                  *
-*             DIRAC  - LUCIA interface                               *
-*          written by Timo Fleig, 1999-2001                          *
-*                                                                    *
-*                                                                    *
-*                                                                    *
-**********************************************************************
-*
-      subroutine dalton_lucita_input_interface
-!
-!     Note that the lucita input has already been processed in the .dal 
-!     file with the input options within the *LUCITA deck.
 
-#include "implicit.h"
-      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
-
-!     print header
-      call hello_dalton_lucita
-!
-!     cross-check symmetry info etc.
-      CALL GET_ORB_DIM_ENV(ECORE_ORIG)
-!
-!     transfer dalton input variables to lucita internals.
-      call dalton_lucita
-      end
-*********************************************************************
-*
-      subroutine dalton_lucita
-*********************************************************************
-!
-!     purpose: transfer dalton/dirac input variables to lucita 
-!              internals.
-!
-!     original version written by T. Fleig for Dirac-Lucita.
-!     major revision by S. Knecht and H. J. Aa. Jensen for
-!     Dalton-Lucita/Dirac-Lucita.
-!
-*********************************************************************
-      use lucita_cfg
-#include "implicit.h"
-#include "priunit.h"
-*
-#include "clunit.inc"
-#include "mxpdim.inc"
-#include "lucinp.inc"
-#include "units.inc"
-#include "orbinp.inc"
-#include "parluci.h"
-*
-      parameter (NCMD = 21)
-      parameter (MXPLNC = 72)
-      character*1  CRDHEL
-      character*3  CALSIZ,YESSTATEMENT
-      character*4  COMMAND,CMD(NCMD)
-      character*6  PRILUC
-      character*10 PERFORMCI
-      character*72 LINE
-*
-*
-*
-*----------------------------------------------------------------------*
-*     check input and print (error) messages where appropriate
-*----------------------------------------------------------------------*
-!
-!     Type of initial wave function (no default)
-      if(lucita_cfg_ini_wavef(1:4).eq.'none')then
-         write(lupri,*)
-     & ' Keyword for type of initial wave function missing. '
-         write(lupri,*) ' This keyword is mandatory. '
-         call quit(' *** error in dalton_lucita: keyword 
-     & .INIWFC not specified.')      
-      else
-        if(lucita_cfg_ini_wavef(1:6).ne.'HF_SCF'
-     &    .and.lucita_cfg_ini_wavef(1:6).ne.'RASSCF')then
-          write(lupri,*)
-     &  ' Type of initial wave function not implemented. '
-          write(lupri,*) ' You have chosen: ',lucita_cfg_ini_wavef
-          write(lupri,*) ' Allowed types  : HF_SCF, RASSCF'
-          call quit(' *** error in dalton_lucita: wrong input to
-     & keyword .INIWFC specified.')
-         end if
-      end if
-!
-!     CI type for LUCIA (no default)
-      if(lucita_cfg_ci_type(1:4).eq.'none')then
-         write(lupri,*) ' Keyword for type of CI calculation missing. '
-         write(lupri,*) ' This keyword is mandatory. '
-         call quit(' *** error in dalton_lucita: keyword 
-     & .CITYPE not specified.')      
-      else
-        if(lucita_cfg_ci_type(1:6).ne.'FCI   '.and.
-     &     lucita_cfg_ci_type(1:6).ne.'SDCI  '.and.
-     &     lucita_cfg_ci_type(1:6).ne.'GASCI '.and.
-     &     lucita_cfg_ci_type(1:6).ne.'RASCI ') then
-           write(lupri,'(//A//2A/A)')
-     &     ' Type of CI calculation not properly specified.',
-     &     ' You have chosen: ',lucita_cfg_ci_type,
-     &     ' Allowed types  :  FCI, SDCI, GASCI, RASCI'
-          call quit(' *** error in dalton_lucita: wrong input to
-     & keyword .CITYPE specified.')
-        end if
-      end if
-*
-*     Active electrons
-!     transfer to common block in lucita/lucinp.inc
-      nactel = lucita_cfg_nr_active_e
-
-      if(lucita_cfg_ci_type(1:6).eq.'GASCI ')then
-        if(nactel .ne. ngso_lucita(lucita_cfg_nr_gas_spaces,2))then
-          write(lupri,'(/a,i3,a/a,i3/)')
-     &    ' Number of active electrons ==>',NACTEL,' must be identical',
-     &    ' with the max number of e- in the last GAS space ==>',
-     &      ngso_lucita(lucita_cfg_nr_gas_spaces,2)
-          call quit(' *** error in dalton_lucita: # of active electrons
-     &   does not match the max number of e- in the last GAS space.')
-        end if
-      end if
-      if(nactel.lt.0)then
-        if(lucita_cfg_ci_type(1:6).eq.'RASCI ') then
-            write(lupri,'(//A/A/)')
-     &         ' Number of active electrons NACTEL must be',
-     &         ' specified for this type of calculation. Quitting.'
-          call quit(' *** error in dalton_lucita: # of active electrons
-     &   (.NACTEL) must be specified for RASCI.')
-        end if
-      end if
-*
-*  7: Spin multiplicity (no default)
-*
-      multip = lucita_cfg_is_spin_multiplett
-      if(multip.lt.0)then
-        write(lupri,*) 'Spin multiplicity is a MANDATORY keyword.'
-        write(lupri,*) 'Specify and restart.'
-          call quit(' *** error in dalton_lucita: spin multiplicity
-     & (.MULTIP) must be specified in any case.')
-      else
-        call evenodd(IEONAC,NACTEL)
-        call evenodd(IEOMUL,MULTIP)
-        if(IEONAC.eq.2.and.IEOMUL.eq.2) then
-          write(lupri,*) 'Illegal spin multiplicity given.'
-          write(lupri,*) 'Read a book about fermions.'
-          call quit(' *** error in dalton_lucita: spin multiplicity
-     & is impossible.')
-        else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
-          write(lupri,*) 'Illegal spin multiplicity given.'
-          write(lupri,*) 'Read a book about fermions.'
-          call quit(' *** error in dalton_lucita: spin multiplicity
-     & is impossible.')
-        else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
-          if(MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
-            write(lupri,'(//A/A/)')
-     &      ' Illegal spin multiplicity given.',
-     &      ' Compare with number of active electrons.'
-          call quit(' *** error in dalton_lucita: spin multiplicity
-     & is impossible.')
-          end if
-        else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
-          if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
-            write(lupri,'(//A/A/)')
-     &      ' Illegal spin multiplicity given.',
-     &      ' Compare with number of active electrons.'
-          call quit(' *** error in dalton_lucita: spin multiplicity
-     & is impossible.')
-          end if
-        end if
-      end if
-*
-*     Global print parameter
-      if(lucita_cfg_global_print_lvl .eq. 0)then
-         PRILUC = 'NON'
-      else if(lucita_cfg_global_print_lvl .eq. 1)then
-        PRILUC = 'LOW'
-      else if(lucita_cfg_global_print_lvl .eq. 2)then
-        PRILUC = 'MED'
-      else if(lucita_cfg_global_print_lvl .eq. 3)then
-        PRILUC = 'HIG'
-      else if(lucita_cfg_global_print_lvl .eq. 4)then
-        PRILUC = 'VHI'
-      else
-        write(lupri,*) 'Invalid print flag. Check .PRINTG.'
-        write(lupri,*) 'lucita_cfg_global_print_lvl = ',
-     &                  lucita_cfg_global_print_lvl
-        call quit(' *** error in dalton_lucita: global print level
-     & (.PRINTG) too high.')
-      end if
-*
-*     Local print parameter
-      IPLOCAL = lucita_cfg_local_print_lvl
-*
-*     Approximate size of calculation
-      CALSIZ = lucita_cfg_calculation_size(1:3)
-*
-*     Orbital distribution in inactive space (no defaults if RASCI)
-*
-      INACOB = 0
-      if(lucita_cfg_inactive_shell_set)then
-        INACOB = 1
-!       not in use for GASCI/RASCI
-        if(lucita_cfg_ci_type(1:6).eq.'GASCI ') INACOB = 0
-        if(lucita_cfg_ci_type(1:6).eq.'RASCI ') INACOB = 0
-      else
-        if(lucita_cfg_ci_type(1:6).eq.'RASCI ')then
-          write(lupri,*) 'Number of inactive orbitals per sym'
-          write(lupri,*) 'has to be specified. This is mandatory'
-          write(lupri,*) 'in a RASCI calculation.'
-          call quit(' *** error in dalton_lucita: inactive orbitals 
-     &    (.INACTI) not specified for RASCI calculation.')
-        end if
-      end if
-*
-*     Orbital distribution in GAS spaces (no defaults if GASCI)
-      ngas = lucita_cfg_nr_gas_spaces
-      if(ngas.lt.1)then
-        if(lucita_cfg_ci_type(1:6).eq.'GASCI ')then
-          write(lupri,*) 'GASCI type requires .GASSHE to be specified.'
-          write(lupri,*) 'Else, I do not know what to do.'
-          call quit(' *** error in dalton_lucita: GASCI run but
-     &    .GASSHE not specified.')
-        end if
-      end if
-*
-*     Cumulative min. and max. numbers of electrons in GAS spaces
-      if(lucita_cfg_ci_type(1:6).eq.'GASCI ')then
-        if(.not.lucita_cfg_minmax_occ_gas_set)then
-          write(lupri,*) 'GASCI type requires .GASSPC to be specified.'
-          write(lupri,*) 'Else, I do not know what to do.'
-          call quit(' *** error in dalton_lucita: GASCI run but
-     &    .GASSPC not specified.')
-        end if
-      end if
-      NCISPC = lucita_cfg_nr_calc_sequences
-*
-*     RAS specifications; no default
-      if(lucita_cfg_ci_type(1:6).eq.'RASCI ')then
-        if(.not.lucita_cfg_ras1_set .or. .not. lucita_cfg_ras2_set.or.
-     &     .not.lucita_cfg_ras3_set)then
-          write(lupri,*) 'RASCI type requires .RAS1, .RAS2 and .RAS3'//
-     &                   ' to be specified.'
-          write(lupri,*) 'Else, I do not know what to do.'
-          call quit(' *** error in dalton_lucita: RASCI run but
-     &    not all RAS spaces specified.')
-        end if
-      end if
-*
-*     Default setting for DENSity matrices
-      idemol = lucita_cfg_density_calc_lvl
-
-*     Default setting for Davidson subspace dimensions
-      max_ci_vector_subspace = lucita_cfg_max_dav_subspace_dim
-      max_ci_vector_subspace =
-     &      max(3*lucita_cfg_nr_roots, max_ci_vector_subspace)
-*
-*     Restart option from CI vector(s)
-      irstrt = lucita_cfg_restart_ci
-*
-*     Type of parallel calculation
-      IF (LUCI_NMPROC .GT. 1) THEN
-        IODENSEPAR = 2
-        IRUNPA     = 1
-        IPARMODEL  = 2
-      ELSE
-        IODENSEPAR = 0
-        IRUNPA     = 0
-        IPARMODEL  = 0
-      END IF
-*
-*     Type of I/O model in parallel calculation
-      IF (LUCI_NMPROC .GT. 1) THEN
-        IIOMOD = 1
-        YESSTATEMENT = 'Yes'
-      ELSE
-        IIOMOD = 0
-        YESSTATEMENT = 'No'
-      END IF
-*
-*     maximum number of CI Iterations
-      imaxciiter = lucita_cfg_max_nr_dav_ci_iter
-*
-*     Largest allowed batchsize (if larger than biggest block!) 
-      imaxlblksz = MAX(100 000,lucita_cfg_max_batch_size)
-*
-*     Distribution routine to use (only relevant in parallel case) 
-*
-      idistroute = lucipar_cfg_ttss_dist_strategy
-      IF(LUCI_NMPROC .GT. 1)THEN
-        if(idistroute.gt.2.or.idistroute.lt.1)then
-          write(lupri,*) 'Value for keyword .DISTRT incorrect ',
-     &                    idistroute
-          write(lupri,*) 'INFO: I will ignore your input.'
-          write(lupri,*) 'Program will continue.'
-          idistroute = 2   
-        endif
-      END IF
-*
-*     Truncate residual vectors before creating new trial vector?
-*     (14-jun-07, hjaaj)
-      trunc_fac = lucita_cfg_accepted_truncation
-*
-*
-*     memory reduction multiplier ...
-      ISMEMFAC  = lucipar_cfg_mem_reduction_multp 
-
-      if(irunpa.eq.1) then
-        performci = 'parallel'
-      else if(irunpa.eq.0) then
-        performci = 'sequential'
-      endif
-*
-*
-*-----------------------------------------------------------------*
-*  Print section
-*-----------------------------------------------------------------*
-*
-*  1: Title
-*
-      write(LUOUT,'(/1X,80A1)') ('*',I=1,80)
-      write(LUOUT,'(A/2A/A)') ' *',
-     &   ' * title : ',lucita_cfg_run_title, ' *'
-      write(LUOUT,'(1X,80A1)') ('*',I=1,80)
-*
-*  2: Initial wave function
-*
-      write(LUOUT,'(/A42,A6/)')
-     &  ' Orbitals as initial wave function .... ',
-     &    lucita_cfg_ini_wavef(1:6)
-*
-*  3: Type of CI calculation
-*
-      write(LUOUT,'(A42,A6/)')
-     &  ' Type of calculation .................. ',
-     &    lucita_cfg_ci_type(1:6)
-*
-*  4: Number of roots to be treated
-*
-      write(LUOUT,'(A42,I3/)')
-     &  ' Number of roots to be obtained ....... ',lucita_cfg_nr_roots
-*
-*  5: State symmetry
-*
-      write(LUOUT,'(A42,I3/)')
-     &  ' Calculation carried out in irrep ..... ',
-     &    lucita_cfg_ptg_symmetry
-*
-*  6: Number of active electrons
-*
-      if(NACTEL.gt.0)then
-        write(LUOUT,'(A42,I3/)')
-     &  ' Number of active electrons ........... ',NACTEL
-      end if
-*
-*  7: Spin multiplicity
-*
-      write(LUOUT,'(A42,I3/)')
-     &  ' Spin multiplicity .................... ',MULTIP
-*
-*  8: LUCIA global print parameter
-*
-      write(LUOUT,'(A42,A3/)')
-     &  ' Global print level is ................ ',PRILUC
-*
-*  9: MOLUC local print parameter
-*
-      write(LUOUT,'(A42,I3/)')
-     &  ' Local print level is ................. ',IPLOCAL
-*
-* 10: SIZE of CI calculation
-*
-      write(LUOUT,'(A42,A3/)')
-     &  ' Approximate size of CI calculation ... ',CALSIZ
-*
-* 10b: runtype of CI calculation
-*
-      write(LUOUT,'(A42,A8/)')
-     &  ' Running the CI calculation ........... ',performci
-*
-*
-* 10c: runtype of parallel calculation
-*
-      if(irunpa.gt.0)then
-        write(LUOUT,'(A42,I3/)')
-     &  ' Applying parallel scheme ............. ',iparmodel
-      endif
-*
-*
-* 10d: file version to use in parallel calculation
-*
-      write(LUOUT,'(A42,A3/)')
-     &  ' Using MPI-FILE I/O ................... ',YESSTATEMENT
-*
-*
-* 10e: file system in parallel calculation
-*
-      if( irunpa .gt. 0 ) then
-        write(LUOUT,'(A42,I1/)')
-     &  ' Parallel distribution routine ........ ',IDISTROUTE
-      end if
-*
-* 10f: truncation factor
-*
-      write(LUOUT,'(/A42,1P,D10.2/)')
-     &  ' Truncation Factor ..................... ',trunc_fac
-                   
-*
-* 18: DENSity matrix level
-*
-      if (IDEMOL.ge.1) then
-        write(LUOUT,'(A42,I3/)')
-     &    ' Calculating density matrices at level  ',IDEMOL
-      end if
-*
-* 19: Restart option activated
-*
-      if(IRSTRT.eq.1) then
-        write(LUOUT,'(A42,A3/)')
-     &    ' Restarted calculation from file ...... ','YES'
-      end if
- 
-!     initialize number of inactive orbitals per symmetry irrep
-!     (lucita/orbinp.inc)
-!     values will be set in dalton2lucita for non-GAS calculations
-      call izero(ninobs,mxpobs)
-
-!     set file handles for reading/writing, etc.
-      call set_file_handles(lucita_cfg_ptg_symmetry)
- 
-!     conversion routine for creating LUCIA input
-      call dalton2lucita(lucita_cfg_ptg_symmetry,lucita_cfg_nr_roots,
-     &                   MULTIP,lucita_cfg_max_holes_ras1,
-     &                   lucita_cfg_max_e_ras3,INACOB,
-     &                   IDEMOL,IRSTRT,max_ci_vector_subspace,
-     &                   IMAXCIITER,
-     &                   lucita_cfg_ci_type(1:6),
-     &                   lucita_cfg_ini_wavef(1:6),CALSIZ,
-     &                   PRILUC,NINOBS,NGAS,NCISPC,IPLOCAL)
-*
-6666  continue
-*
-      END
-***********************************************************************
       SUBROUTINE DMPINT(LUINT)
 *
 * Dump integrals in WORK(KINT1),WORK(KINT2) on file LUINT
 *
+      use lucita_energy_types
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
 #include "glbbas.inc"
 #include "wrkspc.inc"
 *
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
 *
       CALL REWINO(LUINT)
 *.1 : One-electron integrals
@@ -571,6 +129,7 @@ C    *              (IWRK(KEIGSY+I-1),I=1,NORBT)
       READ (ITAP30) (CMO(I),I=1,NCOEF)
       CLOSE(ITAP30,STATUS='KEEP')
 *
+      NTEST = 000 !
 !     NTEST = 100 ! hjaaj DEBUG
       IF(NTEST.GE.100) THEN
         WRITE(lupri,*) '  MO - AO expansion matrix '
@@ -670,7 +229,7 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 *. Output
       DIMENSION CMOMO(*)
 *
-      NTEST = 000
+      NTEST = 100
       IF(NTEST.GE.1) THEN
         WRITE(lupri,*)
         WRITE(lupri,*) ' ===================='
@@ -1052,44 +611,28 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
-#include "crun.inc"
 #include "lucinp.inc"
 #include "parluci.h"
-*
+! potnuc on infinp.h could also deliver ecore_env
+!
       NTEST = 000
 !     NTEST = 9999 ! debug
-      IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
-        call quit( 'No MOLCAS ENVIRONMENT!')
-      ELSE IF(ENVIRO(1:6).EQ.'DALTON' ) THEN
-        call izero(naos_env,MXPOBS)
-        call izero(nmos_env,MXPOBS)
-        if(luci_myproc .eq. luci_master)then
-          CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV,NSMOB)
-        end if
+
+      call izero(naos_env,MXPOBS)
+      call izero(nmos_env,MXPOBS)
+      if(luci_myproc .eq. luci_master)then
+        CALL GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV,NSMOB)
+      end if
 #ifdef VAR_MPI
-        if(luci_nmproc .gt. 1)then
-          call dalton_mpi_bcast(nsmob,     luci_master, mpi_comm_world)
-          call dalton_mpi_bcast(ecore_env, luci_master, mpi_comm_world)
-          call dalton_mpi_bcast(naos_env,  luci_master, mpi_comm_world)
-          call dalton_mpi_bcast(nmos_env,  luci_master, mpi_comm_world)
-        end if
+      if(luci_nmproc .gt. 1)then
+        call dalton_mpi_bcast(nsmob,     luci_master, mpi_comm_world)
+        call dalton_mpi_bcast(ecore_env, luci_master, mpi_comm_world)
+        call dalton_mpi_bcast(naos_env,  luci_master, mpi_comm_world)
+        call dalton_mpi_bcast(nmos_env,  luci_master, mpi_comm_world)
+      end if
 #endif
-      ELSE IF(ENVIRO(1:5).EQ.'LUCIA') THEN
-*. Lucia : core energy is obtained from 2-e file
-        CALL GETOBS_LUCIA(NAOS_ENV,NMOS_ENV)
-      else if (ENVIRO(1:5).eq.'DIRAC') then
-        if (luci_myproc.eq.luci_master) then
-          write(lupri,*) 'Integral import from DIRAC.'
-          write(lupri,*) 'No checking of environment dims.'
-        end if
-      ELSE IF(ENVIRO(1:4).EQ.'NONE') THEN
-*. No environment,
-        WRITE(lupri,*) 'GET_ORB_DIM_ENV in trouble. '
-        WRITE(lupri,*) 'No ENVIRO parameter defined '
-      END IF
-*
+!
       IF(NTEST.GE.100) THEN
         WRITE(lupri,*) ' From GET_ORB_FROM_ENV : '
         WRITE(lupri,*) ' ======================='
@@ -1100,7 +643,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
         CALL IWRTMA(NMOS_ENV,1,NSMOB,1,NSMOB)
         WRITE(lupri,*) ' ECORE_ENV=', ECORE_ENV
       END IF
-*
+!
       END
 ***********************************************************************
 *
@@ -1126,7 +669,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *. Scratch
       DIMENSION SCR(*)
 *. Scratch should atleaest be of length  **
-      CHARACTER*(*) LABEL
 *
       NTEST = 000
 *. Integrals in AO basis, neglect symmetry
@@ -1689,39 +1231,15 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
       IF(NTEST.GE.5)
      &WRITE(lupri,*) ' LGETINT : ICC_EXC and ICOUL = ', ICC_EXC, ICOUL
 
-      IF (ICC_EXC.EQ.0) THEN
-*
 * =======================
 * Usual/Normal  integrals
 * =======================
 *
 *. Integrals in core in internal LUCIA format
-         CALL GETINCN2(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
-     &                 IXCHNG,IKSM,JLSM,WORK(KINT2),
-     &                 WORK(KPINT2),NSMOB,WORK(KINH1),ICOUL)
-      ELSE IF (ICC_EXC.EQ.1) THEN
-*
-* ============================
-* Coupled Cluster coefficients
-* ============================
-*
-        IF(ICOUL.EQ.1) THEN
-          IKLJ = 0
-          IJ_TRNSP = 1
-        ELSE
-          IKLJ = 1
-          IJ_TRNSP = 0
-        END IF
-        call quit('CC coefficients not implemented in LGETINT')
-*. IJ_TRNSP : RSBB2BN requires blocks for e(ijkl) in the form C(ji,kl)
-*. Amplitudes fetched from KCC1, KCC2 used as scratch
-!       CALL GET_DX_BLK(ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,WORK(KCC1+NSXE),
-!    &                  XINT,1,IXCHNG,IKLJ,IKSM,JLSM,WORK(KCC2),
-!    &                  IJ_TRNSP )
-C            GET_DX_BLK(IGAS,ISM,JGAS,JSM,KGAS,KSM,LGAS,LSM,
-C    &                  C,CBLK,IEXP,IXCHNG,IKLJ,IKSM,JLSM,SCR)
-      END IF
-*
+      CALL GETINCN2(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
+     &              IXCHNG,IKSM,JLSM,WORK(KINT2),
+     &              WORK(KPINT2),NSMOB,WORK(KINH1),ICOUL)
+
       IF(NTEST.NE.0) THEN
         IF(ITP.EQ.0) THEN
           NI = NTOOBS(ISM)
@@ -1772,82 +1290,7 @@ C     Call Abend2( ' Jeppe forced me to stop in LGETINT ' )
       RETURN
       END
 ***********************************************************************
-*
-      subroutine set_nracte_wf(citype,waffct,nracte)
-*
-#ifdef VAR_MPI
-      use dalton_mpi
-#endif
-#include "implicit.h"
-#include "priunit.h"
-#ifdef VAR_MPI
-#include "mpif.h"
-#endif
-#include "parluci.h"
-! from common block in infinp.h: NACTEL, FLAG(13): MO restart yes/no
-#include "maxorb.h"
-#include "mxcent.h"
-#include "infinp.h"
 
-*
-      character*6 WAFFCT, citype
-*
-!     write(lupri,*) 'set_nracte_wf called, we try doing a little!' !hjaaj DEBUG
-!     write(lupri,*) 'WAFFCT = ',WAFFCT
-      nracte = NACTEL
-
-!     set # of active e- always to zero if MO restart but no
-!     mcscf/hf because then NACTEL is not set and issue a warning
-!     for citypes other than GASCI! stefan - jan 2011
-      if(luci_myproc .eq. 0)then
-        if(flag(13).and..not.(doscf.or.domc))then 
-          nracte = 0
-          if(citype.eq.'SDCI  ')then
-            write(lupri,'(/a)') ' *** WARNING from set_nracte_wf:'
-            write(lupri,'(a )') ' number of active e- is unknown if'//
-     &    ' the MO restart option is used but not a single ensuing'//
-     &    ' HF/MCSCF iteration has been performed.'
-            write(lupri,'(a/)') ' Since the number of active e- is'//
-     &    ' essential to the following CI setup LUCITA will stop here.'
-            call quit('*** ERROR in set_nracte_wf: # of active e- is 
-     &      required for CI types other than GASCI/RASCI. ***')
-          end if
-        end if
-      end if
-
-
-#ifdef VAR_MPI      
-      if(luci_nmproc .gt. 1)then
-        call dalton_mpi_bcast(nracte, luci_master, mpi_comm_world)
-      end if
-#endif
-
-      if(WAFFCT.eq.'HF_SCF') then
-        if(nracte .gt. 0)then
-          write(lupri,*) 'ERROR in set_nracte_wf:'//
-     &' # of active e- > 0 for closed-shell HF reference wave function.'
-          call quit('*** ERROR in set_nracte_wf: # of active e- > 0
-     & for closed-shell HF reference wave function. ***')
-        end if
-      else if(WAFFCT.eq.'RASSCF')then
-        if(citype.ne.'GASCI ')then
-          if(nracte .le. 0)then
-            write(lupri,*) 'ERROR in set_nracte_wf:'//
-     &'     # of active e- = 0 for open-shell HF/MCSCF'//
-     &      ' reference wave function.'
-            call quit('*** ERROR in set_nracte_wf: # of active e- = 0
-     &      for open-shell HF/MCSCF reference wave function. ***')
-          end if
-        end if
-      else
-        write(lupri,*) 'ERROR in set_nracte_wf:'//
-     &' unknown reference wave function: ',WAFFCT
-          call quit('*** ERROR in set_nracte_wf: 
-     & unknown reference wave function. ***')
-      end if
-
-      end
-***********************************************************************
       SUBROUTINE GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV,NSYM_ENV)
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "priunit.h"
@@ -1942,7 +1385,6 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
       ELSE IF (INTIMP.EQ.1.OR.INTIMP.EQ.5.or.INTIMP.eq.6) THEN
 !       sirius or dirac integral format
         GTIJKL = GMIJKL(I,J,K,L,WORK(KINT2),WORK(KPINT2))
-!       write(lupri,*) '(IJ|KL) =',I,J,K,L,GTIJKL
       END IF
 
       END
@@ -1993,6 +1435,7 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
         WRITE(lupri,*) ' JORB JABS JSM JOFF ',JORB,JABS,JSM,JOFF
         WRITE(lupri,*) ' KORB KABS KSM KOFF ',KORB,KABS,KSM,KOFF
         WRITE(lupri,*) ' LORB LABS LSM LOFF ',LORB,LABS,LSM,LOFF
+        call flshfo(lupri)
       END IF
 *
       If ( jSm.gt.iSm .or. ( iSm.eq.jSm .and. JABS.gt.IABS)) Then
@@ -2043,6 +1486,7 @@ C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
       If(Ntest .ge. 100 ) then
         write(lupri,*) ' i j k l ',i,j,k,l
         write(lupri,*) ' Isym,Jsym,Ksym,Lsym',Isym,Jsym,Ksym,Lsym
+        call flshfo(lupri)
       End if
 *
 *  Define offset for given symmetry block
@@ -2089,8 +1533,12 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       Else
         ijkl=ij+(kl-1)*ijPairs
       End If
-      If( ntest .ge. 100 )
-     & write(lupri,*) ' ijkl ', ijkl
+      If( ntest .ge. 100 )then
+        write(lupri,*) ' ijkl ', ijkl
+        write(lupri,*) ' iblOff       ', iblOff
+        write(lupri,*) ' iblOff-1+ijkl', iblOff-1+ijkl
+        call flshfo(lupri)
+      end if
 *
       GMIJKL = Intlst(iblOff-1+ijkl)
       If( ntest .ge. 100 )
@@ -2098,7 +1546,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *
       END
 ***********************************************************************
-      SUBROUTINE GTJK(RJ,RK,NTOOB,SCR,IREOTS)
+      SUBROUTINE GTJK(RJ,RK,NTOOB)
 *
 * Interface routine for obtaining Coulomb (RJ) and
 * Exchange integrals (RK)
@@ -2112,28 +1560,10 @@ C    &            NOCSF,IDIAG
 #include "mxpdim.inc"
 #include "parluci.h"
 #include "crun.inc"
-*.Input
-      DIMENSION IREOTS(*)
 *.Output
       DIMENSION RJ(NTOOB,NTOOB),RK(NTOOB,NTOOB)
-*.Scratch
-      DIMENSION SCR(2*NTOOB ** 2)
-* Commented out
-C     IF(INTIMP.EQ.1) THEN
-      IF(INTIMP.EQ.11) THEN
-*. Interface to MOTRA integrals
-        CALL GTJKM(SCR(1),SCR(1+NTOOB**2))
-*. Reorder to LUCIA order
-        DO 100 J = 1, NTOOB
-          JJ = IREOTS(J)
-          DO 50 I = 1, NTOOB
-            II = IREOTS(I)
-C?          WRITE(lupri,*) ' I II J JJ ',I,II,J, JJ
-            RJ(I,J) = SCR((JJ-1)*NTOOB+II)
-            RK(I,J) = SCR((JJ-1)*NTOOB+II+ NTOOB **2)
-   50     CONTINUE
-  100  CONTINUE
-      ELSE IF(INTIMP.EQ.1.OR.INTIMP.EQ.5.or.INTIMP.eq.6) THEN
+
+      IF(INTIMP.EQ.1.OR.INTIMP.EQ.5.or.INTIMP.eq.6) THEN
 *. Interface to SIRIUS
         CALL GTJKS(RJ,RK,NTOOB)
       ELSE
@@ -2177,119 +1607,7 @@ C?          WRITE(lupri,*) ' I II J JJ ',I,II,J, JJ
       RETURN
       END
 ***********************************************************************
-      Subroutine GTJKM(RJ,RK)
-*
-*     Gather all integrals RJ(I,J) = (II!JJ)
-*     Gather all integrals RK(I,J) = (IJ!IJ)
-*
-      IMPLICIT REAL*8(A-H,O-Z)
 
-#include "SysDef.inc"
-
-#include "mxpdim.inc"
-#include "orbinp.inc"
-#include "lucinp.inc"
-*.LUNDIO
-      Parameter ( mxBatch = 106  )
-      Parameter ( mxSyBlk = 666  )
-      Common / LundIO / LuTr2,lTr2Rec,iDAdr(mxBatch),nBatch(mxSyBlk)
-*.Output
-      DIMENSION RJ(NTOOB,NTOOB),RK(NTOOB,NTOOB)
-*.Local
-      Parameter ( lBuf    = 9600 )
-      Dimension Scr(lBuf)
-*
-      Do iSym=1,nSmOb
-        itOrb=NTOOBS(iSym)
-        itOff=ITOOBS(iSym)
-        iiBlk=iSym*(iSym+1)/2
-        iiPairs=itOrb*(itOrb+1)/2
-        Do jSym=1,iSym
-          jtOrb=NTOOBS(jSym)
-          jtOff=ITOOBS(jSym)
-          jjBlk=jSym*(jSym+1)/2
-          jjPairs=jtOrb*(jtOrb+1)/2
-          ijPairs=itOrb*jtOrb
-          If ( iSym.eq.jSym ) ijPairs=jtOrb+itOrb*(itOrb-1)/2
-          ijBlk=jSym+iSym*(iSym-1)/2
-*
-*     collect all RJ(iOrb,jOrb)=(II,JJ)
-*
-          iRecOld=-1
-          iSyBlk=jjBlk+iiBlk*(iiBlk-1)/2
-          iBatch=nBatch(iSyBlk)
-          iDisk=iDAdr(iBatch)
-          nInts=iiPairs*jjPairs
-          Do i=1,itOrb
-            ii=i*(i+1)/2
-*JOS
-            MaxJ = jtOrb
-            If(Isym.eq.Jsym) MaxJ = i
-            Do j=1,MaxJ
-*JOE
-              jj=j*(j+1)/2
-              iijj=ii+(jj-1)*iiPairs
-*JOS
-              If ( Isym.eq.Jsym ) Then
-                jjOff=jj+(jj-1)*(jj-2)/2-1
-                iijj =  iijj - jjOff
-              End If
-*JOE
-              iRec=(iijj-1)/lTr2Rec
-              If ( iRec.eq.iRecOld ) then
-                iijj=iijj-iRec*lTr2Rec
-              Else
-                iDisk=iDAdr(iBatch)
-                Do iSkip=1,iRec
-!                 Call DaFile(LuTr2,0,Scr,RtoI*lTr2Rec,iDisk)
-                End Do
-!               Call DaFile(LuTr2,2,Scr,RtoI*lTr2Rec,iDisk)
-                iijj=iijj-iRec*lTr2Rec
-                iRecOld=iRec
-              End If
-              RJ(i+itOff-1,j+jtOff-1)=Scr(iijj)
-              RJ(j+jtOff-1,i+itOff-1)=Scr(iijj)
-            End Do
-          End Do
-*
-*     collect all RK(iOrb,jOrb)=(IJ,IJ)
-*
-          iRecOld=-1
-          iSyBlk=ijBlk*(ijBlk+1)/2
-          iBatch=nBatch(iSyBlk)
-          iDisk=iDAdr(iBatch)
-          nInts=ijPairs*(ijPairs+1)/2
-          ij=0
-          Do i=1,itOrb
-            jMax=jtOrb
-            If ( iSym.eq.jSym ) jMax=i
-            Do j=1,jMax
-              ij=ij+1
-              ijOff=ij+(ij-1)*(ij-2)/2-1
-              ijij=ij+(ij-1)*ijPairs-ijOff
-              iRec=(ijij-1)/lTr2Rec
-              If ( iRec.eq.iRecOld ) then
-                ijij=ijij-iRec*lTr2Rec
-              Else
-                iDisk=iDAdr(iBatch)
-                Do iSkip=1,iRec
-!                 Call DaFile(LuTr2,0,Scr,RtoI*lTr2Rec,iDisk)
-                End Do
-!               Call DaFile(LuTr2,2,Scr,RtoI*lTr2Rec,iDisk)
-                ijij=ijij-iRec*lTr2Rec
-                iRecOld=iRec
-              End If
-              RK(i+itOff-1,j+jtOff-1)=Scr(ijij)
-              RK(j+jtOff-1,i+itOff-1)=Scr(ijij)
-            End Do
-          End Do
-*
-        End Do
-      End Do
-*
-      RETURN
-      END
-***********************************************************************
 * Working on EXPHAM
 * some known problems :
 *     1 : if CSF are used diagonal is not delivered to H0mat
@@ -2299,11 +1617,14 @@ C?          WRITE(lupri,*) ' I II J JJ ',I,II,J, JJ
 * from complete integral list stored in core
 *
       IMPLICIT REAL*8           (A-H,O-Z)
+#include "priunit.h"
       REAL*8           J(NORB,NORB),K(NORB,NORB)
 *
       DO 200 IORB = 1, NORB
         DO 100 JORB = 1, NORB
+!         write(lupri,*) 'iorb,jorb ==> j',iorb,jorb
           J(IORB,JORB) = GTIJKL(IORB,IORB,JORB,JORB)
+!         write(lupri,*) 'iorb,jorb ==> k',iorb,jorb
           K(IORB,JORB) = GTIJKL(IORB,JORB,JORB,IORB)
   100   CONTINUE
   200 CONTINUE
@@ -2325,12 +1646,8 @@ C?          WRITE(lupri,*) ' I II J JJ ',I,II,J, JJ
 *                           Aug 2006                                   *
 *               HJAaJ, May 2008, for DALTON                            *
 *                                                                      *
-*----------------------------------------------------------------------*
-*                                                                      *
-*     history: none                                                    *
-*                                                                      *
 ************************************************************************
-#include "clunit.inc"
+#include "priunit.h"
       Character*8   Fmt
       Character*70  Line,StLine
       integer    :: lpaper = 120 
@@ -2347,15 +1664,15 @@ C?          WRITE(lupri,*) ' I II J JJ ',I,II,J, JJ
 *----------------------------------------------------------------------*
 *     Print the program header                                         *
 *----------------------------------------------------------------------*
-      write(luout,'(/1x,a)') StLine
-      write(luout,'( 1x,a)') StLine,' ',
+      write(lupri,'(/1x,a)') StLine
+      write(lupri,'( 1x,a)') StLine,' ',
      &   'D A L T O N - L U C I T A',
      &   'An interface section for LUCITA under DALTON', ' ',
      &   'Authors: J. Olsen, Univ. Aarhus',
      &   '         H. J. Aa. Jensen, Univ. Southern Denmark ',
      &   '         S. Knecht, Univ. Southern Denmark',' ',
-     &   'Based on LUCITA-DIRAC interface',
-     &   '    Author: Timo Fleig, Univ. Toulouse', ' ',
+!    &   'Based on LUCITA-DIRAC interface',
+!    &   '    Author: Timo Fleig, Univ. Toulouse', ' ',
      &   'Using LUCIA version 1999', ' ',
      &   '    Author: J. Olsen, Lund/Aarhus',' ',
      &   'Parallelization of LUCITA, Duesseldorf/Odense:    ',
@@ -2539,7 +1856,11 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       END
 
 ***********************************************************************
-      SUBROUTINE INTIM(IPRNT)
+      subroutine intim(citask_id,int1_mcscf,int2_mcscf,
+     &                 update_ijkl_from_env,
+     &                 orbital_trial_vector,
+     &                 ci_trial_vector,
+     &                 mcscf_provides_integrals)
 *
 * Interface to external integrals
 *
@@ -2552,9 +1873,19 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 #ifdef VAR_MPI
       use sync_coworkers
 #endif
+      use lucita_cfg
+      use lucita_energy_types
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
-      INTEGER*8 current_free_mem, kintdal_interface
       ! for addressing of WORK
+      INTEGER*8 current_free_mem, kintdal_interface
+      character (len=12), intent(in) :: citask_id
+      real(8), intent(inout)         :: int1_mcscf(*)
+      real(8), intent(inout)         :: int2_mcscf(*)
+      logical, intent(inout)         :: update_ijkl_from_env
+      logical, intent(in)            :: orbital_trial_vector
+      logical, intent(in)            :: ci_trial_vector
+      logical, intent(in)            :: mcscf_provides_integrals
 #include "priunit.h"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -2565,1405 +1896,207 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 #include "csm.inc"
 #include "orbinp.inc"
 #include "parluci.h"
+#include "oper.inc"
 *./CINTFO/
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-*./CECORE/
-      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
-       real*8 einact
+      character (len=25)   :: file_name
+      logical              :: update_ijkl, integral_available
+      integer              :: ngsh_lucita_tmp(max_number_of_gas_spaces,
+     &                                        max_number_of_ptg_irreps)
+      integral_available = .false.
 
-*. : Pointers for symmetry blocks of integrals
+!     pointers for symmetry blocks of integrals
       CALL INTPNT(WORK(KPINT1),WORK(KLSM1),
      &            WORK(KPINT2),WORK(KLSM2))
-*
-*. Pointer for orbital indices for symmetry blocked matrices
+
+!     pointer for orbital indices for symmetry blocked matrices
       CALL ORBINH1(WORK(KINH1),NTOOBS,NTOOB,NSMOB)
-*
-      IF(INTIMP.EQ.1.AND.NOINT.EQ.0) THEN
-*
-*  ==============
-* . Molcas format
-*  ==============
-*
-        WRITE(lupri,*) ' Integrals imported from MOLCAS files'
-        CALL QUIT('Cannot read MOLCAS files in this version')
 
-      ELSE IF (INTIMP.EQ.3.AND.NOINT.EQ.0 ) THEN
-*
-*  ==============
-* Formatted input of symmetry non-vanishing integrals
-*  ==============
-*
-        WRITE(lupri,*) ' Integrals imported formatted (E22.15) '
-*.1 : One-electron integrals
-        REWIND LU2INT
-        READ(LU2INT,'(E22.15)') (WORK(KINT1-1+INT1),INT1=1,NINT1)
-*.2 : Two-electron integrals
-        IF(INCORE.EQ.1.OR.EXTSPC.EQ.0) THEN
-          READ(LU2INT,'(E22.15)') (WORK(KINT2-1+INT2),INT2=1,NINT2)
-        END IF
-*.3 : Core energy
-        WRITE(lupri,*) ' Core energy will be read '
-        READ(LU2INT,'(E22.15)') ECORE
-*
-*. Proceed in Normal MOLCAS way so
-        INTIMP = 1
-*
-* ===============
-* . SIRIUS format
-* ===============
-*
-      ELSE IF (INTIMP .EQ. 5.AND.NOINT.EQ.0  ) THEN
-!       WRITE(lupri,*) ' Integrals imported from DALTON/SIRIUS files'
-*. Load one-electron integrals and two-electron integrals
-        IF(INCORE.EQ.1) THEN
-          if(luci_myproc .eq. luci_master)then
-            CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
-            LSCR = current_free_mem - 1000
-            idum = 0
-!           set local marker + allocate space for lucita-dalton integral interface
-            call memman(idum,idum,'MARK  ',idum,'dalint')
-            call memman(kintdal_interface,lscr,'ADDL  ',2,'dalint')
+!
+!     load one-electron integrals and two-electron integrals
+      if(citask_id.eq.'return CIdia' .or. 
+     &   citask_id.eq.'perform Davi' .or. 
+     &   citask_id.eq.'ijkl resort ' .or. 
+     &   citask_id.eq.'return sigma' )then
 
-            CALL LUCITA_GETINT_DALTON(einact,WORK(KINT1),WORK(KINT2),
-     &                                WORK(kintdal_interface),LSCR)
-!           CALL LUCITA_GETINT_DALTON(EMY, FCAC, H2AC, tmp_dal_work,LWRK)
-
-!           release memory
-            CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'dalint')
-            ecore = ecore_orig + einact
+        IF(INCORE.EQ.1)THEN
+          write(file_name,'(a17,i3,a1,i4)')
+     &    'IJKL_REOD_LUCITA-',1,'.',luci_myproc
+          do i = 18, 20
+            if(file_name(i:i).eq. ' ') file_name(i:i) = '0'
+          end do
+          do i = 22, 25
+            if(file_name(i:i).eq. ' ') file_name(i:i) = '0'
+          end do
+          LUINT_LUCITA = -1
+!
+!         check for existing file with reordered integrals -
+!         if available read from it...
+          if(citask_id.eq.'perform Davi' .or. 
+     &       citask_id.eq.'ijkl resort ')then
+            if(luci_myproc .eq. luci_master)then
+              inquire(file=file_name,exist=integral_available)
+            end if
           end if
+!
+          CALL GPOPEN(LUINT_LUCITA,file_name,'UNKNOWN',' ',
+     &                'UNFORMATTED',IDUMMY,.FALSE.)
+          is_2e_int_active = i12
+
+          update_ijkl =
+     &    update_ijkl_from_env.or.ci_trial_vector.or.
+     &    orbital_trial_vector
+
+!         default for reordering task
+          if(citask_id.eq.'ijkl resort ') update_ijkl = .true.
+
+          if(update_ijkl)then
+
+            if(luci_myproc .eq. luci_master)then
+              if(.not.integral_available)then
+                CALL MEMMAN(current_free_mem,0,'SFREEM',2,'SHOWMM')
+                LSCR = current_free_mem - 1000
+                idum = 0
+!               set local marker + allocate space for lucita-dalton integral interface
+                call memman(idum,idum,'MARK  ',idum,'dalint')
+                call memman(kintdal_interface,lscr,'ADDL  ',2,'dalint')
+
+                CALL LUCITA_GETINT_DALTON(einact_mc2lu,WORK(KINT1),
+     &                                    WORK(KINT2),
+     &                                    WORK(kintdal_interface),LSCR,
+     &                                    int1_mcscf,int2_mcscf,
+     &                                    mcscf_provides_integrals,1)
+                ecore = ecore_orig + einact_mc2lu
+!               release memory
+                CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'dalint')
+              else
+!               read 1e- and 2e-integrals from file
+!               -----------------------------------
+                CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
+                READ (LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
+     &                              einact_mc2lu
+                read(LUINT_LUCITA) 
+     &          ((ngsh_lucita_tmp(i,j),i=1,max_number_of_gas_spaces),
+     &                                 j=1,max_number_of_ptg_irreps)
+                CALL READT(LUINT_LUCITA, nint1, work(kint1))
+                if(is_2e_int_active .gt. 1)
+     &          CALL READT(LUINT_LUCITA, nint2, work(kint2))
+!               check consistency in active spaces for integral run 
+!               and actual run
+                do i = 1, max_number_of_gas_spaces
+                  do j = 1, max_number_of_ptg_irreps
+                    if(ngsh_lucita_tmp(i,j) /= ngsh_lucita(i,j))then
+                    write(lupri,*) '*** error in intim: active spaces'//
+     &              ' in integral run and present CI run do not match.'
+                    write(lupri,*) 'integral run ',ngsh_lucita_tmp(:,:)
+                    write(lupri,*) 'actual CI    ',ngsh_lucita(:,:)
+                    call quit('inconsistency in active spaces for the'//
+     &              ' integral CI-run and the present CI-run.')
+                    end if
+                  end do
+                end do
+              end if
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+              write(lupri,*) 
+     &        '*** master   ',luci_myproc,'reports 1-ints:',
+     &                        nint1
+              call wrtmatmn(work(kint1),1,nint1,1,nint1,lupri)
+              write(lupri,*) 
+     &        '*** master   ',luci_myproc,'reports 2-ints:',
+     &                        nint2
+              call wrtmatmn(work(kint2),1,nint2,1,nint2,lupri)
+              write(lupri,*) 
+     &        '*** master   ',luci_myproc,'reports ecore  ',
+     &                        ecore, ecore_orig, einact_mc2lu
+#undef LUCI_DEBUG
+#endif
+            end if ! luci_master only
 #ifdef VAR_MPI
-          if(luci_nmproc .gt. 1)then
-!           synchronize the co-workers with the 1-/2-electron integrals
-            call sync_coworkers_cfg(3,work(kint1),work(kint2))
-!           set sync_ctrl option
-            sync_ctrl_array(3) = .false.
+            if(luci_nmproc .gt. 1)then
+!             set sync_ctrl option
+              sync_ctrl_array(3) = update_ijkl
+!             synchronize the co-workers with the 1-/2-electron integrals
+              call sync_coworkers_cfg(work(kint1),work(kint2))
 
 #ifdef LUCI_DEBUG
-            if(luci_myproc .eq. luci_master+1)then
-              print *, '*** co-worker',luci_myproc,'reports 1-ints:',
-     &                      nint1
-              call wrtmatmn(work(kint1),1,nint1,1,nint1,lupri)
-              print *, '*** co-worker',luci_myproc,'reports 2-ints:',
-     &                      nint2
-              call wrtmatmn(work(kint2),1,nint2,1,nint2,lupri)
-            end if ! debug print for co-worker-id luci_master+1
+              if(luci_myproc .eq. luci_master+1)then
+                print *, '*** co-worker',luci_myproc,'reports 1-ints:',
+     &                        nint1
+                call wrtmatmn(work(kint1),1,nint1,1,nint1,lupri)
+                print *, '*** co-worker',luci_myproc,'reports 2-ints:',
+     &                        nint2
+                call wrtmatmn(work(kint2),1,nint2,1,nint2,lupri)
+              end if ! debug print for co-worker-id luci_master+1
+!#undef LUCI_DEBUG
 #endif
+            end if
+#endif
+            
+            if(.not.orbital_trial_vector.and..not.ci_trial_vector)then
+!             put 1e- and 2e-integrals to file
+!             --------------------------------
+              WRITE (LUINT_LUCITA) ('********',I=1,3), 'LUCIIJKL'
+              WRITE(LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
+     &                            einact_mc2lu
+              write(LUINT_LUCITA) 
+     &        ((ngsh_lucita(i,j),i=1,max_number_of_gas_spaces),
+     &                           j=1,max_number_of_ptg_irreps)
+              CALL WRITT(LUINT_LUCITA, nint1, work(kint1))
+              if(is_2e_int_active .gt. 1)
+     &        CALL WRITT(LUINT_LUCITA, nint2, work(kint2))
+              WRITE (LUINT_LUCITA) ('********',I=1,3), 'EODATA  '
+              update_ijkl_from_env = .false.
+            end if
+!           1e-integrals from MCSCF environment, 2e-integrals from file
+            if(ci_trial_vector)then
+              if(is_2e_int_active .gt. 1)then
+                CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
+                READ (LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
+     &                              einact_mc2lu
+                read(LUINT_LUCITA) 
+     &          ((ngsh_lucita_tmp(i,j),i=1,max_number_of_gas_spaces),
+     &                                 j=1,max_number_of_ptg_irreps)
+                CALL READT(LUINT_LUCITA, nint1, work(kint2))
+                CALL READT(LUINT_LUCITA, nint2, work(kint2))
+              end if
+            end if
+          else
+!           read 1e- and 2e-integrals from file
+!           -----------------------------------
+            CALL MOLLAB('LUCIIJKL',LUINT_LUCITA,LUPRI)
+            READ (LUINT_LUCITA) nint1, nint2, ecore, ecore_orig ,
+     &                          einact_mc2lu
+            read(LUINT_LUCITA) 
+     &      ((ngsh_lucita_tmp(i,j),i=1,max_number_of_gas_spaces),
+     &                             j=1,max_number_of_ptg_irreps)
+            CALL READT(LUINT_LUCITA, nint1, work(kint1))
+            if(is_2e_int_active .gt. 1)
+     &      CALL READT(LUINT_LUCITA, nint2, work(kint2))
           end if
-#endif
+          CALL GPCLOSE(LUINT_LUCITA, 'KEEP')
         ELSE
           CALL QUIT('LUCITA out-of-core not implemented yet, sorry!')
         END IF
-*
-* ===============
-* . DIRAC format
-* ===============
-*
-      else if (INTIMP.eq.6.and.NOINT.eq.0) then
-        call quit('*** error in intim: dirac integral interface
-     & missing ***')
-!       call rdint_dirac(KINT1,KINT2,DOUGRP,IPRNT)
-      END IF
-*
-*. Change one-electron integrals to inactive fock matrix
-      IF(NOINT.EQ.0) THEN
 
         call dcopy(nint1,work(kint1),1,work(kint1o),1)
 
-        IF(IUSE_PH.EQ.1) THEN
-           CALL FI(WORK(KINT1),ECORE_HEX,1)
-        ELSE
-           ECORE_HEX = 0.0D0
-        END IF
-      END IF
+        IF(IUSE_PH.EQ.1) CALL FI(WORK(KINT1),ECORE_HEX,1)
 
-      ECORE_ORIG = ECORE
-      ECORE      = ECORE + ECORE_HEX
+        ECORE_ORIG = ECORE
+        ECORE      = ECORE + ECORE_HEX
+
 #ifdef LUCI_DEBUG
-      if(luci_myproc.eq.luci_master)then
-        write(lupri,'(/2x,e15.8)') 'Updated core energy: ',ECORE
-      end if
+        if(luci_myproc.eq.luci_master)then
+          write(lupri,'(/2x,a,e15.8)') 'Updated core energy: ',ECORE
+        end if
 #endif
-*
+      else
+
+      end if ! citask_id switch
       END
 ***********************************************************************
-*
-*  Create usual input file for LUCITA by writing keywords and
-*  values to unit ..
-*
-      subroutine luciwrt(IPLOCAL,NSHPGS,MXPNGAS,MXPIRR,MXPICI,
-     &                   NGAS,NSYM,NCISPC,NSEQ,TYPELUC,MAXIT,
-     &                   MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
-     &                   IRREP,NROOT,MULTIP,MS2,NELGS,
-     &                   CALSIZ,IVFLEV,
-     &                   IUSE_PH,IDEMOL,IRSTRT,MXCIVL,
-     &                   IPRSTR,IPRCIX,IPRORB,IPRDIA,
-     &                   IPRXT,IPRRSP,IPRDEN,IPROCC,IPRNCIV)
-*
-      implicit real*8 (A-H,O-Z)
-*
-#include "priunit.h"
-#include "units.inc"
-#include "parluci.h"
-*
-      logical      MSCOMB
-      character*2  TYPELUC(MXSEQ)
-      character*3  CALSIZ
-      character*72 HESTR
-      CHARACTER    LUCIAIN_MPIN*7, NLUCIAIN_MPI*11
-      INTEGER      LUCIAIN_MPIL
-      dimension    NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
-*
-*-----------------------------------------------------------------*
-*  Print input for LUCITA input file           
-*-----------------------------------------------------------------*
-*
-!     IPLOCAL = 5
-      if (IPLOCAL.ge.5) then
-         write(lupri,*) '==========================================='
-         write(lupri,*) '  Input written to file LUCIAIN     '
-         write(lupri,*) '==========================================='
-*
-         write(lupri,'(A13)') '* &LUCIA &END'
-*
-         if (CALSIZ.eq.'NOR') then
-           write(lupri,'(A6)') 'MEGACI'
-         else
-           write(lupri,'(A6)') 'TERACI'
-         end if
-*
-         write(lupri,'(A6)') 'DALTON'
-*
-         write(lupri,'(A3)') 'D2H'
-*
-         write(lupri,'(A6)') 'NIRREP'
-         write(lupri,'(1X,I3)') NSYM
-*
-         write(lupri,'(A6)') 'IREFSM'
-         write(lupri,'(1X,I3)') IRREP
-*
-         write(lupri,'(A5)') 'GASSH'
-         write(lupri,'(1X,I3)') NGAS
-*
-         HESTR = ' '
-         write (HESTR,'(A,I1,A)') '(1X,',NSYM-1,'(I3,A1),I3)'
-         if (NSYM.eq.1) write (HESTR,'(A)') '(I4)'
-         do IGAS = 1,NGAS,1
-            write(lupri,HESTR)
-     &      (NSHPGS(IGAS,ISYM),',',ISYM=1,NSYM-1),NSHPGS(IGAS,NSYM)
-         end do
-*
-         write(lupri,'(A6)') 'NACTEL'
-         write(lupri,'(1X,I3)') NACTEL
-*
-         write(lupri,'(A6)') 'GASSPC'
-         write(lupri,'(1X,I3)') NCISPC
-         do ISPC=1,NCISPC,1
-            write(lupri,'(1X,2I3)')
-     &           (NELGS(IGAS,1,ISPC),NELGS(IGAS,2,ISPC),IGAS=1,NGAS)
-         end do
-*
-         write(lupri,'(A6)') 'SEQUEN'
-         do ICISPC=1,NCISPC,1
-            write(lupri,'(1X,I3)') NSEQ
-            do ISEQ=1,NSEQ,1
-               if (TYPELUC(ISEQ).eq.'CI') then
-                  write(lupri,'(1X,A3,I3)') 'CI,',MAXIT
-               else if (TYPELUC(ISEQ).eq.'PT') then
-                  write(lupri,'(1X,A6,I3)') 'PERTU,',MAXIT
-               else if (TYPELUC(ISEQ).eq.'VF') then
-                  write(lupri,'(1X,A8,I3)') 'VECFREE,',IVFLEV
-               end if
-            end do
-         end do
-*
-         write(lupri,'(A6)') 'RESTRT'
-         write(lupri,'(1X,I3)') IRSTRT
-*
-         write(lupri,'(A5)') 'MULTS'
-         write(lupri,'(1X,I3)') MULTIP
-*
-         write(lupri,'(A3)') 'MS2'
-         write(lupri,'(1X,I3)') MS2
-*
-         if (MSCOMB) then
-            write(lupri,'(A6)') 'MSCOMB'
-            write(lupri,'(F4.1)') SCOMB
-         end if
-*
-         write(lupri,'(A5)') 'ROOTS'
-         write(lupri,'(1X,I3)') NROOT
 
-         write(lupri,'(A5)') 'MXCIV'
-         write(lupri,'(1X,I3)') MXCIVL
-*
-         write(lupri,'(A5)') 'DENSI'
-         write(lupri,'(1X,I3)') IDEMOL
-*
-         write(lupri,'(A5)') 'NOCSF'
-*
-         write(lupri,'(A6)') 'IPRSTR'
-         write(lupri,'(1X,I3)') IPRSTR
-         write(lupri,'(A6)') 'IPRCIX'
-         write(lupri,'(1X,I3)') IPRCIX
-         write(lupri,'(A6)') 'IPRORB'
-         write(lupri,'(1X,I3)') IPRORB
-         write(lupri,'(A6)') 'IPRDIA'
-         write(lupri,'(1X,I3)') IPRDIA
-         write(lupri,'(A5)') 'IPRXT'
-         write(lupri,'(1X,I3)') IPRXT
-         write(lupri,'(A6)') 'IPRRSP'
-         write(lupri,'(1X,I3)') IPRRSP
-         write(lupri,'(A6)') 'IPRDEN'
-         write(lupri,'(1X,I3)') IPRDEN
-         write(lupri,'(A6)') 'IPROCC'
-         write(lupri,'(1X,I3)') IPROCC
-         write(lupri,'(A6)') 'PRNCIV'
-         write(lupri,'(1X,I3,A)') IPRNCIV
-*
-         write(lupri,'(A6)') 'RESDIM'
-         write(lupri,'(1X,I8)') IRESDIM
-*
-         write(lupri,'(A6)') 'LCSBLK'
-         write(lupri,'(I20)') LCSBLK
-*
-         if (IUSE_PH.eq.1) then
-            write(lupri,'(A6)') 'USE_PH'
-            write(lupri,'(A6)') 'ADVICE'
-         end if
-*
-         if (CALSIZ.ne.'NOR') then
-            write(lupri,'(A6)') 'CLSSEL'
-         end if
-*
-         write(lupri,'(A12)') 'END OF INPUT'
-*
-      end if
-*
-*--------------------------------------------------
-* Write to file LUCIAIN
-*--------------------------------------------------
-      LUCIAIN_MPIN = "LUCIAIN"
-      IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
-         WRITE (NLUCIAIN_MPI,'(A7,A1,I1)') LUCIAIN_MPIN,'.',LUCI_MYPROC
-         LUCIAIN_MPIL=9
-      ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
-         WRITE (NLUCIAIN_MPI,'(A7,A1,I2)') LUCIAIN_MPIN,'.',LUCI_MYPROC
-         LUCIAIN_MPIL=10
-      ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
-         WRITE (NLUCIAIN_MPI,'(A7,A1,I3)') LUCIAIN_MPIN,'.',LUCI_MYPROC
-         LUCIAIN_MPIL=11
-      ELSE
-         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
-      ENDIF
-
-      open(unit=LUINP,file=NLUCIAIN_MPI(1:LUCIAIN_MPIL),
-     &     status='UNKNOWN',form='FORMATTED')
-         Rewind(LUINP)
-         write(LUINP,'(A13)') '* &LUCIA &END'
-*
-         if (CALSIZ.eq.'NOR') then
-           write(LUINP,'(A6)') 'MEGACI'
-         else
-           write(LUINP,'(A6)') 'TERACI'
-         end if
-*
-         write(LUINP,'(A6)') 'DALTON'
-*
-         write(LUINP,'(A3)') 'D2H'
-*
-         write(LUINP,'(A6)') 'NIRREP'
-         write(LUINP,'(1X,I3)') NSYM
-*
-         write(LUINP,'(A6)') 'IREFSM'
-         write(LUINP,'(1X,I3)') IRREP
-*
-         write(LUINP,'(A5)') 'GASSH'
-         write(LUINP,'(1X,I3)') NGAS
-*
-         HESTR = ' '
-         write (HESTR,'(A,I1,A)') '(1X,',NSYM-1,'(I3,A1),I3)'
-         if (NSYM.eq.1) write (HESTR,'(A)') '(1X,I3)'
-         do IGAS = 1,NGAS,1
-            write(LUINP,HESTR)
-     &      (NSHPGS(IGAS,ISYM),',',ISYM=1,NSYM-1),NSHPGS(IGAS,NSYM)
-         end do
-*
-         write(LUINP,'(A6)') 'NACTEL'
-         write(LUINP,'(I4)') NACTEL
-*
-         write(LUINP,'(A6)') 'GASSPC'
-         write(LUINP,'(I4)') NCISPC
-         do ISPC=1,NCISPC,1
-            write(LUINP,'(1X,2I3)')
-     &           (NELGS(IGAS,1,ISPC),NELGS(IGAS,2,ISPC),IGAS=1,NGAS)
-         end do
-*
-         write(LUINP,'(A6)') 'SEQUEN'
-         do ICISPC=1,NCISPC,1
-            write(LUINP,'(1X,I3)') NSEQ
-            do ISEQ=1,NSEQ,1
-               if (TYPELUC(ISEQ).eq.'CI') then
-                  write(LUINP,'(1X,A3,I3)') 'CI,',MAXIT
-               else if (TYPELUC(ISEQ).eq.'PT') then
-                  write(LUINP,'(1X,A6,I3)') 'PERTU,',MAXIT
-               else if (TYPELUC(ISEQ).eq.'VF') then
-                  write(LUINP,'(1X,A8,I3)') 'VECFREE,',IVFLEV
-               end if
-            end do
-         end do
-*
-         if (IRSTRT.eq.1) then
-           write(LUINP,'(A6)') 'RESTRT'
-         end if
-*
-         write(LUINP,'(A5)') 'MULTS'
-         write(LUINP,'(1X,I3)') MULTIP
-*
-         write(LUINP,'(A3)') 'MS2'
-         write(LUINP,'(1X,I3)') MS2
-*
-         if (MSCOMB) then
-            write(LUINP,'(A6)') 'MSCOMB'
-            write(LUINP,'(F4.1)') SCOMB
-         end if
-*
-         write(LUINP,'(A5)') 'ROOTS'
-         write(LUINP,'(1X,I3)') NROOT
-
-         write(LUINP,'(A5)') 'MXCIV'
-         write(LUINP,'(1X,I3)') MXCIVL
-*
-         write(LUINP,'(A5)') 'DENSI'
-         write(LUINP,'(1X,I3)') IDEMOL
-*
-         write(LUINP,'(A5)') 'NOCSF'
-*
-         write(LUINP,'(A6)') 'IPRSTR'
-         write(LUINP,'(1X,I3)') IPRSTR
-         write(LUINP,'(A6)') 'IPRCIX'
-         write(LUINP,'(1X,I3)') IPRCIX
-         write(LUINP,'(A6)') 'IPRORB'
-         write(LUINP,'(1X,I3)') IPRORB
-         write(LUINP,'(A6)') 'IPRDIA'
-         write(LUINP,'(1X,I3)') IPRDIA
-         write(LUINP,'(A5)') 'IPRXT'
-         write(LUINP,'(1X,I3)') IPRXT
-         write(LUINP,'(A6)') 'IPRRSP'
-         write(LUINP,'(1X,I3)') IPRRSP
-         write(LUINP,'(A6)') 'IPRDEN'
-         write(LUINP,'(1X,I3)') IPRDEN
-         write(LUINP,'(A6)') 'IPROCC'
-         write(LUINP,'(1X,I3)') IPROCC
-         write(LUINP,'(A6)') 'PRNCIV'
-         write(LUINP,'(1X,I3)') IPRNCIV
-*
-         write(LUINP,'(A6)') 'RESDIM'
-         write(LUINP,'(1X,I8)') IRESDIM
-*
-         write(LUINP,'(A6)') 'LCSBLK'
-         write(LUINP,'(I20)') LCSBLK
-*
-         if (IUSE_PH.eq.1) then
-            write(LUINP,'(A6)') 'USE_PH'
-            write(LUINP,'(A6)') 'ADVICE'
-         end if
-*
-         if (CALSIZ.ne.'NOR') then
-            write(LUINP,'(A6)') 'CLSSEL'
-         end if
-*
-         write(LUINP,'(A12)') 'END OF INPUT'
-*
-      close (unit=LUINP)
-*
-      end
-***********************************************************************
-*  Conversion routine from 'dummy' DALTON input for LUCITA to
-*  true LUCITA input. This routine creates the required
-*  default settings and processes the input already given by
-*  DALTON.
-*************************************************************
-*
-      subroutine dalton2lucita(IRREP,NROOT,MULTIP,MXHOL1,MXELR3,INACOB,
-     &                         IDEMOL,IRSTRT,MXCIVL,IMAXCIITER,
-     &                         TYPE,WAFFCT,CALSIZ,PRILUC,NINOBS,
-     &                         NGAS,NCISPC,IPRT)
-*
-      use lucita_cfg
-      implicit real*8 (A-H,O-Z)
-#include "priunit.h"
-#include "mxpdim.inc"
-#include "lucinp.inc"
-#include "SysDef.inc"
-*
-#include "inforb.h"
-#include "parluci.h"
-*
-      logical MSCOMB
-*
-      character*2 TYPELUC(MXSEQ)
-      character*3 CALSIZ
-      character*6 TYPE, WAFFCT, PRILUC
-*
-      dimension NSHPGS(MXPNGAS,MXPIRR),NELGS(MXPNGAS,2,MXPICI)
-      dimension IHELP(4),NINOBS(MXPIRR)
-*
-*
-!     NSYM = NSMOB ! transfer number of symmetries from lucinp.inc
-!     print *, '*** note from stefan: is it not dangerous 
-!    &to re-set NSYM here in dalton2lucita??? NSYM is global in sirius!'
-!     print *,'NSMOB is',NSMOB
-!
-!     set IRESDIM independent from ci type
-      IRESDIM = 100 000
-*
-*------------------------------------------------------------------*
-*  Create default settings for LUCITA
-*------------------------------------------------------------------*
-*
-*------------------------------------------------------------------*
-*  Import required information from Dalton
-*------------------------------------------------------------------*
-      call set_nracte_wf(type,WAFFCT,NACRAS)
-!     print *, ' stefan: define NACRAS for proper FCI/SDCI!!!***'
-*
-*.................................................................
-*  1) Inactive space as GAS 1 (if stated in input)
-*.................................................................
-*
-*
-*     inactive shells and total number of inactive orbitals
-      nsum    =  0
-      iretish = -1
-      if(inacob .eq. 1)then
-        call icopy(nsym,nish_lucita,1,ninobs,1)
-        nsum = 0
-        do isym = 1, nsym
-          nsum = nsum + ninobs(isym)
-        end do
-      end if
-      if(nsum.gt.0) iretish = 0
-*
-*.................................................................
-*  2) TYPE dependencies (keywords depending on type of CI chosen)
-*.................................................................
-*         ................
-      if (TYPE.eq.'FCI   ') then
-*         ................
-*
-*  NGSSH, NGAS
-        if (INACOB.eq.0) then
-          NGAS = 1
-          do ISYM=1,NSYM,1
-            NSHPGS(1,ISYM) = NORB(ISYM)
-          end do
-        else if (INACOB.eq.1) then
-          NGAS = 2
-          do ISYM=1,NSYM,1
-            NSHPGS(1,ISYM) = NINOBS(ISYM)
-            NSHPGS(2,ISYM) = NORB(ISYM) - NINOBS(ISYM)
-          end do
-        end if
-*
-*  NACTEL
-        NTOCCH = 0
-        NTOCCR = 0
-        if (NACTEL.eq.-1) then
-          if (WAFFCT.eq.'HF_SCF') then
-            do ISYM=1,NSYM,1
-              NTOCCH = NTOCCH + 2*NOCC(ISYM)
-            end do
-            NACTEL = NTOCCH
-          else if (WAFFCT.eq.'RASSCF') then
-            do ISYM=1,NSYM,1
-              NTOCCR = NTOCCR + 2*NISH(ISYM)
-            end do
-            NOCCIM = NTOCCR + NACRAS
-            NACTEL = NOCCIM
-          end if
-          write(lupri,'(A42,I3/)')
-     &      ' Number of active electrons ........... ',NACTEL
-        end if
-        NTOOB = 0
-        do ISYM=1,NSYM,1
-          NTOOB = NTOOB + NORB(ISYM)
-        end do
-        MXTNEL = 2*NTOOB
-        if (NACTEL.gt.MXTNEL) then
-         write(lupri,*) 'Number of active electrons exceeds '
-         write(lupri,*) 'the orbital space.'
-         write(lupri,*) 'Consider Paulis famous principle and restart!'
-         Call Abend2( 'Quitting.' )
-        end if
-*
-*  GASSPC, NCISPC
-        NCISPC = 1
-        ICISPC = 1
-        if (INACOB.eq.0) then
-          NELGS(1,1,ICISPC) = NACTEL
-          NELGS(1,2,ICISPC) = NACTEL
-        else if (INACOB.eq.1) then
-          NELGS(1,1,ICISPC) = 2*NSUM
-          NELGS(1,2,ICISPC) = 2*NSUM
-          NELGS(2,1,ICISPC) = NACTEL
-          NELGS(2,2,ICISPC) = NACTEL
-        end if
-*
-*  MULTS (just a check for consistence)
-        call evenodd(IEONAC,NACTEL)
-        call evenodd(IEOMUL,MULTIP)
-        if (IEONAC.eq.2.and.IEOMUL.eq.2) then
-           write(lupri,*) 'Illegal spin multiplicity given.'
-           write(lupri,*) 'Number of active electrons: ',NACTEL
-           write(lupri,*) 'Read a book about fermions.'
-           Call Abend2( 'quitting' )
-        else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
-           write(lupri,*) 'Illegal spin multiplicity given.'
-           write(lupri,*) 'Number of active electrons: ',NACTEL
-           write(lupri,*) 'Read a book about fermions.'
-           Call Abend2( 'quitting' )
-        else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
-           if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
-              write(lupri,*) 'Illegal spin multiplicity given.'
-              write(lupri,*) 'Compare with number of active'
-              write(lupri,*) 'electrons.'
-              Call Abend2( 'quitting' )
-           end if
-        else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
-           if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
-              write(lupri,*) 'Illegal spin multiplicity given.'
-              write(lupri,*) 'Compare with number of active'
-              write(lupri,*) 'electrons.'
-              Call Abend2( 'quitting' )
-           end if
-        end if
-*
-*  MS2
-        MS2 = MULTIP - 1           ! MS(MAX) = S set by default
-*
-*  MSCOMB      Spin combinations (sign for)
-        MSCOMB = .false.
-        SCOMB = 0.
-        if (MULTIP.ge.2.and.MS2.eq.0) then
-          SCOMB = 1.0
-          MSCOMB = .true.
-        end if
-*
-*  SEQUEN
-*  We will support CI, PERTUrbation theory, and VECFREE calculations
-        NSEQ = 1
-        TYPELUC(NSEQ) = 'CI'
-        MAXIT = IMAXCIITER
-*
-*  DENSIty matrices
-*   IDEMOL will be written directly to output
-*
-*  LCSBLK
-        LCSBLK = 100000
-*
-*  USE_PH
-        IUSE_PH = 1
-*
-*
-*              ..............
-      else if (TYPE.eq.'SDCI  ') then
-*              ..............
-*
-*  NGSSH, NGAS
-        if (INACOB.eq.0) then
-          if (WAFFCT.eq.'HF_SCF') then
-            NGAS = 2
-            do ISYM=1,NSYM,1
-              NSHPGS(1,ISYM) = NOCC(ISYM)
-              NSHPGS(2,ISYM) = NSSH(ISYM)
-              if (NSHPGS(2,ISYM).gt.MXTSOB) then
-                call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
-     &                        MXTSOB,NGAS,IPRT)
-              else
-                do IGAS=3,NGAS,1
-                  NSHPGS(IGAS,ISYM) = 0
-                end do
-              end if
-            end do
-          else if (WAFFCT.eq.'RASSCF') then
-            if (IRETISH.eq.-1) then
-              NGAS = 2
-              do ISYM=1,NSYM,1
-                NSHPGS(1,ISYM) = NASH(ISYM)
-                NSHPGS(2,ISYM) = NSSH(ISYM)
-                if (NSHPGS(2,ISYM).gt.MXTSOB) then
-                  call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
-     &                          MXTSOB,NGAS,IPRT)
-                else
-                  do IGAS=3,NGAS,1
-                    NSHPGS(IGAS,ISYM) = 0
-                  end do
-                end if
-              end do
-            else if (IRETISH.eq.0) then
-              NGAS = 3
-              do ISYM=1,NSYM,1
-                NSHPGS(1,ISYM) = NISH(ISYM)
-                NSHPGS(2,ISYM) = NASH(ISYM)
-                NSHPGS(3,ISYM) = NSSH(ISYM)
-                if (NSHPGS(3,ISYM).gt.MXTSOB) then
-                  call gassplit(NSHPGS(1,ISYM),3,MXPNGAS,
-     &                          MXTSOB,NGAS,IPRT)
-                else
-                  do IGAS=4,NGAS,1
-                    NSHPGS(IGAS,ISYM) = 0
-                  end do
-                end if
-              end do
-            else
-              write(lupri,*) 'IRETISH has unallowed value.'
-              write(lupri,*) 'IRETISH = ',IRETISH
-              Call Abend2('Quitting.')
-            end if
-          end if
-*  Inactive orbitals specified:
-        else if (INACOB.eq.1) then
-          if (WAFFCT.eq.'HF_SCF') then
-            NGAS = 3
-            do ISYM=1,NSYM,1
-              NSHPGS(1,ISYM) = NINOBS(ISYM)
-              NSHPGS(2,ISYM) = NOCC(ISYM) - NINOBS(ISYM)
-              if (NSHPGS(2,ISYM).lt.0) then
-                write(lupri,*) 'Too many inactive orbitals specified'
-                write(lupri,*) 'for symmetry ',ISYM
-                write(lupri,*) 'Reconsider input.'
-                Call Abend2( 'Quitting.' )
-              end if
-              NSHPGS(3,ISYM) = NSSH(ISYM)
-              if (NSHPGS(3,ISYM).gt.MXTSOB) then
-                call gassplit(NSHPGS(1,ISYM),3,MXPNGAS,
-     &                        MXTSOB,NGAS,IPRT)
-              else
-                do IGAS=4,NGAS,1
-                  NSHPGS(IGAS,ISYM) = 0
-                end do
-              end if
-            end do
-          else if (WAFFCT.eq.'RASSCF') then
-            if (IRETISH.eq.-1) then
-              write(lupri,*) 'You have specified inactive orbitals.'
-              write(lupri,*) 'But there are no doubly occupied'
-              write(lupri,*) 'orbitals left!      '
-              write(lupri,*) 'Reconsider your input or files.'
-              Call Abend2('Quitting.')
-            end if
-            NGAS = 4
-            do ISYM=1,NSYM,1
-              NSHPGS(1,ISYM) = NINOBS(ISYM)
-              NSHPGS(2,ISYM) = NISH(ISYM) - NINOBS(ISYM)
-              if (NSHPGS(2,ISYM).lt.0) then
-                write(lupri,*) 'Too many inactive orbitals specified'
-                write(lupri,*) 'for symmetry ',ISYM
-                write(lupri,*) 'Reconsider input.'
-                Call Abend2( 'Quitting.' )
-              end if
-              NSHPGS(3,ISYM) = NASH(ISYM)
-              NSHPGS(4,ISYM) = NSSH(ISYM)
-              if (NSHPGS(4,ISYM).gt.MXTSOB) then
-                call gassplit(NSHPGS(1,ISYM),4,MXPNGAS,
-     &                        MXTSOB,NGAS,IPRT)
-              else
-                do IGAS=5,NGAS,1
-                  NSHPGS(IGAS,ISYM) = 0
-                end do
-              end if
-            end do
-          end if
-        end if
-*
-*  NACTEL
-        NTOCCH = 0
-        NTOCCR = 0
-        if (NACTEL.eq.-1) then
-          if (WAFFCT.eq.'HF_SCF') then
-            do ISYM=1,NSYM,1
-              NTOCCH = NTOCCH + 2*NOCC(ISYM)
-            end do
-            NACTEL = NTOCCH
-          else if (WAFFCT.eq.'RASSCF') then
-            do ISYM=1,NSYM,1
-              NTOCCR = NTOCCR + 2*NISH(ISYM)
-            end do
-            NOCCIM = NTOCCR + NACRAS
-            NACTEL = NOCCIM
-          end if
-          write(lupri,'(A42,I3/)')
-     &      ' Number of active electrons ........... ',NACTEL
-        end if
-        NTOOB = 0
-        do ISYM=1,NSYM,1
-          NTOOB = NTOOB + NORB(ISYM)
-        end do
-        MXTNEL = 2*NTOOB
-        if (NACTEL.gt.MXTNEL) then
-         write(lupri,*) 'Number of active electrons exceeds '
-         write(lupri,*) 'the orbital space.'
-         write(lupri,*) 'Consider Paulis famous principle and restart!'
-         Call Abend2( 'Quitting.' )
-        end if
-*
-*  GASSPC, NCISPC
-        NCISPC = 1                  ! might well be made more flexible
-        NOCCEL = 0
-        if (INACOB.eq.0) then
-          if (WAFFCT.eq.'HF_SCF') then
-            do ISYM=1,NSYM,1
-              NOCCEL = NOCCEL + 2*NOCC(ISYM)
-            end do
-            NIMN = max(0,NOCCEL-2)
-            NIMX = NOCCEL
-            NEMN = NOCCEL
-            NEMX = NOCCEL
-            do ICISPC=1,NCISPC,1
-              NELGS(1,1,ICISPC) = NIMN
-              NELGS(1,2,ICISPC) = NIMX
-              do IGS=2,NGAS-1,1
-                NELGS(IGS,1,ICISPC) = NEMN - 2
-                NELGS(IGS,2,ICISPC) = NEMX
-              end do
-              NELGS(NGAS,1,ICISPC) = NEMN
-              NELGS(NGAS,2,ICISPC) = NEMX
-            end do
-          else if (WAFFCT.eq.'RASSCF') then
-            if (IRETISH.eq.-1) then
-              NOCCEL = NACRAS
-            else
-              do ISYM=1,NSYM,1
-                NOCCEL = NOCCEL + 2*NISH(ISYM)
-              end do
-            end if
-*
-            NIMN = max(0,NOCCEL-2)
-            NIMX = NOCCEL
-*
-            NAMN = max(NACTEL-2,0)
-            NAMX = NACTEL
-*
-            NEMN = NACTEL
-            NEMX = NACTEL
-*
-            do ICISPC=1,NCISPC,1
-              NELGS(1,1,ICISPC) = NIMN
-              NELGS(1,2,ICISPC) = NIMX
-              if (IRETISH.eq.0) then
-                NELGS(2,1,ICISPC) = NAMN
-                NELGS(2,2,ICISPC) = NAMX
-                do IGS=3,NGAS-1,1
-                  NELGS(IGS,1,ICISPC) = NEMN - 2
-                  NELGS(IGS,2,ICISPC) = NEMX
-                end do
-              end if
-              NELGS(NGAS,1,ICISPC) = NEMN
-              NELGS(NGAS,2,ICISPC) = NEMN
-            end do
-          end if
-*  Inactive orbitals chosen:
-        else if (INACOB.eq.1) then
-          if (WAFFCT.eq.'HF_SCF') then
-            do ISYM=1,NSYM,1
-              NOCCEL = NOCCEL + 2*NOCC(ISYM)
-            end do
-            NFMN = 2*NSUM
-            NFMX = 2*NSUM
-            NIMN = max(NFMN,NOCCEL-2)
-            NIMX = NOCCEL
-            NEMN = NOCCEL
-            NEMX = NOCCEL
-            do ICISPC=1,NCISPC,1
-              NELGS(1,1,ICISPC) = NFMN
-              NELGS(1,2,ICISPC) = NFMX
-              NELGS(2,1,ICISPC) = NIMN
-              NELGS(2,2,ICISPC) = NIMX
-              do IGS=3,NGAS-1,1
-                NELGS(IGS,1,ICISPC) = NEMN - 2
-                NELGS(IGS,2,ICISPC) = NEMX
-              end do
-              NELGS(NGAS,1,ICISPC) = NEMN
-              NELGS(NGAS,2,ICISPC) = NEMX
-            end do
-          else if (WAFFCT.eq.'RASSCF') then
-            do ISYM=1,NSYM,1
-              NOCCEL = NOCCEL + 2*NISH(ISYM)
-            end do
-*
-            NFMN = 2*NSUM
-            NFMX = 2*NSUM
-*
-            NIMN = max(NFMN,NOCCEL-2)
-            NIMX = NOCCEL
-*
-            ININ1 = max(NACRAS-2,0)
-            NAMN = ININ1 + NIMN
-            ININ2 = NACRAS + 2
-            NASUM = 0
-            do ISYM=1,NSYM,1
-              NASUM = NASUM + NASH(ISYM)
-            end do
-            ININ3 = min(ININ2,NASUM)
-            NAMX = NOCCEL + ININ3
-*
-            NEMN = NACTEL
-            NEMX = NACTEL
-*
-            do ICISPC=1,NCISPC,1
-              NELGS(1,1,ICISPC) = NFMN
-              NELGS(1,2,ICISPC) = NFMX
-              NELGS(2,1,ICISPC) = NIMN
-              NELGS(2,2,ICISPC) = NIMX
-              NELGS(3,1,ICISPC) = NAMN
-              NELGS(3,2,ICISPC) = NAMX
-              do IGS=4,NGAS-1,1
-                NELGS(IGS,1,ICISPC) = NEMN - 2
-                NELGS(IGS,2,ICISPC) = NEMX
-              end do
-              NELGS(NGAS,1,ICISPC) = NEMN
-              NELGS(NGAS,2,ICISPC) = NEMX
-            end do
-          end if
-        end if
-*
-*  MULTS (just a check for consistence)
-        call evenodd(IEONAC,NACTEL)
-        call evenodd(IEOMUL,MULTIP)
-        if (IEONAC.eq.2.and.IEOMUL.eq.2) then
-           write(lupri,*) 'Illegal spin multiplicity given.'
-           write(lupri,*) 'Number of active electrons: ',NACTEL
-           write(lupri,*) 'Read a book about fermions.'
-           Call Abend2( 'quitting' )
-        else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
-           write(lupri,*) 'Illegal spin multiplicity given.'
-           write(lupri,*) 'Number of active electrons: ',NACTEL
-           write(lupri,*) 'Read a book about fermions.'
-           Call Abend2( 'quitting' )
-        else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
-           if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
-              write(lupri,*) 'Illegal spin multiplicity given.'
-              write(lupri,*) 'Compare with number of active'
-              write(lupri,*) 'electrons.'
-              Call Abend2( 'quitting' )
-           end if
-        else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
-           if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
-              write(lupri,*) 'Illegal spin multiplicity given.'
-              write(lupri,*) 'Compare with number of active'
-              write(lupri,*) 'electrons.'
-              Call Abend2( 'quitting' )
-           end if
-        end if
-*
-*  MS2
-        MS2 = MULTIP - 1           ! MS(MAX) = S set by default
-*
-*  MSCOMB      Spin combinations (sign for)
-        MSCOMB = .false.
-        SCOMB = 0.
-        if (MULTIP.ge.2.and.MS2.eq.0) then
-          SCOMB = 1.0
-          MSCOMB = .true.
-        end if
-*
-*  SEQUEN
-*  We will support CI, PERTUrbation theory, and VECFREE calculations
-        NSEQ = 1
-        TYPELUC(NSEQ) = 'CI'
-        MAXIT = IMAXCIITER
-*
-*  DENSIty matrices
-*   IDEMOL will be written directly to output
-*
-*  LCSBLK
-        LCSBLK = 100000
-*
-*  USE_PH
-        IUSE_PH = 1
-*
-*              ...............
-      else if (TYPE.eq.'GASCI ') then
-*              ...............
-*
-*  NGSSH, NGAS
-
-!       synchronize module lucita_orbital_spaces (initialized after input ci/mcscf reading) 
-!       and internal lucita common blocks
-
-!       icopy does not work because of MXPNGAS == 16... not 6...
-!       call icopy(ngas*nsym,ngsh_lucita,1,nshpgs,1)
-
-        do j = 1, ngas
-          do i = 1, nsym
-            nshpgs(j,i) = ngsh_lucita(j,i)
-          end do
-        end do
-
-!       print *, ' shells per gas space in dalton2lucita:ngas,nsym',
-!    &  ngas, nsym
-!       do j = 1, ngas
-!         print *, ' nshpgs per gas: ',
-!    &    (nshpgs(j,i),i=1,nsym)
-!       end do
-
-*  NACTEL
-        NTOOB = 0
-        do ISYM=1,NSYM,1
-          NTOOB = NTOOB + NORB(ISYM)
-        end do
-        MXTNEL = 2*NTOOB
-        if (NACTEL.gt.MXTNEL) then
-         write(lupri,*) 'Number of active electrons exceeds '
-         write(lupri,*) 'the orbital space.'
-         write(lupri,*) 'Consider Paulis famous principle and restart!'
-         Call Abend2( 'Quitting.' )
-        end if
-*
-*  GASSPC, NCISPC
-        do ICISPC=1,NCISPC,1
-          do IGAS=1,NGAS,1
-            do i = 1, 2
-              nelgs(igas,i,icispc) = ngso_lucita(igas,i)
-            end do
-          end do
-        end do
-        if (NACTEL.ne.NELGS(NGAS,2,NCISPC)) then
-          write(lupri,*) 'I am sure that fascinating discussions about'
-          write(lupri,*) 'the energy of such a wave function exist,'
-          write(lupri,*) 'but I am just a dumb program, so I will stop.'
-          write(lupri,*)
-          write(lupri,*) 'Number of active electrons does not match'
-          write(lupri,*) 'total number of electrons in GAS spaces.'
-          Call Abend2( 'Quitting.' )
-        end if
-*
-*  MULTS (just a check for consistence)
-        call evenodd(IEONAC,NACTEL)
-        call evenodd(IEOMUL,MULTIP)
-        if (IEONAC.eq.2.and.IEOMUL.eq.2) then
-           write(lupri,*) 'Illegal spin multiplicity given.'
-           write(lupri,*) 'Read a book about fermions.'
-           Call Abend2( 'quitting' )
-        else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
-           write(lupri,*) 'Illegal spin multiplicity given.'
-           write(lupri,*) 'Read a book about fermions.'
-           Call Abend2( 'quitting' )
-        else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
-           if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
-              write(lupri,*) 'Illegal spin multiplicity given.'
-              write(lupri,*) 'Compare with number of active'
-              write(lupri,*) 'electrons.'
-              Call Abend2( 'quitting' )
-           end if
-        else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
-           if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
-              write(lupri,*) 'Illegal spin multiplicity given.'
-              write(lupri,*) 'Compare with number of active'
-              write(lupri,*) 'electrons.'
-              Call Abend2( 'quitting' )
-           end if
-        end if
-*
-*  MS2
-        MS2 = MULTIP - 1           ! MS(MAX) = S set by default
-*
-*  MSCOMB      Spin combinations (sign for)
-        MSCOMB = .false.
-        SCOMB = 0.
-        if (MULTIP.ge.2.and.MS2.eq.0) then
-          SCOMB = 1.0
-          MSCOMB = .true.
-        end if
-*
-*  SEQUEN
-*  We will support CI, PERTUrbation theory, and VECFREE calculations
-        NSEQ = 1
-        TYPELUC(NSEQ) = 'CI'
-        MAXIT = IMAXCIITER
-*
-*  DENSIty matrices
-*   IDEMOL will be written directly to output
-*
-*  LCSBLK
-        LCSBLK = 100000
-*
-*  USE_PH
-        IUSE_PH = 1
-*
-*
-*              ................
-      else if (TYPE.eq.'RASCI ') then
-*              ................
-*
-*  NGSSH, NGAS
-*
-!       synchronize module lucita_orbital_spaces (initialized after input ci/mcscf reading) 
-!       and internal lucita common blocks
-
-        do isym = 1, nsym
-          nshpgs(1,isym) = nas1_lucita(isym)
-          nshpgs(2,isym) = nas2_lucita(isym)
-          nshpgs(3,isym) = nas3_lucita(isym)
-        end do
-
-        ngas         = 3
-        ngas_tmp_ras = 3
-        do isym = 1, nsym
-          if(nshpgs(ngas_tmp_ras,isym) .gt. mxtsob)then
-            call gassplit(nshpgs(1,isym),ngas_tmp_ras,mxpngas,
-     &                    mxtsob,ngas,iprt)
-          end if
-        end do
-*
-*  NACTEL
-        NTOOB = 0
-        do ISYM=1,NSYM,1
-          NTOOB = NTOOB + NORB(ISYM)
-        end do
-        MXTNEL = 2*NTOOB
-        if (NACTEL.gt.MXTNEL) then
-         write(lupri,*) 'Number of active electrons exceeds '
-         write(lupri,*) 'the orbital space.'
-         write(lupri,*) 'Consider Paulis famous principle and restart!'
-         Call Abend2( 'Quitting.' )
-        end if
-*
-*  GASSPC, NCISPC
-        ICISPC = 1
-        NCISPC = 1
-        MXELR1 = 0
-        MXELR2 = 0
-        do ISYM=1,NSYM,1
-          MXELR1 = MXELR1 + 2*NSHPGS(1,ISYM)
-          MXELR2 = MXELR2 + 2*NSHPGS(2,ISYM)
-        end do
-*
-        NFMN = 0
-        NFMX = 0
-        NIMX = MXELR1 + NFMX
-        NIMN = NIMX - MXHOL1
-        NEMN = NACTEL + NFMX
-        NEMX = NACTEL + NFMX
-        NAMX = NEMX
-        NAMN = NAMX - MXELR3
-*
-        do ICISPC=1,NCISPC,1
-          NELGS(1,1,ICISPC) = NIMN
-          NELGS(1,2,ICISPC) = NIMX
-          NELGS(2,1,ICISPC) = NAMN
-          NELGS(2,2,ICISPC) = NAMX
-          NELGS(3,1,ICISPC) = NEMN
-          NELGS(3,2,ICISPC) = NEMX
-        end do
-        NACTEL = NACTEL+NFMX
-        if (NACTEL.ne.NELGS(NGAS,2,NCISPC)) then
-          write(lupri,*) 'I am sure that fascinating discussions about'
-          write(lupri,*) 'the energy of such a wave function exist,'
-          write(lupri,*) 'but I am just a dumb program, so I will stop.'
-          write(lupri,*)
-          write(lupri,*) 'Number of active electrons does not match'
-          write(lupri,*) 'total number of electrons in GAS spaces.'
-          Call Abend2( 'Quitting.' )
-        end if
-*
-*  MULTS (just a check for consistence)
-        call evenodd(IEONAC,NACTEL)
-        call evenodd(IEOMUL,MULTIP)
-        if (IEONAC.eq.2.and.IEOMUL.eq.2) then
-           write(lupri,*) 'Illegal spin multiplicity given.'
-           write(lupri,*) 'Read a book about fermions.'
-           Call Abend2( 'quitting' )
-        else if (IEONAC.eq.1.and.IEOMUL.eq.1) then
-           write(lupri,*) 'Illegal spin multiplicity given.'
-           write(lupri,*) 'Read a book about fermions.'
-           Call Abend2( 'quitting' )
-        else if (IEONAC.eq.1.and.IEOMUL.eq.2) then
-           if (MULTIP.lt.2.or.MULTIP.gt.(NACTEL+1)) then
-              write(lupri,*) 'Illegal spin multiplicity given.'
-              write(lupri,*) 'Compare with number of active electrons.'
-              Call Abend2( 'quitting' )
-           end if
-        else if (IEONAC.eq.2.and.IEOMUL.eq.1) then
-           if (MULTIP.lt.1.or.MULTIP.gt.(NACTEL+1)) then
-              write(lupri,*) 'Illegal spin multiplicity given.'
-              write(lupri,*) 'Compare with number of active electrons.'
-              Call Abend2( 'quitting' )
-           end if
-        end if
-*
-*  MS2
-        MS2 = MULTIP - 1           ! MS(MAX) = S set by default
-*
-*  MSCOMB      Spin combinations (sign for)
-        MSCOMB = .false.
-        SCOMB = 0.
-        if (MULTIP.ge.2.and.MS2.eq.0) then
-          SCOMB = 1.0
-          MSCOMB = .true.
-        end if
-*
-*  SEQUEN
-*  We will support CI, PERTUrbation theory, and VECFREE calculations
-        NSEQ = 1
-        TYPELUC(NSEQ) = 'CI'
-        MAXIT = IMAXCIITER
-*
-*  DENSIty matrices
-*   IDEMOL will be written directly to output
-*
-*  LCSBLK
-        LCSBLK = 100000
-*
-*  USE_PH
-        IUSE_PH = 1
-*
-*
-      else
-        write(lupri,*) 'Unknown TYPE of CI statement.'
-        write(lupri,*) 'You have chosen  ',TYPE
-        write(lupri,*) 'I will refrain from doing this!'
-        call quit( ' *** error in dalton2lucita: unknown CI type. ***')
-      end if
-*
-*.................................................................
-*  6) Print flags
-*.................................................................
-*      resolve global print flags to LUCIA system
-*
-*  Possible print flags
-*   IPRSTR (done)
-*   IPRCIX (done)
-*   IPRORB (done)
-*   IPRDIA (done, but a little incomplete)
-*   IPRXT  (does not show up anywhere)
-*   IPRRSP (for response jobs; omitted)
-*   IPRDEN (done)
-*   IPROCC (done)
-*   IPRNCIV (done)
-*
-*
-      IPRDEN = 0
-      if (PRILUC.eq.'NON') then
-         IPRSTR = 0
-         IPRCIX = 0
-         IPRORB = 0
-         IPRDIA = 0
-         IPRXT  = 0
-         IPRRSP = 0
-         if (IDEMOL.ge.1) IPRDEN = 1
-         IPROCC = 0
-         IPRNCIV = 0
-      else if (PRILUC.eq.'LOW') then
-         IPRSTR = 0
-         IPRCIX = 0
-         IPRORB = 0
-         IPRDIA = 1
-         IPRXT  = 0
-         IPRRSP = 0
-         if (IDEMOL.ge.1) IPRDEN = 5
-         IPROCC = 0
-         IPRNCIV = 1
-      else if (PRILUC.eq.'MED') then
-         IPRSTR = 10
-         IPRCIX = 3
-         IPRORB = 1
-         IPRDIA = 2
-         IPRXT  = 0
-         IPRRSP = 0
-         if (IDEMOL.ge.1) IPRDEN = 5
-         IPROCC = 0
-         IPRNCIV = 1
-      else if (PRILUC.eq.'HIG') then
-         IPRSTR = 20
-         IPRCIX = 5
-         IPRORB = 2
-         IPRDIA = 10
-         IPRXT  = 0
-         IPRRSP = 0
-         if (IDEMOL.ge.1) IPRDEN = 5
-         IPROCC = 0
-         IPRNCIV = 2
-      else if (PRILUC.eq.'VHI') then
-         IPRSTR = 500
-         IPRCIX = 100
-         IPRORB = 10
-         IPRDIA = 200
-         IPRXT  = 0
-         IPRRSP = 0
-         if (IDEMOL.ge.1) IPRDEN = 500
-         IPROCC = 00
-         IPRNCIV = 5
-      end if
-*
-      if(IDEMOL.ge.1.and.IPRDEN.lt.1) IPRDEN = 1
-
-!     make sure we analyze the final solution vector(s)
-      if(lucita_cfg_analyze_cvec .and. IPRNCIV .le. 0) IPRNCIV = 1
-
-!     set timing printouts for parallel calculations
-      timing_par = .false.
-      if(lucita_cfg_timing_par) timing_par = .true.
-*
-*--------------------------------------------------------------*
-*  Create input file for LUCIA
-*--------------------------------------------------------------*
-      call luciwrt(IPRT,NSHPGS,MXPNGAS,MXPIRR,MXPICI,
-     &             NGAS,NSYM,NCISPC,NSEQ,TYPELUC,MAXIT,
-     &             MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
-     &             IRREP,NROOT,MULTIP,MS2,NELGS,
-     &             CALSIZ,IVFLEV,
-     &             IUSE_PH,IDEMOL,IRSTRT,MXCIVL,
-     &             IPRSTR,IPRCIX,IPRORB,IPRDIA,IPRXT,IPRRSP,
-     &             IPRDEN,IPROCC,IPRNCIV)
-*
-      return
-      end
-***********************************************************************
-* Calculate total number of integrals on record
-* of a symmetry reduced list (r/i, particle symmetry)
-*
-      subroutine numints_red(IGLSUM,NSMBLK,SYDI,NIRR_PN,IPRINT)
-*
-*------------------------------------
-*  Timo Fleig, October 2000
-*
-*   modified for scalar relativistic runs with LUCITA
-*   Nov. 2000
-*------------------------------------
-*
-      implicit real*8 (A-H,O-Z)
-*
-#include "mxpdim.inc"
-#include "multd2h.inc"
-#include "files.inc"
-#include "clunit.inc"
-#include "parluci.h"
-*
-      integer SYDI
-      dimension SYDI(NIRR_PN)
-      dimension IDEKS(MXPORB),IQISYM(MXPIRR)
-*
-      NTESTL = 00
-      NTEST = max(NTESTL,IPRINT)
-*
-      NTEST  = 00
-      if (NTEST.ge.1) then
-        write(LUWRT,*)
-        write(LUWRT,*) '=========================='
-        write(LUWRT,*) ' numints_red speaking:    '
-        write(LUWRT,*) '=========================='
-      end if
-*
-* Set up triangular array
-      II = 0
-      do I=1,MXPORB,1
-        IDEKS(I) = II
-        II = II + I
-      end do
-*
-* Initialize arrays
-      do IS=1,NIRR_PN,1
-        IQISYM(IS) = 0
-      end do
-*
-* Symmetry packing labels
-      NOCC = 0
-      do IS=1,NIRR_PN,1
-        if (SYDI(IS).eq.0) goto 10
-        NOCC = NOCC + 1
-        IQISYM(NOCC) = IS
-   10   continue
-      end do
-      if (NTEST.ge.5) then
-        write(LUWRT,*) 'Symmetry packing labels:'
-        call iwrtma(IQISYM,NOCC,1,NOCC,1)
-      end if
-*
-* Number of symmetry blocks and total number of integrals
-      INIT = 1
-      do ISP=1,NIRR_PN,1
-        if (NTEST.ge.10) write(LUWRT,*) 'ISP =',ISP
-        NSP=IQISYM(ISP)
-        if (NSP.eq.0.and.NTEST.ge.1) then
-          write(LUWRT,*) 'Number of symm for P is  ',NSP
-          write(LUWRT,*) 'Skipping two-el. int. read.'
-          goto 333
-        end if
-        if (NTEST.ge.10) write(LUWRT,*) 'NSP =',NSP
-        NOP=SYDI(NSP)
-        do ISQ=1,ISP,1
-          if (NTEST.ge.10) write(LUWRT,*) 'ISQ =',ISQ
-          NSQ = IQISYM(ISQ)
-          NOQ = SYDI(NSQ)
-          ISPQ = MULTD2H(NSP,NSQ)
-          if (NTEST.ge.10) write(LUWRT,*) 'NSQ =',NSQ
-          ntest = 00
-          do ISR=1,ISP,1
-            if (NTEST.ge.10) write(LUWRT,*) 'ISR =',ISR
-            NSR = IQISYM(ISR)
-            NOR = SYDI(NSR)
-            ISPQR = MULTD2H(ISPQ,NSR)
-            ISSM=ISR
-            if (ISR.EQ.ISP) ISSM=ISQ
-            if (NTEST.ge.10) write(LUWRT,*) 'NSR =',NSR
-            do 40 ISS=1,ISSM,1
-              if (NTEST.ge.10) write(LUWRT,*) 'ISS =',ISS
-              NSS=IQISYM(ISS)
-              NOS=SYDI(NSS)
-              if (NTEST.ge.10) then
-                write(LUWRT,'(A,4I6)') 
-     &          'NOP,NOQ,NOR,NOS',NOP,NOQ,NOR,NOS
-                write(LUWRT,'(A,2I3)') 'ISPQ,ISPQR',ISPQ,ISPQR
-              end if
-              if (NTEST.ge.10) write(LUWRT,*) 'NSS =',NSS
-              if(NSS.NE.ISPQR) goto 40
-              if(NOS*NOR*NOQ*NOP.eq.0) goto 40
-*
-*  NUMBER OF INTEGRALS IN THIS SYMMETRYBLOCK
-*
-              if (NSP.EQ.NSQ) then
-*
-*  TYPES <PP|PP> AND <PP|QQ>
-*
-                NPQ = IDEKS(NOP+1)
-                NRS = IDEKS(NOR+1)
-              else
-*
-*  TYPES <PQ|PQ> AND <PQ|RS>
-*
-                NPQ = NOP*NOQ
-                NRS = NOR*NOS
-              end if
-              if (NSP.EQ.NSR) then
-*
-*  TYPES <PP|PP> AND <PQ|PQ>
-*
-                NIGL = NPQ*(NPQ+1)/2
-              else
-*
-*  TYPES <PP|QQ> AND <PQ|RS>
-*
-                NIGL = NPQ*NRS
-              end if
-              INIT = INIT + 1
-              IGLSUM = IGLSUM + NIGL
-              if (NTEST.ge.1) then
-                 write(LUWRT,601) NSP,NSQ,NSR,NSS,NIGL
-              end if
-40          continue
-          end do
-        end do
-* Number of non-vanishing symmetry blocks
-        NSMBLK = INIT - 1
-333     continue
-      end do
-601   FORMAT(' NUMBER OF INTEGRALS IN SYMMETRYBLOCK '
-     &             ,4I2,' IS : ',I10)
-*
-      end
-***********************************************************************
       SUBROUTINE PUTINT(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM)
 *
 * Put integrals in permanent integral list
@@ -4107,10 +2240,9 @@ C
 
 !     Write one- and two-electron integrals to file FCIDUMP
  
-      if (lucita_cfg_fci_dump) then
-      call
-     &   write_fcidump_file(work(kfcac),NASHT,work(kh2ac),EMY)
-      end if
+      if (lucita_cfg_fci_dump)
+     &   call write_fcidump_file(work(kfcac),NASHT,work(kh2ac),EMY)
+
       LUINT_LUCITA = -1
       CALL GPOPEN(LUINT_LUCITA,'INTEGRALS_LUCITA','NEW',' ',
      &                'UNFORMATTED',IDUMMY,.FALSE.)
@@ -4128,13 +2260,21 @@ C
 ***********************************************************************
 
       SUBROUTINE LUCITA_GETINT_DALTON(EMY,X1INT,X2INT,
-     &                                tmp_dal_work,LWORK)
+     &                                tmp_dal_work,LWORK,
+     &                                int1_mcscf,
+     &                                int2_mcscf,
+     &                                mcscf_provides_integrals,iintden)
 C
 C     Dec 2010 : get EMY and get FCAC and H2AC matrices in Dalton
 C
+      use lucita_mc_response_cfg
 #include "implicit.h"
 
       DIMENSION X1INT(*), X2INT(*), tmp_dal_work(lwork)
+      real(8), intent(inout) :: int1_mcscf(*)
+      real(8), intent(inout) :: int2_mcscf(*)
+      integer, intent(in)    :: iintden
+      logical, intent(in)    :: mcscf_provides_integrals
  
 C Used from include files:
 C  priunit: LUPRI
@@ -4142,11 +2282,14 @@ C  inforb: NCMOT, nsym
 C  inftap: LUINTM, FNINTM
 C  mxpdim: MXPOBS
 C  orbinp: ntoobs
+C  cgas: ngas
 #include "priunit.h"
 #include "inforb.h"
 #include "inftap.h"
 #include "mxpdim.inc"
 #include "orbinp.inc"
+#include "cgas.inc"
+#include "oper.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
       INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
       COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
@@ -4156,79 +2299,449 @@ C  orbinp: ntoobs
       LOGICAL CLOSE_MOTWOINT, DISKH2
 !     scratch space
       integer, allocatable :: mult_ptg(:,:)
+      integer              :: is2e_active
 C
 C     -------------------------------------------------------
 C
 !     allocate scratch matrix
       allocate(mult_ptg(nsym,nsym))
 
+!     set multiplication table
+      mult_ptg = 0
+      call set_ptg_multiplication_table(mult_ptg,nsym)
+      
+      is2e_active = i12
+
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LWORK
 
-!     allocate scratch memory and read-in 1/2-electron integrals from dalton-sirius files
-      call memget('REAL',kfcac,nnashx   ,tmp_dal_work,kfree,lfree)
-      call memget('REAL',kh2ac,nnashx**2,tmp_dal_work,kfree,lfree)
+!     write(lupri,*) 'mcscf_provides_integrals = ',
+!    &                mcscf_provides_integrals
 
-      LUINT_LUCITA = -1
-      CALL GPOPEN(LUINT_LUCITA,'INTEGRALS_LUCITA','OLD',' ',
-     &                'UNFORMATTED',IDUMMY,.FALSE.)
-      CALL MOLLAB('LUCIINTS',LUINT_LUCITA,LUPRI)
-      READ (LUINT_LUCITA) EMY, NNASHX_x, NSYM_x
-      IF (NNASHX .NE. NNASHX_x) THEN
-         call quit('NNASHX in common .ne. NNASHX on INTEGRALS_LUCITA')
-      END IF
-      IF (NSYM .NE. NSYM_x) THEN
-         call quit('NSYM in common .ne. NSYM on INTEGRALS_LUCITA')
-      END IF
-      CALL READT(LUINT_LUCITA, NNASHX, tmp_dal_WORK(KFCAC))
-      CALL READT(LUINT_LUCITA, NNASHX*NNASHX, tmp_dal_WORK(KH2AC))
-      CALL GPCLOSE(LUINT_LUCITA, 'KEEP')
+      if(.not.mcscf_provides_integrals)then
+!       allocate scratch memory and read-in 1/2-electron integrals from dalton-sirius files
+        call memget('REAL',kfcac,nnashx   ,tmp_dal_work,kfree,lfree)
+        call memget('REAL',kh2ac,nnashx**2,tmp_dal_work,kfree,lfree)
+
+        LUINT_LUCITA = -1
+        CALL GPOPEN(LUINT_LUCITA,'INTEGRALS_LUCITA','OLD',' ',
+     &                  'UNFORMATTED',IDUMMY,.FALSE.)
+        CALL MOLLAB('LUCIINTS',LUINT_LUCITA,LUPRI)
+        READ (LUINT_LUCITA) EMY, NNASHX_x, NSYM_x
+        IF (NNASHX .NE. NNASHX_x) THEN
+           call quit('NNASHX in common .ne. NNASHX on INTEGRALS_LUCITA')
+        END IF
+        IF (NSYM .NE. NSYM_x) THEN
+           call quit('NSYM in common .ne. NSYM on INTEGRALS_LUCITA')
+        END IF
+        CALL READT(LUINT_LUCITA, NNASHX, tmp_dal_WORK(KFCAC))
+        CALL READT(LUINT_LUCITA, NNASHX*NNASHX, tmp_dal_WORK(KH2AC))
+        CALL GPCLOSE(LUINT_LUCITA, 'KEEP')
 
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: FCAC matrix'
-      WRITE(LUPRI,'(A,2i8)') 
-     &            'dimension: NASHT,NASHT * NASHT',NASHT,NASHT**2
-      CALL OUTPAK(tmp_dal_work(kfcac),NASHT,-1,LUPRI)
-      WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: H2AC matrix'
-      WRITE(LUPRI,'(A,2i8)') 
-     &            'dimension: NNASHX, NNASHX**2',NNASHX,NNASHX**2
-      CALL OUTPUT(tmp_dal_work(kh2ac),1,NNASHX,1,NNASHX,NNASHX,
-     &            NNASHX,-1,LUPRI)
+        WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: FCAC matrix'
+        WRITE(LUPRI,'(A,2i8)') 
+     &              'dimension: NASHT,NASHT * NASHT',NASHT,NASHT**2
+        CALL OUTPAK(tmp_dal_work(kfcac),NASHT,-1,LUPRI)
+        WRITE(LUPRI,'(//A)') 'LUCITA_GETINT_DALTON: H2AC matrix'
+        WRITE(LUPRI,'(A,2i8)') 
+     &              'dimension: NNASHX, NNASHX**2',NNASHX,NNASHX**2
+        CALL OUTPUT(tmp_dal_work(kh2ac),1,NNASHX,1,NNASHX,NNASHX,
+     &              NNASHX,-1,LUPRI)
 #endif
 !#undef LUCI_DEBUG
 
 !--------------------------------------------------------------
 !     transfer 1e- and 2e-integrals from Dalton to LUCITA order
 !--------------------------------------------------------------
+        call sirint2luint(tmp_dal_work(kfcac),tmp_dal_work(kh2ac),
+     &                    dummy,x1int,x2int,mult_ptg,adsxa,nasht,nnashx,
+     &                    ntoobs,nsym,mxpobs,nint1,nint2,ireost,ireots,
+     &                    ngas,is2e_active,iintden,-1)
+!       release scratch space
+        call memrel('lucita-dalton-1/2int-interface.done',tmp_dal_work,
+     &              kfrsav,kfrsav,kfree,lfree)
 
-!     set multiplication table
-      mult_ptg = 0
-      call set_ptg_multiplication_table(mult_ptg,nsym)
+      else ! mcscf_provides_integrals
+!       write(lupri,*) 'distribute ints from mc environment...'
+        call sirint2luint(int1_mcscf,int2_mcscf,
+     &                    dummy,x1int,x2int,mult_ptg,adsxa,nasht,nnashx,
+     &                    ntoobs,nsym,mxpobs,nint1,nint2,ireost,ireots,
+     &                    ngas,is2e_active,iintden,
+     &                    lucita_mc_response_prp_int)
+      end if
 
-      call sirint2luint(tmp_dal_work(kfcac),tmp_dal_work(kh2ac),
-     &                  x1int,x2int,mult_ptg,adsxa,nasht,nnashx,
-     &                  ntoobs,nsym,mxpobs,nint1,nint2)
-
-!     release scratch space
-      call memrel('lucita-dalton-1/2int-interface.done',tmp_dal_work,
-     &            kfrsav,kfrsav,kfree,lfree)
       deallocate(mult_ptg)
 
       END
 ***********************************************************************
 
-      subroutine sirint2luint(h1_in,h2_in,h1_out,h2_out,mult_ptg,
-     &                        return_sym_of_jorb,nr_actorb_tot,nnashx,
-     &                        nr_orb_per_sym,nr_sym,max_orb_per_sym,
-     &                        nr_1int,nr_2int)
+      subroutine lucita_srdft_h1_adapt(X1INT,x1int_scr,int1_mcscf)
+C
+#include "implicit.h"
+
+      real(8), intent(inout) :: x1int(*)
+      real(8), intent(inout) :: x1int_scr(*)
+      real(8), intent(inout) :: int1_mcscf(*)
+ 
+C Used from include files:
+C  priunit: LUPRI
+C  inforb: NCMOT, nsym
+C  inftap: LUINTM, FNINTM
+C  mxpdim: MXPOBS
+C  orbinp: ntoobs
+C  cgas: ngas
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "mxpdim.inc"
+#include "orbinp.inc"
+#include "cgas.inc"
+      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
+      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
+     &              ADSXA(MXPOBS,2*MXPOBS),
+     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
+
+!     scratch space
+      integer, allocatable :: mult_ptg(:,:)
+      integer              :: is2e_active
+      integer              :: iintden = 1
+C
+C     -------------------------------------------------------
+C
+!     allocate scratch matrix
+      allocate(mult_ptg(nsym,nsym))
+
+!     set multiplication table
+      mult_ptg = 0
+      call set_ptg_multiplication_table(mult_ptg,nsym)
+      
+      is2e_active = 1 ! no 2-electron integrals
+
+!-----------------------------------------------------------------
+!     transfer 1e- srDFT contributions from Dalton to LUCITA order
+!-----------------------------------------------------------------
+      call sirint2luint(x1int,dummy,              
+     &                  dummy,x1int_scr,dummy,mult_ptg,
+     &                  adsxa,nasht,nnashx,
+     &                  ntoobs,nsym,mxpobs,nint1,nxxxx,ireost,ireots,
+     &                  ngas,is2e_active,iintden,-1)
+
+!     scale 1-electron integrals with the sr-dft contributions
+      call daxpy(nint1,1.0d0,x1int_scr,1,int1_mcscf,1)
+
+      deallocate(mult_ptg)
+
+      END
+***********************************************************************
+
+      subroutine lucita_putdens_generic(rho1lu,rho2lu,rho1gen,rho2gen,
+     &                                  pv_full_scratch,
+     &                                  isrho2_active,iintden,rhotype,
+     &                                  state_id)
 !
-!     purpose: reorder integrals from dalton-sirius format to internal
-!              lucita format.
+!     Sep 2011 : driver for sorting the 1-/2-particle density matrices from 
+!                LUCITA to a generic format (here: SIRIUS)
 !
-!              1-electron integrals: on output symmetry-reduced list
-!              2-electron integrals: on output symmetry-reduced list
+#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
+      use mpi
+#include "implicit.h"
+#else
+#include "implicit.h"
+#include "mpif.h"
+#endif
+#endif
+#include "parluci.h"
+
+      real(8), intent(in)    :: rho1lu(*)
+      real(8), intent(in)    :: rho2lu(*)
+      real(8), intent(out)   :: rho1gen(*)
+      real(8), intent(out)   :: rho2gen(*)
+      real(8), intent(inout) :: pv_full_scratch(*)
+      integer, intent(in)    :: iintden
+      integer, intent(in)    :: isrho2_active
+      integer, intent(in)    :: rhotype
+      integer, intent(in)    :: state_id
+ 
+! Used from include files:
+!  priunit: LUPRI
+!  inforb: NCMOT, nsym
+!  inftap: LUINTM, FNINTM
+!  mxpdim: MXPOBS
+!  orbinp: ntoobs
+
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "mxpdim.inc"
+#include "orbinp.inc"
+#include "cgas.inc"
+      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
+      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
+     &              ADSXA(MXPOBS,2*MXPOBS),
+     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
+
+!     scratch space
+      integer, allocatable :: mult_ptg(:,:)
+      integer              :: noint_tmp
+      character (len=25)   :: file_name
+!
+!     -------------------------------------------------------
+!
+!     allocate scratch matrix
+      allocate(mult_ptg(nsym,nsym))
+
+!---------------------------------------------------------------------
+!     transfer 1e- and 2e-density matrices from LUCITA to SIRIUS order
+!---------------------------------------------------------------------
+
+!     set multiplication table
+      mult_ptg = 0
+      call set_ptg_multiplication_table(mult_ptg,nsym)
+
+      call dzero(rho1gen,nnashx**1)
+      if(isrho2_active .gt. 1) call dzero(rho2gen,nnashx**2)
+
+      call sirint2luint(rho1gen,rho2gen,pv_full_scratch,
+     &                  rho1lu,rho2lu,mult_ptg,adsxa,nasht,nnashx,
+     &                  ntoobs,nsym,mxpobs,nint1,nint2,ireost,
+     &                  ireots,ngas,isrho2_active,iintden,
+     &                  rhotype)
+
+      deallocate(mult_ptg)
+
+!     put 1e- and 2e-density matrices to file
+!     ---------------------------------------
+
+      write(file_name,'(a17,i3,a1,i4)') 
+     &      'DENSITIES_LUCITA-',state_id,'.',luci_myproc
+      do i = 18, 20
+        if(file_name(i:i).eq. ' ') file_name(i:i) = '0'
+      end do
+      do i = 22, 25
+        if(file_name(i:i).eq. ' ') file_name(i:i) = '0'
+      end do
+
+      LUINT_LUCITA = -1
+      CALL GPOPEN(LUINT_LUCITA,file_name,'UNKNOWN',' ',
+     &                'UNFORMATTED',IDUMMY,.FALSE.)
+      WRITE (LUINT_LUCITA) ('********',I=1,3), 'LUCIDENS'
+        CALL WRITT(LUINT_LUCITA, NNASHX, rho1gen)
+      if(isrho2_active .gt. 1) 
+     &CALL WRITT(LUINT_LUCITA, NNASHX*NNASHX, rho2gen)
+      WRITE (LUINT_LUCITA) ('********',I=1,3), 'EODATA  '
+      CALL GPCLOSE(LUINT_LUCITA, 'KEEP')
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      WRITE(LUPRI,'(//A)') 
+     & 'lucita_putdens_generic: 1-particle density matrix'
+      WRITE(LUPRI,'(A,2i8)') 
+     &            'dimension: NASHT,NASHT * NASHT',NASHT,NASHT**2
+      CALL OUTPAK(rho1gen,NASHT,-1,LUPRI)
+      WRITE(LUPRI,'(//A)') 
+     & 'lucita_putdens_generic: 2-particle density matrix'
+      WRITE(LUPRI,'(A,2i8)') 
+     &            'dimension: NNASHX, NNASHX**2',NNASHX,NNASHX**2
+      CALL OUTPUT(rho2gen,1,NNASHX,1,NNASHX,NNASHX,
+     &            NNASHX,-1,LUPRI)
+#endif
+!#undef LUCI_DEBUG
+
+      END
+***********************************************************************
+
+      subroutine lucita_spinputdens_1p(rho1slu,rho2lu,rho1gen,rho2gen,
+     &                                 pv_full_scratch,
+     &                                 isrho2_active,iintden,rhotype,
+     &                                 state_id,iab)
+!
+!     Aug 2012 : driver for sorting the 1-particle spin-density matrices from 
+!                LUCITA to a generic format (here: SIRIUS)
+!
+#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
+      use mpi
+#include "implicit.h"
+#else
+#include "implicit.h"
+#include "mpif.h"
+#endif
+#endif
+#include "parluci.h"
+
+      real(8), intent(in)    :: rho1slu(*)
+      real(8), intent(in)    :: rho2lu(*)
+      real(8), intent(out)   :: rho1gen(*)
+      real(8), intent(out)   :: rho2gen(*)
+      real(8), intent(inout) :: pv_full_scratch(*)
+      integer, intent(in)    :: iintden
+      integer, intent(in)    :: isrho2_active
+      integer, intent(in)    :: rhotype
+      integer, intent(in)    :: state_id
+      integer, intent(in)    :: iab
+ 
+! Used from include files:
+!  priunit: LUPRI
+!  inforb: NCMOT, nsym
+!  inftap: LUINTM, FNINTM
+!  mxpdim: MXPOBS
+!  orbinp: ntoobs
+
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "mxpdim.inc"
+#include "orbinp.inc"
+#include "cgas.inc"
+      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
+      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
+     &              ADSXA(MXPOBS,2*MXPOBS),
+     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
+
+!     scratch space
+      integer, allocatable :: mult_ptg(:,:)
+      integer              :: noint_tmp
+      character (len=25)   :: file_name
+!
+!     -------------------------------------------------------
+!
+!     allocate scratch matrix
+      allocate(mult_ptg(nsym,nsym))
+
+!---------------------------------------------------------------------
+!     transfer 1e-spin density matrix from LUCITA to Sirius order
+!---------------------------------------------------------------------
+
+!     set multiplication table
+      mult_ptg = 0
+      call set_ptg_multiplication_table(mult_ptg,nsym)
+
+      call dzero(rho1gen,nnashx**1)
+      if(isrho2_active .gt. 1) call dzero(rho2gen,nnashx**2)
+
+      call sirint2luint(rho1gen,rho2gen,pv_full_scratch,
+     &                  rho1slu,rho2lu,mult_ptg,adsxa,nasht,nnashx,
+     &                  ntoobs,nsym,mxpobs,nint1,nint2,ireost,
+     &                  ireots,ngas,isrho2_active,iintden,
+     &                  rhotype)
+
+      deallocate(mult_ptg)
+
+!     put 1e- and 2e-density matrices to file
+!     ---------------------------------------
+
+      select case(iab)
+        case(1) ! alpha spin
+          write(file_name,'(a17,i3,a1,i4)') 
+     &       'SPINDENSITY-A-1p-',state_id,'.',luci_myproc
+        case(2) ! beta  spin
+          write(file_name,'(a17,i3,a1,i4)') 
+     &        'SPINDENSITY-B-1p-',state_id,'.',luci_myproc
+        case default ! ??? ask einstein or dirac
+          stop ' wrong program/hamiltonian - spin is a good quantum num'
+      end select
+
+      do i = 18, 20
+        if(file_name(i:i).eq. ' ') file_name(i:i) = '0'
+      end do
+      do i = 22, 25
+        if(file_name(i:i).eq. ' ') file_name(i:i) = '0'
+      end do
+
+      LUINT_LUCITA = -1
+      CALL GPOPEN(LUINT_LUCITA,file_name,'UNKNOWN',' ',
+     &                'UNFORMATTED',IDUMMY,.FALSE.)
+      WRITE (LUINT_LUCITA) ('********',I=1,3), 'LUCIDENS'
+        CALL WRITT(LUINT_LUCITA, NNASHX, rho1gen)
+      WRITE (LUINT_LUCITA) ('********',I=1,3), 'EODATA  '
+      CALL GPCLOSE(LUINT_LUCITA, 'KEEP')
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      WRITE(LUPRI,'(//A,i2)') 
+     & 'lucita_putdens_generic: 1-particle spin density matrix :',iab
+      WRITE(LUPRI,'(A,2i8)') 
+     &            'dimension: NASHT, triangular packed',NASHT
+      CALL OUTPAK(rho1gen,NASHT,-1,LUPRI)
+#undef LUCI_DEBUG
+#endif
+
+      END
+***********************************************************************
+
+      subroutine lucita_putdens_ensemble(rho1_ensemble)
+!
+#include "implicit.h"
+
+      real(8), intent(in)    :: rho1_ensemble(*)
+ 
+! Used from include files:
+!  priunit: LUPRI
+!  inforb: NCMOT, nsym
+!  inftap: LUINTM, FNINTM
+!  mxpdim: MXPOBS
+!  orbinp: ntoobs
+
+#include "priunit.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "mxpdim.inc"
+#include "orbinp.inc"
+#include "cgas.inc"
+      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+      INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
+      COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
+     &              ADSXA(MXPOBS,2*MXPOBS),
+     &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
+
+!     scratch space
+      character (len=25)   :: file_name
+!
+!     -------------------------------------------------------
+!
+!     put 1e-density matrix to file
+!     -----------------------------
+
+      LUINT_LUCITA = 99
+      write(file_name,'(a16)') 
+     &      'ENSEMBLE-DENSITY'
+
+         open(file=file_name(1:16),unit=luint_lucita,status='replace',
+     &        form='unformatted',action='write',position='rewind')
+
+      WRITE (LUINT_LUCITA) ('********',I=1,3), 'LUCIDENS'
+        CALL WRITT(LUINT_LUCITA, NNASHX, rho1_ensemble)
+      WRITE (LUINT_LUCITA) ('********',I=1,3), 'EODATA  '
+
+      close(luint_lucita,status='keep')
+
+      END
+***********************************************************************
+
+      subroutine sirint2luint(h1_in,h2_in,pv_full_scratch,h1_out,h2_out,
+     &                        mult_ptg,return_sym_of_jorb,nr_actorb_tot,
+     &                        nnashx,nr_orb_per_sym,nr_sym,
+     &                        max_orb_per_sym,nr_1int,nr_2int,
+     &                        ireost,ireots,nr_gas,is2e_active,iintden,
+     &                        rhotype)
+!
+!     purpose: iintden == 1: reorder integrals from dalton-sirius format to internal
+!                            lucita format.
+!                            1-electron integrals: on output symmetry-reduced list
+!                            2-electron integrals: on output symmetry-reduced list
+!              iintden == 2: reorder particle-density matrices from to internal lucita format to 
+!                            dalton-sirius format.
+!                            rhotype controls the format:
+!                            ==> 1: rho2(ij,kl) density matrix
+!                            ==> 2: rho2(i,j,k,l) used for response
+!                            ==> 3: rho2(ij,kl) symmetrized transition density matrix
 !
 !     -----------------------------------------------------------------
       implicit none
@@ -4242,29 +2755,81 @@ C
       integer :: return_sym_of_jorb(max_orb_per_sym,max_orb_per_sym*2)
       integer :: nr_orb_per_sym(max_orb_per_sym)
       integer :: mult_ptg(nr_sym,nr_sym)
-      real(8) :: h1_in(nnashx)
-      real(8) :: h2_in(nnashx,nnashx)
+      integer :: iintden
+      integer :: nr_gas
+      integer :: is2e_active
+      integer :: ireost(*)
+      integer :: ireots(*)
+      integer :: rhotype
+!     real(8) :: h1_in(nnashx)
+!     real(8) :: h2_in(nnashx,nnashx)
+      real(8) :: h1_in(*)
+      real(8) :: h2_in(*)
+      real(8) :: pv_full_scratch(nr_actorb_tot,nr_actorb_tot,
+     &                           nr_actorb_tot,nr_actorb_tot)
       real(8) :: h1_out(*)
       real(8) :: h2_out(*)
+      integer :: mytest
 !     ------------------------------------------------------------------
 
-!     1-electron integrals
-!     --------------------
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      if(iintden .eq. 2)then
+        write(lupri,*) '  1-el density matrix'
+        call wrtmatmn(h1_out,1,nr_actorb_tot**2,1,
+     &                nr_actorb_tot**2,lupri)
+        if(is2e_active .gt. 1)then
+         write(lupri,*) '  2-el density matrix'
+         call wrtmatmn(h2_out,1,nr_actorb_tot**2*(nr_actorb_tot**2+1)/2,
+     &                 1,nr_actorb_tot**2*(nr_actorb_tot**2+1)/2,lupri)
+        end if
+      end if
+#endif
+
+!     1-electron integrals/density matrix
+!     -----------------------------------
       call sir1int2lu1int(h1_in,h1_out,return_sym_of_jorb,nnashx,
      &                    nr_orb_per_sym,nr_sym,max_orb_per_sym,
-     &                    nr_1int)
+     &                    nr_1int,nr_actorb_tot,ireost,iintden,rhotype)
       
-!     2-electron integrals
-!     --------------------
-      call sir2int2lu2int(h2_in,h2_out,mult_ptg,nr_actorb_tot,
-     &                    nnashx,nr_orb_per_sym,nr_sym,
-     &                    max_orb_per_sym,nr_2int)
+!     2-electron integrals/density matrix
+!     -----------------------------------
+      if(is2e_active .gt. 1)then
+        if(iintden .eq. 1)then
+          call sir2int2lu2int(h2_in,h2_out,mult_ptg,nr_actorb_tot,
+     &                        nnashx,nr_orb_per_sym,nr_sym,
+     &                        max_orb_per_sym,nr_2int)
+        else
+          call lu2dens2sir2dens(h2_in,h2_out,pv_full_scratch,
+     &                          nr_actorb_tot,ireost,ireots,
+     &                          nr_sym,nr_gas,rhotype)
+        end if
+      end if
 
 #ifdef LUCI_DEBUG
-      write(lupri,*) '  symmetry reduced 1-el'
-      call wrtmatmn(h1_out,1,nr_1int,1,nr_1int,lupri)
-      write(lupri,*) '  symmetry reduced 2-el'
-      call wrtmatmn(h2_out,1,nr_2int,1,nr_2int,lupri)
+      if(iintden .eq. 1)then
+        write(lupri,*) '  symmetry reduced 1-el'
+        call wrtmatmn(h1_out,1,nr_1int,1,nr_1int,lupri)
+        if(is2e_active .gt. 1)then
+          write(lupri,*) '  symmetry reduced 2-el'
+          call wrtmatmn(h2_out,1,nr_2int,1,nr_2int,lupri)
+        end if
+      end if
+#undef LUCI_DEBUG
+#endif
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      mytest = 0
+      if(iintden > 1)then
+        write(lupri,*) '  1-el density matrix'
+        call outpak(h1_in,nr_actorb_tot,-1,lupri)
+        if(is2e_active .gt. 1 .and. mytest == 1)then
+          write(lupri,*) '  2-el density matrix'
+          call output(h2_in,1,nnashx,1,nnashx,nnashx,
+     &                nnashx,-1,lupri)
+        end if
+      end if
+#undef LUCI_DEBUG
 #endif
 
       end
@@ -4272,7 +2837,8 @@ C
 ***********************************************************************
       subroutine sir1int2lu1int(h1_in,h1_out,return_sym_of_jorb,nnashx,
      &                          nr_orb_per_sym,nr_sym,max_orb_per_sym,
-     &                          nr_1int)
+     &                          nr_1int,nr_actorb_tot,ireost,iintden,
+     &                          rhotype)
 !
 !     purpose: reorder integrals from dalton-sirius format to internal
 !              lucita format.
@@ -4293,6 +2859,10 @@ C
       integer :: nr_1int
       integer :: return_sym_of_jorb(max_orb_per_sym,max_orb_per_sym*2)
       integer :: nr_orb_per_sym(max_orb_per_sym)
+      integer :: nr_actorb_tot
+      integer :: ireost(*)
+      integer :: iintden
+      integer :: rhotype
       real(8) :: h1_in(*)
       real(8) :: h1_out(*)
 !     -----------------------------------------------------------------
@@ -4300,19 +2870,27 @@ C
       integer :: offset_ij, offset_internal, isorb, jsorb
       integer :: nr_act_isym, nr_act_jsym, orb_tmp
       integer :: i_index, j_index
+      integer :: loop_counter_i
       character (len=90) :: error_message
 !     -----------------------------------------------------------------
 
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      print *,' h1_in:'
-      do isym = 1, nnashx
-        print *,' h1_in(',isym,') = ',h1_in(isym)
-      end do
+      if(rhotype > 0)then
+        write(lupri,*) ' distributing 1p-dens mat elements from h1_out:'
+        call wrtmatmn(h1_out,nr_actorb_tot,nr_actorb_tot,
+     &                       nr_actorb_tot,nr_actorb_tot,lupri)
+      else
+        write(lupri,*) ' distributing 1e-ints from h1_in:'
+        do isym = 1, nnashx
+          write(lupri,*) ' h1_in(',isym,') = ',h1_in(isym)
+        end do
+      end if
+!#undef LUCI_DEBUG
 #endif
 
-!     1-electron integrals
-!     --------------------
+!     1-electron integrals/density matrix elements
+!     --------------------------------------------
       orb_tmp         = 0
       offset_ij       = 0
       offset_internal = 1
@@ -4331,24 +2909,55 @@ C
 
         nr_act_isym = nr_orb_per_sym(isym)
         jsym        = return_sym_of_jorb(isym,ijsym)
-!       print *,' isym, jsym',isym, jsym
 
-        if(jsym .ge. isym)then
+#ifdef LUCI_DEBUG
+        write(lupri,*) ' isym, jsym',isym, jsym
+        write(lupri,*) ' nr_act_isym', nr_act_isym
+#endif
+
+        if(jsym >= isym)then
 
           nr_act_jsym = nr_orb_per_sym(jsym)
 
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' nr_act_jsym', nr_act_jsym
+#endif
+
           do jsorb = 1, nr_act_jsym
-            do isorb = 1, jsorb
+            loop_counter_i = jsorb
+            if(rhotype > 0) loop_counter_i = nr_act_isym
+            do isorb = 1, loop_counter_i
 !             calculate offset on dalton 1e-array (lower triangular matrix)
-              j_index   = ((orb_tmp+jsorb)*(orb_tmp+jsorb-1)/2)
               i_index   =  (orb_tmp+isorb)
+              j_index   = ((orb_tmp+jsorb)*(orb_tmp+jsorb-1)/2)
+!             no triangular packing if rhotype > 1              
+              if(rhotype > 0) j_index   = ((orb_tmp+jsorb-1))
+!    &                                  * ( orb_tmp+jsorb  ))
+     &                                  * nr_actorb_tot
               offset_ij = i_index + j_index
   
-              h1_out(offset_internal) = h1_in(offset_ij)
+              if(iintden .eq. 1)then ! 1e integral
+                h1_out(offset_internal) = h1_in(offset_ij)
+              else ! 1p density matrix element
+!
+!               LUCITA: type-symmetry ordering <==> SIRIUS (or other programs) symmetry-type
+!                       array ireost takes care ot that...
+!
+                offset_internal  = 
+     &          (ireost(isorb+orb_tmp)-1) * nr_actorb_tot + 
+     &           ireost(jsorb+orb_tmp) 
+                if(rhotype > 1) offset_internal = 
+     &          (ireost(jsorb+orb_tmp)-1) * nr_actorb_tot + 
+     &           ireost(isorb+orb_tmp) 
+     
+                h1_in(offset_ij) = h1_out(offset_internal)
+              end if
   
-!             print *,'offset_ij, offset_internal,jsorb, h1',
-!    &                 offset_ij, offset_internal,jsorb, 
-!    &                 h1_out(offset_internal)
+#ifdef LUCI_DEBUG
+       write(lupri,*)'offset_ij, offset_int,jsorb,isorb,h1,switch',
+     & offset_ij, offset_internal,jsorb,isorb,
+     & h1_out(offset_internal), h1_in(offset_ij), iintden
+#endif
 
 !             count the number of non-vanishing 1-electron integrals
               offset_internal = offset_internal + 1
@@ -4363,11 +2972,40 @@ C
 !     final # of 1-el ints
       nr_1int = offset_internal - 1
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      write(lupri,*) '  final 1e- list: # of ints =', nr_1int
-      call wrtmatmn(h1_out,1,nr_1int,1,nr_1int,lupri)
+      if(rhotype <= 0)then
+        write(lupri,*) '  final 1e- list: # of ints =', nr_1int
+        call wrtmatmn(h1_out,1,nr_1int,1,nr_1int,lupri)
+      end if
+#undef LUCI_DEBUG
 #endif
-!#undef LUCI_DEBUG
+
+!     symmetrize 1p-dens matrix
+      if(rhotype >  0)then
+
+!       write(lupri,*) '  temp 1p-tdm: '
+!       call wrtmatmn(h1_in,nr_actorb_tot,nr_actorb_tot,
+!    &                nr_actorb_tot,nr_actorb_tot,lupri)
+
+        call trpad(h1_in,1.0d0,nr_actorb_tot)
+
+!       write(lupri,*) '  temp 1p-tdm: part 2'
+!       call wrtmatmn(h1_in,nr_actorb_tot,nr_actorb_tot,
+!    &                nr_actorb_tot,nr_actorb_tot,lupri)
+
+        if(rhotype == 1) call dscal(nr_actorb_tot**2,0.5d0,h1_in,1)
+
+!       write(lupri,*) '  temp 1p-tdm: part 3'
+!       call wrtmatmn(h1_in,nr_actorb_tot,nr_actorb_tot,
+!    &                nr_actorb_tot,nr_actorb_tot,lupri)
+
+!       pack symmetrized 1p-dens matrix (h1_in) as triangular matrix h1_out
+        call dsitsp(nr_actorb_tot,h1_in,h1_out)
+!       save triangular matrix in h1_in
+        call dzero(h1_in,nr_actorb_tot**2)
+        call dcopy((nr_actorb_tot*(nr_actorb_tot+1))/2,h1_out,1,h1_in,1)
+      end if
 
       end
 ***********************************************************************
@@ -4421,8 +3059,8 @@ C
       end do
 #endif
 
-!     2-electron integrals
-!     --------------------
+!     2-electron integrals/2-particle density matrix elements
+!     -------------------------------------------------------
       offset_internal = 1
       ioff            = 1
 !     4-index loop
@@ -4514,9 +3152,13 @@ C
 
                       do j = j_first, j_last
 
+!                       indices on SIRIUS array
                         ij                      = (i*(i-1))/2 + j
                         kl                      = (k*(k-1))/2 + l
+
+!                       pick element
                         h2_out(offset_internal) = h2_in(ij,kl)
+
 #ifdef LUCI_DEBUG
                         print ('(/2x,a)'),
      &        '-------------------------------------------------------'
@@ -4547,9 +3189,112 @@ C
 !     final # of 2-el ints
       nr_2int = offset_internal - 1
 
+!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       write(lupri,*) '  final 2e- list: # of ints =', nr_2int
       call wrtmatmn(h2_out,1,nr_2int,1,nr_2int,lupri)
+#undef LUCI_DEBUG
+#endif
+
+      end
+***********************************************************************
+
+      subroutine lu2dens2sir2dens(pv_sirius,pv_lu,pv_full_scratch,nasht,
+     &                            ireost,ireots,nr_sym,nr_gas,rhotype)
+!
+!     purpose: reorder 2e-RDM from dalton-sirius format to internal
+!              lucita format.
+!
+!              2e-RDM: on output symmetry-reduced list
+!
+!     -----------------------------------------------------------------
+      implicit none
+#include "priunit.h"
+      integer, intent(in)    :: nasht
+      integer, intent(in)    :: nr_sym
+      integer, intent(in)    :: nr_gas
+      integer, intent(in)    :: rhotype
+      integer, intent(in)    :: ireost(*)
+      integer, intent(in)    :: ireots(*)
+      real(8), intent(out)   :: pv_sirius((nasht*(nasht+1))/2,
+     &                                  (nasht*(nasht+1))/2)
+      real(8), intent(in)    :: pv_lu(*)
+      real(8), intent(inout) :: pv_full_scratch(nasht,nasht,nasht,nasht)
+!     -----------------------------------------------------------------
+      integer                :: nnashx
+      integer                :: n2ashx
+      integer                :: kl_ST_max, kl_ST_min, kl_ST_index
+      integer                :: l, k, k_ST, l_ST
+      integer                :: i, j, ijkl,klij, ij,kl
+      real(8), allocatable   :: temp_mat(:)
+      logical                :: do_reorder
+      real(8)                :: value
+!     -----------------------------------------------------------------
+
+      nnashx = (nasht*(nasht+1))/2
+      n2ashx = nasht**2
+
+!     expand the lower-triangle 2-particle density matrix (lu format) to the full one
+      call dsptsi(n2ashx,pv_lu,pv_full_scratch)
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      write(lupri,*) ' final rho2 (full)'
+      call wrtmatmn(pv_full_scratch,n2ashx,n2ashx,n2ashx,n2ashx,lupri)
+#endif
+
+      if(rhotype > 1)then
+      call symmetrize_transition_density_matrix(pv_full_scratch,nasht,1)
+      end if
+
+#ifdef LUCI_DEBUG
+      write(lupri,*) ' final rho2 (full) - symm attempt'
+      call wrtmatmn(pv_full_scratch,n2ashx,n2ashx,n2ashx,n2ashx,lupri)
+      do i = 1, nasht
+        do j = 1, nasht
+          do k = 1, nasht
+            do l = 1, nasht
+              write(lupri,'(a,i2,a1,i2,a1,i2,a1,i2,a,f16.10)') 
+     &                       ' pv(',i,',',j,',',k,',',l,') = ',
+     &                         pv_full_scratch(i,j,k,l)
+            end do
+          end do
+        end do
+      end do
+#endif
+
+      do_reorder = (nr_gas .gt. 1 .and. nr_sym .gt. 1)
+      if (do_reorder) allocate(temp_mat(n2ashx))
+
+      do l = 1, nasht
+        l_ST = ireots(l)
+        do k = 1, l
+           k_ST = ireots(k)
+           kl_ST_max = max(k_ST,l_ST)
+           kl_ST_min = min(k_ST,l_ST)
+           kl_ST_index = (kl_ST_max*(kl_ST_max-1))/2 + kl_ST_min
+           if(do_reorder)then
+!            reorder from type-symmetry ordering to a symmetry-type one
+             call reormt(pv_full_scratch(1,1,k,l),temp_mat,
+     &                   nasht,nasht,ireost,ireost)
+!            distribute elements on lower triangle
+             call dgetsp(nasht,temp_mat,pv_sirius(1,kl_ST_index))
+           else
+!            distribute elements on lower triangle
+             call dgetsp(nasht,pv_full_scratch(1,1,k,l),
+     &                   pv_sirius(1,kl_ST_index))
+           end if
+        end do
+      end do
+
+
+      if(do_reorder) deallocate(temp_mat)
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      write(lupri,*) ' final PV in SIRIUS format'
+      call output(pv_sirius,1,nnashx,1,nnashx,nnashx,nnashx,-1,lupri)
+#undef LUCI_DEBUG
 #endif
 
       end

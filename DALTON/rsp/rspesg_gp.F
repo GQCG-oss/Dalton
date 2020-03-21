@@ -512,12 +512,16 @@ C
       DOUBLE PRECISION PVAL,DMAT
       LOGICAL DODFT
 
-      IF (.NOT. DODFT) HFXFAC = 1.0D0
+      IF (.NOT. DODFT) THEN
+         FACTOR = 1.0D0
+      ELSE
+         FACTOR = HFXFAC
+      END IF
       PVAL(1) = D2*F*(DMAT(A,B,2)*DMAT(D,C,1)+DMAT(A,B,1)*DMAT(D,C,2)
-     & - DP25*HFXFAC*(DMAT(C,A,2)*DMAT(D,B,1)+DMAT(D,A,2)*DMAT(C,B,1)+
+     & - DP25*FACTOR*(DMAT(C,A,2)*DMAT(D,B,1)+DMAT(D,A,2)*DMAT(C,B,1)+
      &         DMAT(C,A,1)*DMAT(D,B,2)+DMAT(D,A,1)*DMAT(C,B,2))
      & + ( DMAT(A,B,4)*DMAT(D,C,4) 
-     & - DP125*HFXFAC*(DMAT(A,D,3)*DMAT(B,C,3)+DMAT(D,A,3)*DMAT(C,B,3)+
+     & - DP125*FACTOR*(DMAT(A,D,3)*DMAT(B,C,3)+DMAT(D,A,3)*DMAT(C,B,3)+
      &            DMAT(A,C,3)*DMAT(B,D,3)+DMAT(C,A,3)*DMAT(D,B,3))))
 
       RETURN

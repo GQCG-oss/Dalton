@@ -4128,7 +4128,7 @@ C
 C-----------------------------------------------------------------------------
 C
 C     Purpose: Add response property to list of property information to be
-C              passed to numerical differentiantion/averaging.
+C              passed to numerical differentiation/averaging.
 C
 C     Ove Christiansen August 1999.
 C
@@ -6914,7 +6914,7 @@ C
 C-----------------------------------------------------------------------------
 C
 C     Purpose: Add response property to list of property information to be
-C              passed to numerical differentiantion/averaging.
+C              passed to numerical differentiation/averaging.
 C
 C     Ove Christiansen August 1999.
 C

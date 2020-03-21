@@ -15,7 +15,6 @@
 !  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
-#ifdef REV_LOG
 !
 ! File: dalton/rsp/lagrang.F
 !
@@ -41,7 +40,6 @@ Cnew getref calls with appropriate NDREF (fixing CSF and triplet)
 Cstop if solvent and CSF
 Cbugfix: too little was allocated for KGP2
 C===========================================================================
-#endif
 C
 C
 C  /* Deck lagran */

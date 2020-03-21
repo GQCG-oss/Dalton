@@ -1,5 +1,13 @@
 # DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
 
+## special changes for MC-srDFT
+
+### Fixed
+- Oct. 2016: state specific MC-srDFT for excited states
+
+
+
+
 ## [2020.alpha] (Dalton2020 alpha)
 
 ### New features added
@@ -34,7 +42,6 @@
 
 ### Fixed
 - Compilation with 64-bit integer and linking with a 32-bit integer MPI. (H. J. Aa. Jensen)
-- Compilation errors with gfortran-9.2.0 and 64-bit integers.
 - Errors when running DFT with 64-bit integers and MPI. (P. Reinholdt and H. J. Aa. Jensen)
 - Errors for Fermi-contact (FC) labels on APROPER and therefore FC properties in \*\*RESPONS when more than 99 atoms (H. J. Aa. Jensen)
 - Error for \*ESR spin-dipole properties when more than 33 atoms (H. J. Aa. Jensen)
@@ -137,7 +144,7 @@
 - Fix of Douglas-Kroll post-SCF with less than 256 contracted basis functions, but more than 255 uncontracted basis functions
 - Fix of an insufficient memory error for construction of 2-el. integrals in Dirac format with more than 255 basis functions
 - Removed OpenACC CMake variable (currently no OpenACC directives in Dalton).
-- Fix of Douglas-Kroll post-SCF with less than 256 contracted basis functions, but more than 255 uncontracted basis functions
+
 
 ## [2016.1] (2016-04-07)
 

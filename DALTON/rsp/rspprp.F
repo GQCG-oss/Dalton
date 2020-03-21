@@ -237,13 +237,18 @@ C  OUTPUT: CONFIGURATION PART OF GP VECTOR
 C
 C
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
+      use lucita_mc_response_cfg
 #include "implicit.h"
 C
       DIMENSION PRPMO(NORBT,*),GP(KZYVAR,*),XINDX(*),WRK(*)
 C
 #include "priunit.h"
+#include "maxorb.h"
 #include "wrkrsp.h"
 #include "infrsp.h"
+#include "infinp.h"
 #include "infopt.h"
 #include "inforb.h"
 #include "infpri.h"
@@ -303,6 +308,27 @@ C
          ELSE
             ISPIN2 = 0
          END IF
+
+         if(ci_program .eq. 'LUCITA   ')then
+!
+!          set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+           mcscf_ci_trial_vector  = .true.
+
+!          set response prp flags
+           lucita_mc_response_prp     = .true.
+!          unpacked integrals
+           lucita_mc_response_prp_int = 1
+
+!          set vector exchange type: cref
+           if(cref_is_active_bvec_for_sigma)then 
+             vector_exchange_type1 = 2
+             cref_is_active_bvec_for_sigma = .false.
+           else
+!           set vector exchange type: bvec trial vector
+            vector_exchange_type1 = 2
+           end if
+         end if
+
          CALL CISIGD(IREFSY,KSYMST,NDREF,KZCONF,WRK(KCREF),
      *               GP(1,ISIM),WRK(KUPRP),DUMMY,
      *               NOH2,IH8SM,XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
@@ -361,6 +387,26 @@ C
          ELSE
             ISPIN2 = 0
          END IF
+         if(ci_program .eq. 'LUCITA   ')then
+!
+!          set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+           mcscf_ci_trial_vector  = .true.
+
+!          set response prp flags
+           lucita_mc_response_prp     = .true.
+!          unpacked integrals
+           lucita_mc_response_prp_int = 1
+
+!          set vector exchange type: cref
+           if(cref_is_active_bvec_for_sigma)then 
+             vector_exchange_type1 = 2
+             cref_is_active_bvec_for_sigma = .false.
+           else
+!           set vector exchange type: bvec trial vector
+            vector_exchange_type1 = 2
+           end if
+         end if
+
          CALL CISIGD(IREFSY,KSYMST,NDREF,KZCONF,WRK(KCREF),
      *               GP(1+KZVAR,ISIM),WRK(KUPRP),DUMMY,
      *               NOH2,IH8SM,XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
@@ -389,6 +435,12 @@ C           ... remove CREF component of GP vector
      *                  1,KZCONF,1,1,KZCONF,1,1,LUPRI)
          END IF
  100  CONTINUE
+!     reset flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .false.
+!     reset response prp flags
+      lucita_mc_response_prp     = .false.
+!     reset flag for unpacked integrals
+      lucita_mc_response_prp_int = -1
 C
 C END OF PRPCON
 C

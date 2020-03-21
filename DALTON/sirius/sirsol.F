@@ -32,59 +32,55 @@ C
 C Intial polarization added later.
 C
 C===========================================================================
-#ifdef REV_LOG
-TO DO :: <  read CAVORG from LUSOL if label is new SOLVLRM
-hjaaj: someone (Kurt, Trygve, Kenneth?) had changed THRZER in SOLGRD 1.0D-10
-       in Oslo stating
-       "Default threshold (in COMDECK THRZER) for zero is a bit too tight here"
-       I don't see why that should be true so I have removed the change until
-       further.  There must be a bug in SOLNC0 if abs(Tn(l,m)) .gt. 1.0D-14
-       when symmetry of (l,m) is not totally symmetric.  /950824-hjaaj
-
-Revision 1.2  2000/05/24 12:53:44  hjj
-SOLFCK: corrected sign error in FCSOL introduced with AO code;
-        fixed AO code for open shell and for all information
-        needed for call WR_SIRIFC in sirdiis.F
-
-980826-hjaaj: revised SOLLNC and SOLLNO for LSYMPT .ne. 1
-950829-hjaaj: (ver n07) fixed error in SOLLNC (/INFVAR/ with NWOPH was missing)
-950623/950501-hjaaj: *** version n06 ***
-  new label on LUSOL (was SOLVINT, new SOLVRLM) [some SOLVINT forgotten 950501]
-94-03-05 -kvm+ha: Korrigerat inertial polarisations del
-930208-hjaaj: SOLLNO: fixed bug for NOSIM .gt. 1
-930111-hjaaj: SOLFCK: zero WRK(KTAO) (bug fix)
-921210-hjaaj -- preparation for ellipsoidal cavity: RSOL(3)
-SOLFL : now general utility routine (nothing from common);
-SOLFCK: new routine for calculating solvent t operator matrix
-920714-hjaaj: SOLGRD: use F17.8 instead of F15.10 for T(lm) etc.
-920601-hjaaj+ha+kvm -- implemented inertial polarization
-SOLFL: EPSLON in parameter list
-920522-hjaaj: added SOLREF deck
-summer 1990-hjaaj: rewritten for determinant CI and symmetry
-fall 1986 Minneapolis: original code
-===========================================================================
-#endif
-#ifdef UNDEF
-/* Comdeck hj_todo */
-900723: timing of SOLGRD (the following is removed from SIROPT)
-      PARAMETER (IDTGRD = 1)
+C TO DO :: <  read CAVORG from LUSOL if label is new SOLVLRM
+C hjaaj: someone (Kurt, Trygve, Kenneth?) had changed THRZER in SOLGRD 1.0D-10
+C       in Oslo stating
+C       "Default threshold (in COMDECK THRZER) for zero is a bit too tight here"
+C       I do not see why that should be true so I have removed the change until
+C       further.  There must be a bug in SOLNC0 if abs(Tn(l,m)) .gt. 1.0D-14
+C       when symmetry of (l,m) is not totally symmetric.  /950824-hjaaj
+C
+C Revision 1.2  2000/05/24 12:53:44  hjj
+C SOLFCK: corrected sign error in FCSOL introduced with AO code;
+C       fixed AO code for open shell and for all information
+C       needed for call WR_SIRIFC in sirdiis.F
+C
+C 980826-hjaaj: revised SOLLNC and SOLLNO for LSYMPT .ne. 1
+C 950829-hjaaj: (ver n07) fixed error in SOLLNC (/INFVAR/ with NWOPH was missing)
+C 950623/950501-hjaaj: *** version n06 ***
+C   new label on LUSOL (was SOLVINT, new SOLVRLM) [some SOLVINT forgotten 950501]
+C 94-03-05 -kvm+ha: Korrigerat inertial polarisations del
+C 930208-hjaaj: SOLLNO: fixed bug for NOSIM .gt. 1
+C 930111-hjaaj: SOLFCK: zero WRK(KTAO) (bug fix)
+C 921210-hjaaj -- preparation for ellipsoidal cavity: RSOL(3)
+C SOLFL : now general utility routine (nothing from common);
+C SOLFCK: new routine for calculating solvent t operator matrix
+C 920714-hjaaj: SOLGRD: use F17.8 instead of F15.10 for T(lm) etc.
+C 920601-hjaaj+ha+kvm -- implemented inertial polarization
+C SOLFL: EPSLON in parameter list
+C 920522-hjaaj: added SOLREF deck
+C summer 1990-hjaaj: rewritten for determinant CI and symmetry
+C fall 1986 Minneapolis: original code
+C ===========================================================================
+C /* Comdeck hj_todo */
+C 900723: timing of SOLGRD (the following is removed from SIROPT)
+C      PARAMETER (IDTGRD = 1)
 C     ... note : IDTGRD = IDTIM in GRAD
-#include "inftim.h"
-...
-         CALL GETTIM(T1,W1)
-         ... call solgrd ...
-         CALL GETTIM(T2,W2)
-         TIMCPU(1,IDTGRD) = TIMCPU(1,IDTGRD) + T2 - T1
-         TIMWAL(1,IDTGRD) = TIMWAL(1,IDTGRD) + W2 - W1
+C #include "inftim.h"
+C ...
+C         CALL GETTIM(T1,W1)
+C         ... call solgrd ...
+C         CALL GETTIM(T2,W2)
+C         TIMCPU(1,IDTGRD) = TIMCPU(1,IDTGRD) + T2 - T1
+C         TIMWAL(1,IDTGRD) = TIMWAL(1,IDTGRD) + W2 - W1
 C        MAERKE: code 8 for SOLGRD contribution ???? 900723
-900720: ORBLIN option to SOLDIA for no CSF diagonal ?? (for absorp.).
--- SOLGRD must be called by Abacus for solvent diagonal,
-   i.e. NCONST,NWOPPT will be necessary. (or augment ABADIA).
-NB. ABADIA should be in sirius, not abacus, to ensure correct argument
-   list to sirius and detci routines.
--- Also consider -TELM contributions to diagonal Hessian and SOLLIN.
-900718: absorption for solvent calculation.
-#endif
+C 900720: ORBLIN option to SOLDIA for no CSF diagonal ?? (for absorp.).
+C -- SOLGRD must be called by Abacus for solvent diagonal,
+C    i.e. NCONST,NWOPPT will be necessary. (or augment ABADIA).
+C NB. ABADIA should be in sirius, not abacus, to ensure correct argument
+C    list to sirius and detci routines.
+C -- Also consider -TELM contributions to diagonal Hessian and SOLLIN.
+C 900718: absorption for solvent calculation.
 C  /* Deck solref */
       SUBROUTINE SOLREF(IWUNIT)
 C
@@ -175,10 +171,12 @@ C
 #include "maxorb.h"
 #include "inforb.h"
 #include "infind.h"
+#include "gnrinf.h"
+#include "priunit.h"
 C
       IF (NASHT .GT. 0) THEN
          TELM = D2*DDOT(NNASHX,DV,1,RLMAC,1)
-         DO 100 I = 1,NASHT
+         DO 100 I = 1,NASHT                 
             TELM = TELM - DV(IROW(I+1))*RLMAC(IROW(I+1))
   100    CONTINUE
       ELSE
@@ -354,41 +352,164 @@ C
 C Input:
 C  CREF(NCONF)   CI reference vector
 C  RLMAC(NNASHX) solvent integrals
-C  TELMAC        CREF expectation value.
+C  TELMAC        CREF expectation value. If gt 0.9e10, evaluated in routine.
 C  INDXCI(*)     CI index vector
 C
 C Output:
+C  TELMAC        (if input value gt 0.9e10)
 C  GLMCI(NCONF)  = CI gradient vector for Rlm =
 C                2 ( < i | R(l,m) | cref> - TE(l,m) cref(i) )
 C
 C Scratch:
 C  WRK(LWRK)
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION CREF(*),RLMAC(*),GLMCI(*),INDXCI(*),WRK(LWRK)
 C
-      PARAMETER ( D2 = 2.0D0 )
-C
 C Used from common blocks:
+C   INFINP : THRCGR,?
+C   INFPRI : IPRSIR
 C   INFORB : N2ASHX
 C   INFVAR : NCONF
 C
 #include "maxorb.h"
+#include "infinp.h"
+#include "infpri.h"
 #include "inforb.h"
 #include "infvar.h"
 C
+C ***** Comment edh: The CIPRP subroutine computes CI sigma vectors (SCVECS)                     ******
+C ***** according to SUM(J) <I|PRP|J> * CREF(J):                                                 ******
+C ***** CIPRP(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE). Here SCVECS = GLMCI and           ******  
+C ***** NSIM = 1 in accordance with CI gradient expression (c.f. K.V. Mikkelsen et al. JCP 1988) ****** 
+
       CALL QENTER('SOLGC ')
       KURAC = 1
       KWRK1 = KURAC + N2ASHX
       LWRK1 = LWRK + 1 - KWRK1
-      CALL DSPTSI(NASHT,RLMAC,WRK(KURAC))
-      CALL CIPRP(1,CREF,GLMCI,NCONF,WRK(KURAC),INDXCI,WRK(KWRK1),LWRK1)
+      if(ci_program .eq. 'SIRIUS-CI')then
+         CALL DSPTSI(NASHT,RLMAC,WRK(KURAC))
+C        ... unpack RLMAC using CALL DSPTSI(N,ASP,ASI)
+      else if(ci_program .eq. 'LUCITA   ')then
+        CALL DCOPY(NNASHX,RLMAC,1,WRK(KURAC),1)
+        cref_is_active_bvec_for_sigma = .true.
+      end if
+
+      CALL CIPRP(1,CREF,GLMCI,NCONF,WRK(KURAC),INDXCI,WRK(KWRK1),LWRK1) !  SUM(J) <I|PRP|J> * CREF(J)  
 C     CALL CIPRP(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE)
 C
-      CALL DSCAL(NCONF,D2,GLMCI,1)
-      CALL DAXPY(NCONF,(-D2*TELMAC),CREF,1,GLMCI,1)
+      CALL DSCAL(NCONF,2.0D0,GLMCI,1)
+      IF (TELMAC .GT. 0.9D10) THEN
+         TELMAC = DDOT(NCONF,GLMCI,1,CREF,1) / 2 ! assume CREF normalized
+      END IF
+      IF (TELMAC .ne. 0.0D0)
+     &   CALL DAXPY(NCONF,(-2.0D0*TELMAC),CREF,1,GLMCI,1)
 C
+      IF (IPRSIR .GE. 30) THEN
+         PTEST = MAX(1.D-10,1.D-2*THRCGR)
+         WRITE (LUPRI,'(//A/A)')
+     &         ' SOLGC Singlet configuration gradient',
+     &         ' ------------------------------------'
+         CALL PRVEC(NCONF,GLMCI,1,-PTEST,200,LUPRI)
+         CALL FLSHFO(LUPRI)
+      END IF
       CALL QEXIT('SOLGC ')
+      RETURN
+      END
+C  /* Deck solgc_triplet */
+      SUBROUTINE SOLGC_TRIPLET(CREF,RLMAC,TELMAC,GLMCI,INDXCI,WRK,LWRK)
+C
+C Triplet version 18. nov. 2015 hjaaj, based on SOLGC
+C
+C Purpose:
+C
+C  To calculate solvent CI gradient contribution for a value of LM
+C  (or several values summed) in RLMAC.
+C  ( ER(l,m) configuration gradient contribution. )
+C
+C
+C Input:
+C  CREF(NCONF)   CI reference vector
+C  RLMAC(NNASHX) solvent integrals
+C  TELMAC        CREF expectation value. If gt 0.9e10, evaluated in routine.
+C  INDXCI(*)     CI index vector
+C
+C Output:
+C  GLMCI(NCONF)  = CI gradient vector for Rlm =
+C                2 ( < i | R(l,m) | cref> - TE(l,m) cref(i) )
+C  TELMAC        (if input value gt 0.9e10)
+C
+C Scratch:
+C  WRK(LWRK)
+C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION CREF(*),RLMAC(*),GLMCI(*),INDXCI(*),WRK(LWRK)
+C
+C Used from common blocks:
+C   INFINP : THRCGR,?
+C   INFPRI : IPRSIR
+C   INFORB : N2ASHX
+C   INFVAR : NCONF
+C
+#include "maxorb.h"
+#include "infinp.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infvar.h"
+C
+C ***** Comment edh: The CIPRP subroutine computes CI sigma vectors (SCVECS)                     ******
+C ***** according to SUM(J) <I|PRP|J> * CREF(J):                                                 ******
+C ***** CIPRP(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE). Here SCVECS = GLMCI and           ******  
+C ***** NSIM = 1 in accordance with CI gradient expression (c.f. K.V. Mikkelsen et al. JCP 1988) ****** 
+
+      CALL QENTER('SOLGC_TRIPLET ')
+      KURAC = 1
+      KWRK1 = KURAC + N2ASHX
+      LWRK1 = LWRK  + 1 - KWRK1
+      if(ci_program .eq. 'SIRIUS-CI')then
+         CALL DSPTSI(NASHT,RLMAC,WRK(KURAC))
+C        ... unpack RLMAC using CALL DSPTSI(N,ASP,ASI)
+      else if(ci_program .eq. 'LUCITA   ')then
+        CALL DCOPY(NNASHX,RLMAC,1,WRK(KURAC),1)
+        cref_is_active_bvec_for_sigma = .true.
+      end if
+
+      ! GLMCI is initialized in CIPRP_TRIPLET
+      CALL CIPRP_TRIPLET(1,CREF,GLMCI,NCONF,WRK(KURAC),
+     &     INDXCI,WRK(KWRK1),LWRK1) !  SUM(J) <I|PRP|J> * CREF(J)  
+C     CALL CIPRP_TRIPLET(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE)
+C
+      CALL DSCAL(NCONF,2.0D0,GLMCI,1)
+      if (iprsir.gt.30) GN1 = dnrm2(nconf,glmci,1)
+      IF (TELMAC .GT. 0.9D10) THEN
+         TELMAC = DDOT(NCONF,GLMCI,1,CREF,1) / 2 ! assume CREF normalized
+      END IF
+      IF (TELMAC .ne. 0.0D0)
+     &   CALL DAXPY(NCONF,(-2.0D0*TELMAC),CREF,1,GLMCI,1)
+
+      IF (IPRSIR .GE. 30) THEN
+         GN2 = dnrm2(nconf,glmci,1)
+         PTEST = MAX(1.D-10,1.D-2*THRCGR)
+         ptest = 1.d-14 !DEBUG
+         write (lupri,*) 'URLMAC'
+         call output(wrk(kurac),1,nasht,1,nasht,nasht,nasht,-1,lupri)
+         write (lupri,*) 'CREF'
+         CALL PRVEC(NCONF,CREF,1,-PTEST,200,LUPRI)
+         WRITE (LUPRI,'(//A/A/A,1P,2D10.2)')
+     &         ' SOLGC_Triplet configuration gradient',
+     &         ' ------------------------------------',
+     &         ' Norm before and after CREF removal',GN1,GN2
+         CALL PRVEC(NCONF,GLMCI,1,-PTEST,200,LUPRI)
+         CALL FLSHFO(LUPRI)
+      END IF
+C
+      CALL QEXIT('SOLGC_TRIPLET ')
       RETURN
       END
 C  /* Deck solgo */
@@ -510,6 +631,7 @@ C   INFORB: NNASHX, NNBASX, NNORBX, etc.
 C   INFIND: IROW(*)
 C   INFTAP: LUSOL,  LUIT2
 C   INFPRI: IPRSOL
+C   dftcom.h : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -520,6 +642,7 @@ C
 #include "infind.h"
 #include "inftap.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
       LOGICAL     FIRST, FNDLAB
       PARAMETER  (MXLMAX = 50)
@@ -733,6 +856,8 @@ C
      &             NBAST,NORBT)
          IF (NASHT .GT. 0) THEN
             CALL GETAC2(WRK(KRLM),WRK(KRLMAC))
+         IF (DFT_SPINDNS) CALL QUIT('SOLGRD: '//
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
          END IF
          IF (IPRSOL .GE. 15) THEN
             WRITE (LUPRI,'(/A)') ' Rlm_ao matrix:'
@@ -1280,6 +1405,7 @@ C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : NWOPH
 C    INFLIN : NCONST, NVARPT, NWOPPT
 C    INFTAP : LUSOL
+C   dftcom.h : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -1290,6 +1416,7 @@ C
 #include "inflin.h"
 #include "inftap.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
 C     Statement functions
 C
@@ -1386,6 +1513,8 @@ C
      *             NBAST,NORBT)
          IF (NASHT .GT. 0) THEN
             CALL GETAC2(WRK(KRLM),WRK(KRLMAC))
+         IF (DFT_SPINDNS) CALL QUIT('SOLNC: '//
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
          END IF
          TLM   = TN(LM) - SOLELM(DV,WRK(KRLMAC),WRK(KRLM),TELMAC)
 C
@@ -1426,6 +1555,8 @@ C
       JRXCAC = KRXCAC
       DO 600 ICSIM = 1,NCSIM
          CALL GETAC2(WRK(JRXC),WRK(JRXCAC))
+         IF (DFT_SPINDNS) CALL QUIT('SOLNC: '//
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
          TXC    = SOLELM(DV,WRK(JRXCAC),WRK(JRXC),TXCAC)
          WRK(KTXCAC-1+ICSIM) = TXCAC
          JRXC   = JRXC   + NNORBX
@@ -1433,6 +1564,8 @@ C
   600 CONTINUE
 C
       CALL GETAC2(WRK(KRYC),WRK(KRYCAC))
+         IF (DFT_SPINDNS) CALL QUIT('SOLNC: '//
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
 C
       CALL SOLSC(NCSIM,0,BCVEC,CREF,SVEC,WRK(KRXCAC),WRK(KRYCAC),
      *           WRK(KTXCAC),TYCAC,INDXCI,WRK(KW30),LW30)
@@ -1519,6 +1652,7 @@ C    INFVAR : JWOP
 C    INFLIN : NWOPPT, NVARPT, NCONST, NCONRF
 C    INFTAP : LUSOL
 C    INFPRI : IPRSOL
+C   dftcom.h : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -1529,6 +1663,7 @@ C
 #include "inflin.h"
 #include "inftap.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
       LOGICAL FULHES
 C
@@ -1678,6 +1813,8 @@ C
      *             NBAST,NORBT)
          IF (NASHT .GT. 0) THEN
             CALL GETAC2(WRK(KRLM),WRK(KRLMAC))
+         IF (DFT_SPINDNS) CALL QUIT('SOLLNO: '//
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
          END IF
          TELM  = SOLELM(DV,WRK(KRLMAC),WRK(KRLM),TELMAC)
          TLM   = TN(LM) - TELM
@@ -1718,7 +1855,11 @@ C           900720: I think OK, i.e. that only RLM of sym 1
 C           such that RXLM is of sym LSYMPT is needed.
 C           CALL TR1UH1(UBOVEC,H1,H1X,IH1SYM)
 C
-            IF (NASHT .GT. 0) CALL GETAC2(WRK(KRXLM),WRK(KRLMAC))
+            IF (NASHT .GT. 0) THEN
+               CALL GETAC2(WRK(KRXLM),WRK(KRLMAC))
+               IF (DFT_SPINDNS) CALL QUIT('SOLLNO: '//
+     &         'DFT_SPINDNS not implemented here yet, sorry!')
+            END IF
             IF (IPRSOL .GE. 60) THEN
                WRITE (LUPRI,'(/A,I5)') ' Rlm_X_mo matrix, IOSIM =',IOSIM
                CALL OUTPAK(WRK(KRXLM),NORBT,1,LUPRI)
@@ -1784,6 +1925,8 @@ C
                WRK(KOVLP-1+IOSIM) = D0
             END IF
             CALL GETAC2(WRK(JRXYO),WRK(JRXYOA))
+         IF (DFT_SPINDNS) CALL QUIT('SOLLNO: '//
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
             TXYO   = SOLELM(DV,WRK(JRXYOA),WRK(JRXYO),TXYOAC)
             IF (IPRSOL .GE. 40) WRITE (LUPRI,'(/A,I5,3F15.10)')
      *         ' IOSIM, C_OVLP, TXYOAC, TXYO :',
@@ -1861,6 +2004,8 @@ C  Output:  New CI-part of sigma vector (SVECS)
 C
 C Scratch:  WRK
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
       DIMENSION BCVECS(NCONST,*),  SVECS(NVARPT,*)
       DIMENSION CREF(*),  RXAC(NNASHX,*),RYAC(NNASHX)
@@ -1875,9 +2020,15 @@ C   INFORB : NNASHX,N2ASHX,NASHT
 C   INFLIN : LSYMRF,LSYMST,LSYMPT,NCONRF,NCONST
 C
 #include "priunit.h"
+#include "maxorb.h"
 #include "inforb.h"
 #include "inflin.h"
 #include "infpri.h"
+#include "infinp.h"
+#ifdef LUCI_DEBUG
+      real(8), allocatable :: btmp(:), stmp(:), h2tmp(:)
+#endif
+      logical, parameter :: noh2 = .true.
 C
       CALL QENTER('SOLSC ')
 C
@@ -1891,25 +2042,76 @@ C
          CALL QUIT('SOLSC ERROR, both NCSIM .gt. 0 and NOSIM .gt. 0')
       END IF
 C
+!     set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .true.
+
       IF (NCSIM .GT. 0) THEN
          KURYAC = 1
          KURXAC = KURYAC + N2ASHX
          KW1    = KURXAC + N2ASHX
          LW1    = LWRK + 1 - KW1
-         CALL DSPTSI(NASHT,RYAC,WRK(KURYAC))
-         CALL DSCAL(N2ASHX,D2,WRK(KURYAC),1)
+
+         if(ci_program .eq. 'SIRIUS-CI')then
+           CALL DSPTSI(NASHT,RYAC,WRK(KURYAC))
+C          ... unpack RYAC using CALL DSPTSI(N,ASP,ASI)
+           my_length = n2ashx
+         else if(ci_program .eq. 'LUCITA   ')then
+           CALL DCOPY(NNASHX,RYAC,1,WRK(KURYAC),1)
+           my_length = nnashx
+         end if
+         CALL DSCAL(my_length,D2,WRK(KURYAC),1)
+
          DO 18 ICSIM = 1,NCSIM
-            CALL DSPTSI(NASHT,RXAC(1,ICSIM),WRK(KURXAC))
-            CALL DSCAL(N2ASHX,D2,WRK(KURXAC),1)
+
+            if(ci_program .eq. 'SIRIUS-CI')then
+              CALL DSPTSI(NASHT,RXAC(1,ICSIM),WRK(KURXAC))
+C             ... unpack RXAC(1,ICSIM) using CALL DSPTSI(N,ASP,ASI)
+              my_length = n2ashx
+            else if(ci_program .eq. 'LUCITA   ')then
+              call dzero(WRK(KURXAC),my_length)
+              CALL DCOPY(NNASHX,RXAC(1,ICSIM),1,WRK(KURXAC),1)
+              my_length = nnashx
+            end if
+
+            CALL DSCAL(my_length,D2,WRK(KURXAC),1)
+
 C           First SVECS(NA) = SVECS(NA) + < NA | 2*RX | CREF >
             IF (IPRSOL.GT.100) THEN
                WRITE(LUPRI,*)ICSIM,' RXAC MATRIX SCALED WITH 2'
                CALL OUTPUT(WRK(KURXAC),1,NASHT,1,NASHT,
      *                                 NASHT,NASHT,1,LUPRI)
             END IF
+
+!           set vector exchange type: cref
+            vector_exchange_type1 = 2
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+            allocate (btmp(nconst))
+            btmp(1:nconst) = cref(1:nconst)
+            do i = 1, nconst
+             if (abs(cref(i)) .gt. 0.0d0 ) then
+              write(lupri,*) 'big B in ctrial',i, cref(i)
+             end if
+            end do
+#endif
+
             CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST,CREF,SVECS(1,ICSIM),
      &                  WRK(KURXAC),DUMMY,
-     &                  .TRUE.,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+     &                  noh2,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+
+#ifdef LUCI_DEBUG
+            btmp(1:nconst) = btmp(1:nconst) - cref(1:nconst)
+            do i = 1, nconst
+               if (abs(btmp(i)) .gt. 1.0D-14) then
+                  write(lupri,*) 'B changed ',i, cref(i), btmp(i)
+               end if
+               if (abs(svecs(i,icsim)) .gt. 0.0d0 ) then
+                  write(lupri,*) 'big S ',i, cref(i), svecs(i,icsim)
+               end if
+            end do
+            deallocate(btmp)
+#undef LUCI_DEBUG
+#endif
             IF (IPRSOL.GT.125) THEN
                WRITE(LUPRI,*)' LINEAR TRANS WITH RXAC ADDED '
                CALL OUTPUT(SVECS(1,ICSIM),1,NCONST,1,1,NCONST,1,1,LUPRI)
@@ -1920,10 +2122,14 @@ C           then  SVECS(NA) = SVECS(NA) + < NA | 2*RY | BCVECS >
                CALL OUTPUT(WRK(KURYAC),1,NASHT,1,NASHT,
      *                                 NASHT,NASHT,1,LUPRI)
             END IF
+
+!           set vector exchange type: bvec trial vector
+            vector_exchange_type1 = 2
             CALL CISIGD(LSYMST,LSYMST,NCONST,NCONST,
      &                  BCVECS(1,ICSIM),SVECS(1,ICSIM),
      &                  WRK(KURYAC),DUMMY,
-     &                  .TRUE.,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+     &                  noh2,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+
             IF (IPRSOL.GT.125) THEN
                WRITE(LUPRI,*)' LINEAR TRANS WITH RYAC ADDED '
                CALL OUTPUT(SVECS(1,ICSIM),1,NCONST,1,1,NCONST,1,1,LUPRI)
@@ -1944,22 +2150,66 @@ C           then  SVECS(NA) = SVECS(NA) + < NA | 2*RY | BCVECS >
             END IF
    18    CONTINUE
       END IF
+!     reset flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .false.
+!
+!     set flag for orbital trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_orbital_trial_vector = .true.
+
       IF (NOSIM .GT. 0) THEN
          KURXAC = 1
          KW1    = KURXAC + N2ASHX
          LW1    = LWRK + 1 - KW1
          DO 22 IOSIM = 1,NOSIM
-            CALL DSPTSI(NASHT,RXAC(1,IOSIM),WRK(KURXAC))
-            CALL DSCAL(N2ASHX,D2,WRK(KURXAC),1)
+
+            if(ci_program .eq. 'SIRIUS-CI')then
+              CALL DSPTSI(NASHT,RXAC(1,IOSIM),WRK(KURXAC))
+C             ... unpack RXAC(1,IOSIM) using CALL DSPTSI(N,ASP,ASI)
+              my_length = n2ashx
+            else if(ci_program .eq. 'LUCITA   ')then
+              CALL DCOPY(NNASHX,RXAC(1,IOSIM),1,WRK(KURXAC),1)
+              my_length = nnashx
+            end if
+
+            CALL DSCAL(my_length,D2,WRK(KURXAC),1)
+
 C           now SVECS(NA) = SVECS(NA) + <NA | 2*RXY | CREF >
             IF (IPRSOL.GT.100) THEN
                WRITE(LUPRI,*)' RXAC MATRIX SCALED WITH 2, iosim',IOSIM
                CALL OUTPUT(WRK(KURXAC),1,NASHT,1,NASHT,
      *                                 NASHT,NASHT,1,LUPRI)
             END IF
+
+!           set vector exchange type: cref
+            vector_exchange_type1 = 1
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+            allocate (btmp(nconst))
+            btmp(1:nconst) = cref(1:nconst)
+            do i = 1, nconst
+              if (abs(cref(i)) .gt. 0.2d0 ) then
+                  write(lupri,*) 'big B in',i, cref(i)
+              end if
+            end do
+#endif
+
             CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST,CREF,SVECS(1,IOSIM),
-     &               WRK(KURXAC),DUMMY,
-     &               .TRUE.,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+     &                  WRK(KURXAC),DUMMY,
+     &                  noh2,.FALSE.,XNDXCI,0,0,WRK(KW1),LW1)
+
+#ifdef LUCI_DEBUG
+            btmp(1:nconst) = btmp(1:nconst) - cref(1:nconst)
+            do i = 1, nconst
+               if (abs(btmp(i)) .gt. 1.0D-14) then
+                  write(lupri,*) 'B changed ',i, cref(i), btmp(i)
+               end if
+               if (abs(svecs(i,iosim)) .gt. 0.1d0 ) then
+                  write(lupri,*) 'big S ',i, cref(i), svecs(i,iosim)
+               end if
+            end do
+            deallocate(btmp)
+#undef LUCI_DEBUG
+#endif
             IF (IPRSOL.GT.125) THEN
                WRITE(LUPRI,*)' LINEAR TRANS WITH RXAC ADDED '
                CALL OUTPUT(SVECS(1,IOSIM),1,NCONST,1,1,NCONST,1,1,LUPRI)
@@ -1979,7 +2229,10 @@ C           not needed because of this projection)
             END IF
    22    CONTINUE
       END IF
+!     reset flag for orbital trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_orbital_trial_vector = .false.
 C
+
 C     CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
 C    &            NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK,LFREE)
 C

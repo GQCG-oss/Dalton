@@ -581,12 +581,12 @@ C     Send ending signal to slaves
 C
          IPRTYP = ENDING_SIGNAL
          CALL MPIXBCAST(IPRTYP,1,'INTEGER',MYNUM)
+
          CALL GPCLOSE(LUCME,'KEEP')
          CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUNMPF,'KEEP')
-         CALL GPCLOSE(LUSTAT,'KEEP')
-         LUSTAT = LUPRI ! LUSTAT may be used in GPCLOSE
          CALL GPCLOSE(LUPRI,'KEEP')
+         CALL GPCLOSE(LUSTAT,'KEEP')
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
 C ahs only print if number of cores are less than 16

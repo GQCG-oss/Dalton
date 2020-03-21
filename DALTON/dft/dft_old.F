@@ -16,6 +16,7 @@
 !
 !
 C
+#ifdef INCLUDE_DFT_OLD
       SUBROUTINE DFT_COMP_KSM(DMAT,KSM,WRK,LWORK,IPRFCK)
 #include "implicit.h"
 #include "inforb.h"
@@ -61,9 +62,9 @@ C
 C
 C     Calculate grid
 C
-      IF (.NOT.GRDONE) THEN
-         CALL DFTGRD(WORK,LWORK,1,.FALSE.)
-         GRDONE = .TRUE.
+      IF (.NOT.DFTGRID_DONE_OLD) THEN
+         CALL MAKE_DFTGRID(WORK,LWORK,1,.FALSE.)
+         DFTGRID_DONE_OLD = .TRUE.
       END IF
 C
       NC0  = 0
@@ -1113,3 +1114,4 @@ C
       END IF
       RETURN
       END
+#endif   /* INCLUDE_DFT_OLD */

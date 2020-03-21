@@ -21,7 +21,6 @@ C FILE : sirius/sirdiis.F
 C Principal author : Hans Jørgen Aa. Jensen
 C First version    : 1993
 C
-#ifdef OLD_REV_LOG
 !===========================================================================
 !se efter HJTODO
 !HJTODO 940816: if .FREEZE implemented in FCKEIG (requires new ORDRSS)
@@ -73,7 +72,6 @@ C
 !930623-hjaaj
 !FCKEIG: inserted PARAMETER(D0=0.0D0)
 !===========================================================================
-#endif
 C  /* Deck srdiis */
       SUBROUTINE SRDIIS (ICONV,CMO,WRK,KFRSAV,LFRSAV)
 C
@@ -101,6 +99,8 @@ C
 #include "infvar.h"
 #include "infpri.h"
 #include "gnrinf.h"
+C dftcom.h : DFT_SPINDNS
+#include "dftcom.h"
 C
 Cholesky
 #include "ccdeco.h"
@@ -206,7 +206,9 @@ C     scale by 4 to get correct orbital gradient from DIIS_EVC
       CALL DSCAL(N2BAST,D4,WRK(KSMOAO),1)
       CALL MEMREL('SRDIIS.SMOAO',WRK,KFRSAV,KREL,KFREE,LFREE)
 C
-      IF (NASHT .EQ. 0) THEN
+      IF (DFT_SPINDNS) THEN
+         NDMAT = 3
+      ELSE IF (NASHT .EQ. 0) THEN
          NDMAT = 1
       ELSE
          NDMAT = 2
@@ -937,7 +939,7 @@ c        density
      &                   WRK(KFCSOL),DUMMY,TNLM,.FALSE.,ESOLT,
      &                   WRK(KFREE),LFREE,IPR_DIIS)
              CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-             CALL MEMREL('DISCTL.SOLFCK',WRK,1,KFCSOL,KFREE,LFREE)
+             CALL MEMREL('DIIS_CTL.SOLFCK',WRK,1,KFCSOL,KFREE,LFREE)
 
            ELSE IF (PCM) THEN
              CALL MEMGET2('REAL','FCPCM',KFCSOL,NNBASX,WRK,KFREE,LFREE)
@@ -948,6 +950,8 @@ c        density
 !             call outpak(wrk(kfcsol), nbast, 1, lupri)
 
              CALL DAXPY(NNBAST,DM1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
+             CALL MEMREL('DIIS_CTL.PCMFCK',WRK,KFRSAV,
+     &          KFCSOL,KFREE,LFREE)
            END IF
          ELSE  ! the mmpcm interface is only implemented for hf/dft so
 C                no reference to doccsd
@@ -959,7 +963,7 @@ C          parameters on input: MXITMP and THRSMP
            XTEST1 = D0
            CALL MEMGET2('REAL','FCSOL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
            CALL MEMGET2('REAL','MMPCM',KMMPCM,NNBAST,WRK,KFREE,LFREE)
-           DO 998 ITER = 1, MXITMP
+           DO ITER = 1, MXITMP
 C            First the MM part ...
              CALL DZERO(WRK(KFCSOL),NNBAST)
              CALL DZERO(WRK(KMMPCM),NNBAST)
@@ -989,7 +993,7 @@ C            Now the PCM part ...
              ELSE
                XTEST1 = XTEST2
              END IF
- 998       CONTINUE
+           END DO ! ITER = 1, MXITMP
  999       CONTINUE
            IF (.NOT. LCONV) write(lupri,*) 'MMPCM not converged !'
            CALL MEMREL('DISCTL.PCMQM3FCK',WRK,1,KFCSOL,KFREE,LFREE)
@@ -1674,7 +1678,8 @@ C
          CALL DAXPY(NNBAST,D1,H1AO,1,DCAO,1)
          CALL UTHUB(DCAO,FCAO,CMO,WRK(KFREE),
      &              NSYM,NBAS,NORB)
-      END IF
+       END IF
+
 C
 C     if qm3 .or. pcm then also mmpcm automatically
       IF (IPRENR .GT. 0) THEN

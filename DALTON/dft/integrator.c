@@ -42,8 +42,8 @@
    callbacks and associated closures (callback data). The callback
    gets the grid data for current point as well as its own closure.
 
-   The grid file DALTON.QUAD is assumed to be available on call to
-   dft_integrator(). OTherwise, it is a black-box implementation.
+   The grid file DALTON.cQUAD is assumed to be available on call to
+   dft_integrator(). Otherwise, it is a black-box implementation.
 
 */
 

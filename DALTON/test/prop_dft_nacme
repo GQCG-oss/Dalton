@@ -1,0 +1,165 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > prop_dft_nacme.info <<%EOF%
+   prop_dft_nacme
+   ----------
+   Molecule:         H2
+   Wave Function:    B3-LYP / 6-31G**
+   Test Purpose:     Calculation of vibrational g-factor as sum
+                     over all first order non-adiabatic coupling elements
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > prop_dft_nacme.mol <<%EOF%
+BASIS
+cc-pVTZ
+N2 HF NACME; basis set : cc-pVTZ
+
+    1    0
+      7.00    2
+N_a    0.000000000000000   0.000000000000000   1.037572100000000       *
+N_b    0.000000000000000   0.000000000000000  -1.037572100000000       *
+FINISH
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > prop_dft_nacme.dal <<%EOF%
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.DFT
+ B3LYP
+**PROPERTIES
+.EXCITA
+.NACME
+*RESPON
+.THRESH
+ 1.0D-09
+*TROINV
+.SKIP
+*EXCITA
+.FNAC
+.NEXCITA
+   10
+.THRESH
+ 1.0D-9
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >prop_dft_nacme.check
+cat >>prop_dft_nacme.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# Basis set
+CRIT1=`$GREP "H * 2 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT2=`$GREP "total\: * 2 * 2\.0000 * 14 * 10" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[1]=2
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
+CRIT2=`$GREP "H * \/ * 1 \: * 1 * x * (0| )\.0000000000 * 2 * y * (0| )\.0000000000 * 3 * z * 1\.5000000000" $log | wc -l`
+CRIT3=`$GREP "H * \/ * 2 \: * 4 * x * (0| )\.0000000000 * 5 * y * (0| )\.0000000000 * 6 * z * \-1\.5000000000" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+ECHO[2]="$CRIT1 $CRIT2 $CRIT3"
+CTRL[2]=3
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# Symmetry
+CRIT1=`$GREP "Number of coordinates in each symmetry\: * 1 * 1 * 1 * 0 * 1 * 1 * 1 * 0" $log | wc -l`
+CRIT2=`$GREP "Number of orbitals in each symmetry\: * 3 * 1 * 1 * 0 * 3 * 1 * 1 * 0" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="SYMMETRY NOT CORRECT"
+
+# Energies
+CRIT1=`$GREP "Final MCSCF energy\: * \-1\.04697084862[0-9]" $log | wc -l`
+TEST[4]=`expr	$CRIT1`
+CTRL[4]=1
+ERROR[4]="ENERGIES NOT CORRECT"
+
+# Properties setup
+CRIT1=`$GREP "The molecular gradient" $log | wc -l`
+CRIT2=`$GREP "The molecular Hessian" $log | wc -l`
+CRIT3=`$GREP "Electronic excitation energies" $log | wc -l`
+CRIT4=`$GREP "First order nonadiabatic coupling elements" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+ECHO[5]="$CRIT1 $CRIT2 $CRIT3 $CRIT4"
+CTRL[5]=4
+ERROR[5]="CALCULATION OF VIBRATIONAL G-FACTOR NOT SET UP CORRECTLY"
+
+# Vibrational g-factor
+CRIT1=`$GREP "Vibrational g\-factor\: * H * z\[ * 3 * \- * 6\]\/2 * 1\.337[12]" $log | wc -l`
+# Vibrational g-factor: H   z[ 3 - 6]/2     1.337202 ! no d-states included /hjaaj
+# Vibrational g-factor: H   z[ 3 - 6]/2     1.337165 ! with 2 d-states included /hjaaj
+CRIT2=`$GREP "Vibrational g\-factor\: * H * x\[ * 1 * \+ * 4\]\/2 * (0| )\.413557" $log | wc -l`
+CRIT3=`$GREP "Vibrational g\-factor\: * H * y\[ * 2 * \+ * 5\]\/2 * (0| )\.413557" $log | wc -l`
+CRIT4=`$GREP "Vibrational g\-factor\: * H * z\[ * 3 * \+ * 6\]\/2 * 1\.438462" $log | wc -l`
+CRIT5=`$GREP "Vibrational g\-factor\: * H * x\[ * 1 * \- * 4\]\/2 * (0| )\.302475" $log | wc -l`
+CRIT6=`$GREP "Vibrational g\-factor\: * H * y\[ * 2 * \- * 5\]\/2 * (0| )\.302475" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+ECHO[6]="$CRIT1 $CRIT2 $CRIT3 $CRIT4 $CRIT5 $CRIT6"
+CTRL[6]=6
+ERROR[6]="VIBRATIONAL G-FACTOR NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     echo ${ECHO[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+%EOF%
+#######################################################################

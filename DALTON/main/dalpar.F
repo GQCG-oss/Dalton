@@ -73,6 +73,7 @@ C
 #if defined (HAS_PCMSOLVER)
       use pcm_parallel, only: j1ints_pcm
 #endif
+      use parallel_models_mpi, only: lucita_models_enabled
 
 #include "implicit.h"
 
@@ -228,7 +229,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYNUM,MYNUM,IPRINT)
          ELSE IF (IPRTYP.EQ.QMMMB2_4_WORK) THEN
             CALL QMMMB2_S4(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.LUCITA_WORK) THEN
-            call lucita_coworker_main(work(1),mwork)
+            call lucita_coworker_main(work(1),mwork,iprint)
+            lucita_models_enabled = .true.
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
          ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
@@ -269,8 +271,10 @@ C added by Bin Gao, May 12, 2012
             call j1ints_pcm(work(1),mwork,iprtyp,iprint)
 #endif
 
-         else if (IPRTYP .eq. CALL_FCKTRA_DISTRIBUTED) THEN
+         else if (IPRTYP .eq. CALL_FCKTRA_DISTRIBUTED ) THEN
             call FCKTRA_DISTRIBUTED_NODE(WORK(1),MWORK,IPRINT)
+         else if (IPRTYP .eq. PAR_SRDFT_INTEGRATION ) THEN
+            call SRDFT_PAR_NODE(WORK(1),MWORK,IPRINT)
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I0)')
      &         '(DALTON_NODEDRIVER) ERROR on slave',mynum,

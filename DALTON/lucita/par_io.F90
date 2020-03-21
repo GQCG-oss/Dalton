@@ -21,15 +21,19 @@ module par_mcci_io
 #endif
 
   public mcci_cp_vcd_batch
+  public mcci_cp_vcd_mpi_2_seq_io_interface
 
   private
 
   save
 
+  integer(kind=MPI_INTEGER_KIND)         :: my_MPI_REAL8 = MPI_REAL8
   integer(kind=MPI_INTEGER_KIND)         :: istat(MPI_STATUS_SIZE)
   integer(kind=MPI_INTEGER_KIND)         :: ierr
 
 contains 
+
+!******************************************************************************
 
   subroutine mcci_cp_vcd_batch(luin,             &
                                luout,            &
@@ -109,7 +113,7 @@ contains
         call dzero(xmat,lebatch(isbatch))
 
 !       set offset for data read operation
-        ioffset_in = my_ioff_luin + (cs_fullvector_off * joff) + my_ioffset_scratch
+        ioffset_in     = my_ioff_luin + (cs_fullvector_off * joff) + my_ioffset_scratch
         ioffset_int_in = (cs_fullactblk_off * joff) + num_blk_cnt + 1
  
         num_blk_cnt_act  = 0
@@ -173,6 +177,9 @@ contains
 !                  by a nonzero length
 !
 !******************************************************************************
+#ifdef LUCI_DEBUG
+#include "priunit.h"
+#endif
      real(8), intent(inout) :: xmat(*)
      integer, intent(in)    :: luin
      integer, intent(in)    :: luinlist(*)
@@ -215,9 +222,13 @@ contains
                                   ioff_luin,               &
                                   xmat(mem_off),           &
                                   blk_len,                 &
-                                  MPI_REAL8,               &
+                                  my_MPI_REAL8,            &
                                   istat,                   &
                                   ierr)
+#ifdef LUCI_DEBUG
+            write(lupri,*) 'printing read at (mem_off)',ioff_luin, mem_off
+            call wrtmatmn(xmat(mem_off),1,blk_len,1,blk_len,lupri)
+#endif
  
           end if ! block is non-zero on input file
         end if ! block has non-zero length in general
@@ -247,6 +258,9 @@ contains
 !                  by a nonzero length
 !
 !******************************************************************************
+#ifdef LUCI_DEBUG
+#include "priunit.h"
+#endif
      real(8), intent(in)    :: xmat(*)
 !    integer, intent(in)    :: luout ! stefan: open mpi 1.5 with f90-bindings complains here
      integer                :: luout
@@ -281,9 +295,13 @@ contains
                                    ioff_luout,                              &
                                    xmat(mem_off),                           &
                                    blk_len,                                 &
-                                   MPI_REAL8,                               &
+                                   my_MPI_REAL8,                            &
                                    istat,                                   &
                                    ierr)
+#ifdef LUCI_DEBUG
+            write(lupri,*) 'printing write at',ioff_luout
+            call wrtmatmn(xmat(mem_off),1,blk_len,1,blk_len,lupri)
+#endif
  
         end if ! block has non-zero length in general
 
@@ -297,6 +315,73 @@ contains
    end subroutine write_batch_pario
 !******************************************************************************
 
+   subroutine mcci_cp_vcd_mpi_2_seq_io_interface(xmat,                    &
+                                                 file_seq,                &
+                                                 file_mpi,                &
+                                                 offset_mpi_io_file,      &
+                                                 block_list_mpi_io_file,  &
+                                                 par_dist_block_list,     &
+                                                 block_list,              &
+                                                 communicator_group,      &
+                                                 nr_blocks,               &
+                                                 nr_vectors,              &
+                                                 real_complex_switch,     &
+                                                 io_direction_switch)
+!******************************************************************************
+!
+!    purpose:  interface to two i/o routines: 
+!              a. copy vector residing on disc from sequential i/o format to 
+!                 mpi i/o format
+!              b. copy vector residing on disc from mpi i/o format to 
+!                 sequential i/o format
+!
+!******************************************************************************
+     real(8), intent(inout) :: xmat(*)
+     integer, intent(in)    :: file_seq
+     integer, intent(in)    :: file_mpi
+     integer, intent(inout) :: block_list_mpi_io_file(*)
+     integer, intent(in)    :: nr_blocks
+     integer, intent(in)    :: nr_vectors
+     integer, intent(in)    :: real_complex_switch
+     integer, intent(in)    :: communicator_group
+     integer, intent(in)    :: par_dist_block_list(nr_blocks)
+     integer, intent(in)    :: block_list(*)
+     integer, intent(in)    :: io_direction_switch
+!    offset
+     integer(kind=MPI_OFFSET_KIND), intent(inout) :: offset_mpi_io_file
+!******************************************************************************
+
+     select case(io_direction_switch)
+       case(1)
+         call copy_vector_sequential_2_mpi_io(file_seq,                     &
+                                              file_mpi,                     &
+                                              xmat,                         &
+                                              offset_mpi_io_file,           &
+                                              block_list_mpi_io_file,       &
+                                              par_dist_block_list,          &
+                                              block_list,                   &
+                                              communicator_group,           &
+                                              nr_blocks,                    &
+                                              nr_vectors,                   &
+                                              real_complex_switch)
+       case(2)
+         call copy_vector_mpi_2_sequential_io(file_mpi,                     &
+                                              file_seq,                     &
+                                              xmat,                         &
+                                              offset_mpi_io_file,           &
+                                              block_list_mpi_io_file,       &
+                                              par_dist_block_list,          &
+                                              block_list,                   &
+                                              communicator_group,           &
+                                              nr_blocks,                    &
+                                              nr_vectors,                   &
+                                              real_complex_switch)
+       case default
+         call quit('*** error in mcci_cp_vcd_mpi_2_seq_io_interface: unknown copy direction. ***')
+     end select
+
+   end subroutine mcci_cp_vcd_mpi_2_seq_io_interface
+!******************************************************************************
 end module
 #else
 subroutine mcci_pario

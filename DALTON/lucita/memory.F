@@ -47,7 +47,11 @@
 *           Fall 97 (KPGINT1 added )
 
 *. Input
+#ifdef MOD_SRDFT
+      use lucita_mcscf_srdftci_cfg
+#endif
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "lucinp.inc"
@@ -101,72 +105,67 @@
       CALL MEMMAN(KLSM1,NBINT1,'ADDS  ',2,'LSM1   ')
       CALL MEMMAN(KLSM2,NBINT2,'ADDS  ',2,'LSM2   ')
 
+!
+!     stefan: idea: can't we just set the KRHO1/KRHO2 equal to the integral
+!                   work array pointer - they are needed only for
+!                   natorbs or mcscf densities and then we do not need
+!                   the ints any longer/do not have them available...
+!
+
 !     density matrices
 !     ----------------
 !     one-body density matrix
       CALL MEMMAN(KRHO1,NTOOB ** 2,'ADDS  ',2,'RHO1  ')
+
+!     one-body ensemble density matrix
+      if(srdft_ci_with_lucita)then
+        CALL MEMMAN(KRHO1_ens, NTOOB ** 2,'ADDS  ',2,'RHO1en')
+      end if
+
+*.3.1: One-body spin density
+!     ISPNDEN = 1
+      IF(ISPNDEN.GE.1) THEN
+        CALL MEMMAN(KSRHO1, ntoob **2, 'ADDS  ',2,'SRHO1 ')
+        CALL MEMMAN(KSRHO1a,ntoob **2, 'ADDS  ',2,'SRHO1a')
+        CALL MEMMAN(KSRHO1b,ntoob **2, 'ADDS  ',2,'SRHO1b')
+      ELSE 
+        KSRHO1  = 1
+        KSRHO1a = 1
+        KSRHO1b = 1
+      END IF
+      IF(ISPNDEN.GE.2) THEN
+*. Two-body spin-density matrices
+        LENSS = (ntoob*(ntoob+1)/2) ** 2
+        CALL MEMMAN(KRHO2AA,LENSS,'ADDS  ',2,'RHO2AA')
+        CALL MEMMAN(KRHO2BB,LENSS,'ADDS  ',2,'RHO2AA')
+        LENAB = ntoob**4
+        CALL MEMMAN(KRHO2AB,LENAB,'ADDS  ',2,'RHO2AB')
+      ELSE
+        KRHO2AA = 1
+        KRHO2BB = 1
+        KROH2AB = 1
+      END IF
+
+
+!     write(lupri,*) ' KRHO1 is...',KRHO1
 !     two-body density matrix
       LRHO2 = NTOOB**2*(NTOOB**2+1)/2
       if(idensi.eq.2)then 
         CALL MEMMAN(KRHO2,LRHO2,'ADDS  ',2,'RHO2  ')
       end if
 
+*. indices for pair of orbitals symmetry ordered
+      CALL MEMMAN(KINH1,NTOOB*NTOOB,'ADDS  ',2,'KINH1  ')
+
       KPNIJ = 1
       KIJKK = 1
-      IF(MXP1+MXP2+MXQ. NE. 0 .OR. IPROCC.NE.0 ) THEN
-*. Allocate memory for explicit hamiltonian and roots
-        NSBDET = MXP1 + MXP2 + MXQ
-        NSBDETP = MAX(NSBDET,IPROCC)
-        MXP = MXP1 + MXP2
-        CALL MEMMAN(KSBEVC,NSBDET*NROOT,'ADDS  ',2,'KSBEVC')
-        CALL MEMMAN(KSBEVL,       NROOT,'ADDS  ',2,'KSBEVL')
-*. KSBIDT must be able to hold list of subspace dets / print dets
-        LSCR = NSBDETP+1
-        CALL MEMMAN(KSBIDT,LSCR,'ADDS  ',1,'KSBIDT')
-*. ( NSBDET + 1 elements allocated since NSBDET+1 values are
-* obtained in order to check for degenerencies )
-
-        CALL MEMMAN(KSBCNF,LSCR        ,'ADDS  ',1,'KSBCNF')
-        CALL MEMMAN(KSBIA ,LSCR        ,'ADDS  ',1,'KSBIA ')
-        CALL MEMMAN(KSBIB ,LSCR        ,'ADDS  ',1,'KSBIB ')
+      KSBEVC = 0
+      KSBEVL = 0
+      KSBIDT = 0
+      KSBCNF = 0
+      KH0    = 0
+      KH0SCR = 0
 *
-        LH0 = MXP*(MXP+1)/2 + MXP1*MXQ + MXQ
-        CALL MEMMAN(KH0,LH0,'ADDS  ',2,'KH0   ')
-*. Scratch space for manipulating with H0
-        LH0SCR =
-     &  MAX(6*NSBDETP,4*NSBDETP+4*NOCOB,
-     &      MXP1*(MXP1+1)/2+MXP1**2)
-        CALL MEMMAN(KH0SCR,LH0SCR      ,'ADDS  ',2,'KH0SCR')
-      ELSE
-        KSBEVC = 0
-        KSBEVL = 0
-        KSBIDT = 0
-        KSBCNF = 0
-        KH0    = 0
-        KH0SCR = 0
-      END IF
-*. indeces for pair of orbitals symmetry ordered
-*
-      CALL MEMMAN(KINH1,NTOOB*NTOOB,'ADDS  ',2,'KINH1  ')
-*
-*. Length of MO-MO and MO_AO expansion file
-      LMOMO = 0
-      LMOAO = 0
-      DO ISM = 1, NSMOB
-        LMOMO = LMOMO + NMOS_ENV(ISM)*NMOS_ENV(ISM)
-        LMOAO = LMOAO + NMOS_ENV(ISM)*NAOS_ENV(ISM)
-      END DO
-      CALL MEMMAN(KMOMO  ,LMOMO ,'ADDS  ',2,'MOMO  ')
-      IF(NOMOFL.EQ.0) THEN
-        WRITE(6,*)
-     &  ' Alloc : space for MO-AO matrices will be allocated '
-        CALL MEMMAN(KMOAOIN,LMOAO ,'ADDS  ',2,'MOAOIN')
-        CALL MEMMAN(KMOAOUT,LMOAO ,'ADDS  ',2,'MOAOUT')
-      ELSE
-        KMOAOIN = 0
-        KMOAOUT = 0
-      END IF
-
 !     call lmemchk('LUCITA_ALLOC')
 
       END
@@ -179,6 +178,7 @@
 * Check memory allocated  with the memory manager
       write (lupri,'(/2A)') 'Memory check - ',TEXT
       CALL MEMMAN(IDUM,IDUM,'CHECK ',IDUM,'IDUM  ')
+      write (lupri,'(/3A/)') 'Memory check - ',TEXT,' passed'
 *
       END
 ***********************************************************************
@@ -212,7 +212,7 @@
      &          JBASEN, IBASE_L
 !               for addressing of WORK
       CHARACTER*6 TASK,IDENT,IIDENT,MARKC
-      PARAMETER(NPAD = 1 )
+      integer, parameter :: npad = 1
       PARAMETER(MAXLVL = 1024 )
       PARAMETER(MAXMRK = 1024)
       COMMON/CMEMO8/NWORD,KFREES,KFREEL,IBASE(MAXLVL),
@@ -227,11 +227,15 @@
 *
 #include "priunit.h"
 #include "mxpdim.inc"
-#include "SysDef.inc"
 #include "wrkspc.inc"
+#ifdef VAR_INT64
+      integer, parameter :: rtoi = 1
+#else
+      integer, parameter :: rtoi = 2
+#endif
 *
-      ISTOP = 0
-      ITSOK  = 1
+      ISTOP   = 0
+      ITSOK   = 1
       IPRNTMP = 0
 *
       IF(TASK(1:3).EQ.'INI') THEN
@@ -274,18 +278,18 @@
           KFREES = KFREEL + KADD + 2*NPAD
         END IF
         IF ( KFREES-1 .GT. NWORD ) THEN
-          WRITE(2,*)
-          WRITE(2,*) ' You can''t always get what you want'
-          WRITE(2,*) ' No, you can''t always get what you want'
-          WRITE(2,*) ' But if you try sometime, you may find '
-          WRITE(2,*) ' you get what you need '
-          WRITE(2,*) '                       Jagger/Richard '
+          WRITE(lupri,*)
+          WRITE(lupri,*) ' You can''t always get what you want'
+          WRITE(lupri,*) ' No, you can''t always get what you want'
+          WRITE(lupri,*) ' But if you try sometime, you may find '
+          WRITE(lupri,*) ' you get what you need '
+          WRITE(lupri,*) '                       Jagger/Richard '
 *
-          WRITE(2,*) ' MEMMAN : work array too short '
-          WRITE(2,*) ' current and required length ',NWORD,KFREES-1
+          WRITE(lupri,*) ' MEMMAN : work array too short '
+          WRITE(lupri,*) ' current and required length ',NWORD,KFREES-1
 *
-          WRITE(2,*) ' Trying to allocate : identifer,length'
-          WRITE(2,'(20X,A,I9)')IDENT,KADD
+          WRITE(lupri,*) ' Trying to allocate : identifer,length'
+          WRITE(lupri,'(20X,a,I15)')IDENT,KADD
           ISTOP = 1
           IPRNTMP = 1
           NSNLI = NS+NL
@@ -295,17 +299,17 @@
         NL = 0
         NSNLI = NS + NL
         IF(NS.GT.MAXLVL) THEN
-          WRITE(2,*) ' Too many levels in MEMMAN '
-          WRITE(2,*) ' Increase MAXLVL from ', MAXLVL
-          Call Abend1(11)
+          WRITE(lupri,*) ' Too many levels in MEMMAN '
+          WRITE(lupri,*) ' Increase MAXLVL from ', MAXLVL
+          call quit('*** error in MEMMAN: too many levels. ***')
         END IF
-        IIDENT(NS) = IDENT
-        KFREEL     = KFREES
-        IBASE(NS)  = KBASE
-        DO 10 IPAD = 1, NPAD
-          WORK(KBASE-NPAD-1+IPAD)  = PAD1
-          WORK(KFREEL-NPAD-1+IPAD) = PAD2
-   10   CONTINUE
+        IIDENT(NS)     = IDENT
+        KFREEL         = KFREES
+        IBASE(NS)      = KBASE
+
+        work(KBASE-1)  = PAD1
+        work(KFREEL-1) = PAD2
+!       WRITE(lupri,*) ' global tag set at: ',KBASE-1,KFREEL-1
 *
 **. Local memory
 *
@@ -317,35 +321,35 @@
           KFREEL = KFREEL + KADD + 2*NPAD
         END IF
         IF ( KFREEL-1 .GT. NWORD ) THEN
-          WRITE(2,*)
-          WRITE(2,*) ' You can''t always get what you want'
-          WRITE(2,*) ' No, you can''t always get what you want'
-          WRITE(2,*) ' But if you try sometime, you may find '
-          WRITE(2,*) ' you get what you need '
-          WRITE(2,*) '                       Jagger/Richard '
+          WRITE(lupri,*)
+          WRITE(lupri,*) ' You can''t always get what you want'
+          WRITE(lupri,*) ' No, you can''t always get what you want'
+          WRITE(lupri,*) ' But if you try sometime, you may find '
+          WRITE(lupri,*) ' you get what you need '
+          WRITE(lupri,*) '                       Jagger/Richard '
 
-          WRITE(2,*) ' MEMMAN : work array too short '
-          WRITE(2,*) ' current and required length ',NWORD,KFREEL-1
-          WRITE(2,*) ' Trying to allocate : identifer,offset,  length'
-          WRITE(2,'(24X,A,2I9)')IDENT,KBASE,KADD
+          WRITE(lupri,*) ' MEMMAN : work array too short '
+          WRITE(lupri,*) ' current and required length ',NWORD,KFREEL-1
+          WRITE(lupri,*) ' Trying to allocate : identifer,offset,length'
+          WRITE(lupri,'(24X,a,2I15)') IDENT,KBASE,KADD
           ISTOP = 1
           IPRNTMP = 1
           NSNLI = NS+NL
           GOTO 1001
         END IF
-        NL =  NL + 1
+        NL    =  NL + 1
         NSNLI = NS+NL
         IF(NS+NL.GT.MAXLVL) THEN
-          WRITE(2,*) ' Too many levels in MEMMAN '
-          WRITE(2,*) ' Increase MAXLVL from ', MAXLVL
-          Call Abend1(11)
+          WRITE(lupri,*) ' Too many levels in MEMMAN '
+          WRITE(lupri,*) ' Increase MAXLVL from ', MAXLVL
+          call quit('*** error in MEMMAN: too many levels. ***')
         END IF
-        IIDENT(NS+NL) = IDENT
-        IBASE(NS+NL) = KBASE
-        DO 20 IPAD = 1, NPAD
-          WORK(KBASE-NPAD-1+IPAD) = PAD1
-          WORK(KFREEL-NPAD-1+IPAD) =  PAD2
-   20   CONTINUE
+        IIDENT(NSNLI)  = IDENT
+        IBASE(NSNLI)   = KBASE
+
+        work(KBASE-1)  = PAD1
+        work(KFREEL-1) = PAD2
+!       WRITE(lupri,*) ' local tag set at: ',KBASE-1,KFREEL-1
 *
 ** Flush local memory
 *
@@ -357,9 +361,9 @@
 *. Set a mark at current free address
         NM = NM + 1
         IF(NM.GT.MAXMRK) THEN
-          WRITE(2,*) ' Too many marks  in MEMMAN '
-          WRITE(2,*) ' Increase MAXMRK from ', MAXMRK
-          Call Abend1(11)
+          WRITE(lupri,*) ' Too many marks  in MEMMAN '
+          WRITE(lupri,*) ' Increase MAXMRK from ', MAXMRK
+          call quit('*** error in MEMMAN: too many marks. ***')
         END IF
         MARKC(NM) = IDENT
         IMARK(NM) = KFREEL
@@ -380,64 +384,77 @@
         KBASE = NWORD - KFREEL - 1
         NSNLI = NS+ NL
       ELSE
-          WRITE(2,*) ' MEMMAN : Unknown task parameter ',TASK
-          WRITE(2,*) ' Too confused to continue  '
-          Call Abend1(11)
+          WRITE(lupri,*) ' MEMMAN : Unknown task parameter ',TASK
+          WRITE(lupri,*) ' Too confused to continue  '
+          call quit('*** error in MEMMAN: unknown task. ***')
       END IF
 *
 **. Check paddings
 *
       ICHECK = 1
-      ITSOK = 1
-      IF(TASK(1:5).EQ.'CHECK'.OR.ICHECK.EQ.1) THEN
+      ITSOK  = 1
+!     IF(ICHECK == 1)THEN
+      IF(TASK(1:5) == 'CHECK' .OR. ICHECK == 1)THEN
+
         DO 100 IL = 1, NSNLI
-          JBASE = IBASE(IL)
+
+          JBASE  = IBASE(IL)
+
           IF(IL.NE.NSNLI) THEN
-           JBASEN = IBASE(IL+1)
+            JBASEN = IBASE(IL+1)
           ELSE
            JBASEN = KFREEL + 1
           END IF
+
           L1OK = 1
           L2OK = 1
-          DO  IPAD = 1, NPAD
-            IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1 .OR.
-     &         WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) THEN
-               ITSOK = 0
-               WRITE(2,*) ' Memory problem for : '
-               WRITE(2,*) '   Level (IL) ',IL
-               IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1) L1OK = 0
-               IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
-               IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-                WRITE(2,'(4X,A,I20,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
-               ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-                WRITE(2,'(4X,A,I20,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'    OKAY       -  '
-               ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                WRITE(2,'(4X,A,I20,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'     -       OKAY '
-               ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                  WRITE(2,'(4X,A,I20,4X,A)')
-     &            IIDENT(IL),IBASE(IL),'     -       OKAY '
-               ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-                 WRITE(2,'(4X,A,I20,4X,A)')
-     &            IIDENT(IL),IBASE(IL),'     -       -    '
-               END IF
+          IF(WORK(JBASE-1).NE.PAD1.OR. WORK(JBASEN-2).NE.PAD2)THEN
+            ITSOK = 0
+            WRITE(lupri,*) ' Memory problem for : '
+            WRITE(lupri,*) '   Level (IL) ',IL
+
+            IF(WORK(JBASE-1)  .NE.PAD1) L1OK = 0
+            IF(WORK(JBASEN-2) .NE.PAD2) L2OK = 0
+!           write(lupri,*) 'bla bla: JBASE-1, JBASEN-2 ==> ',
+!    &      JBASE-1, JBASEN-2
+!           write(lupri,*) 'WORK(JBASE-1), WORK(JBASEN-2)',           
+!    &      WORK(JBASE-1), WORK(JBASEN-2)
+!           do i = 1, il
+!            write(lupri,*) 'place: start and end tags',IBASE(I)-1,
+!    &       IBASE(I+1)-2
+!           end do
+
+            IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
+              WRITE(lupri,'(4X,A,I20,4X,A)')
+     &        IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
+            ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
+              WRITE(lupri,'(4X,A,I20,4X,A)')
+     &        IIDENT(IL),IBASE(IL),'    OKAY       -  '
+            ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
+              WRITE(lupri,'(4X,A,I20,4X,A)')
+     &        IIDENT(IL),IBASE(IL),'     -       OKAY '
+            ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
+              WRITE(lupri,'(4X,A,I20,4X,A)')
+     &        IIDENT(IL),IBASE(IL),'     -       OKAY '
+            ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
+              WRITE(lupri,'(4X,A,I20,4X,A)')
+     &        IIDENT(IL),IBASE(IL),'     -       -    '
             END IF
-          END DO
+          END IF
   100   CONTINUE
-CSK        iprntmp = 1
       END IF
  1001 CONTINUE
 *
-        IF(ITSOK.EQ.0.OR.IPRNTMP.NE.0) THEN
-          WRITE(2,'(A,A,1X,A)') ' Current task : ', TASK, IDENT
-          WRITE(2,*) ' NS, NL, NSNLI',NS,NL,NSNLI
+        IF(ITSOK == 0 .OR. IPRNTMP > 0) THEN
+          WRITE(lupri,'(A,A,1X,A)') ' Current task : ', TASK, IDENT
+          WRITE(lupri,*) ' NS, NL, NSNLI',NS,NL,NSNLI
           IF(ITSOK.EQ.0)
-     &    WRITE(2,*) '  Sorry to say it , but memory is CORRUPTED '
-          WRITE(2,*) '  Memory map : '
-          WRITE(2,*) '  Identifier    Offset     Pad1 okay Pad2 okay '
-          WRITE(2,*) '  ========== ============  ========= ========= '
+     &    WRITE(lupri,*) '  Sorry to say it , but memory is CORRUPTED '
+          WRITE(lupri,*) '  Memory map : '
+          WRITE(lupri,*) 
+     &    '  Identifier    Offset     Pad1 okay Pad2 okay '
+          WRITE(lupri,*) 
+     &    '  ========== ============  ========= ========= '
           DO 200 IL = 1, NSNLI
             JBASE = IBASE(IL)
             IF(IL.NE.NSNLI) THEN
@@ -447,51 +464,49 @@ CSK        iprntmp = 1
             END IF
             L1OK = 1
             L2OK = 1
-            DO 40 IPAD = 1, NPAD
-              IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1) L1OK = 0
-   40       CONTINUE
-            DO 50 IPAD = 1, NPAD
-              IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
-   50       CONTINUE
+            IF(WORK(JBASE-1).NE.PAD1) L1OK = 0
+            IF(WORK(JBASEN-2).NE.PAD2) L2OK = 0
 C           find local off-set to WORK for print
             IBASE_L = IBASE(IL) - IMARK(1)
             IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-               WRITE(2,'(4X,A,I12,4X,A)')
+               WRITE(lupri,'(4X,A,I12,4X,A)')
      &         IIDENT(IL),IBASE_L,'    OKAY     OKAY '
             ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-               WRITE(2,'(4X,A,I12,4X,A)')
+               WRITE(lupri,'(4X,A,I12,4X,A)')
      &         IIDENT(IL),IBASE_L,'    OKAY       -  '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(2,'(4X,A,I12,4X,A)')
+               WRITE(lupri,'(4X,A,I12,4X,A)')
      &         IIDENT(IL),IBASE_L,'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-               WRITE(2,'(4X,A,I12,4X,A)')
+               WRITE(lupri,'(4X,A,I12,4X,A)')
      &         IIDENT(IL),IBASE_L,'     -       OKAY '
             ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-               WRITE(2,'(4X,A,I12,4X,A)')
+               WRITE(lupri,'(4X,A,I12,4X,A)')
      &         IIDENT(IL),IBASE_L,'     -       -    '
             END IF
   200     CONTINUE
 *
 * Marks
 *
-          WRITE(2,*)
-          WRITE(2,*) '======='
-          WRITE(2,*) ' Marks '
-          WRITE(2,*) '======='
-          WRITE(2,*)
+          WRITE(lupri,*)
+          WRITE(lupri,*) '======='
+          WRITE(lupri,*) ' Marks '
+          WRITE(lupri,*) '======='
+          WRITE(lupri,*)
 *
-          WRITE(2,*) ' Identifier  Start of free memory '
-          WRITE(2,*) ' ================================='
+          WRITE(lupri,*) ' Identifier  Start of free memory '
+          WRITE(lupri,*) ' ================================='
           DO JMARK = 1, NM
-            WRITE(2,'(3X,A6,10X,I18)') MARKC(JMARK),IMARK(JMARK)
+            WRITE(lupri,'(3X,A6,10X,I18)') MARKC(JMARK),IMARK(JMARK)
           END DO
 *
         IF (ITSOK.EQ.0)
-     &     Call Abend2(' Error observed by  memory manager ')
+     &    call quit('*** error in MEMMAN: memory corrupted. ***')
         END IF
 *
       IF (ISTOP.NE.0)
-     &   Call Abend2(' Error observed by  memory manager ')
+     &   call quit(
+     & '*** error in MEMMAN: not enough memory available. ***')
 
       END
+! -- end of memory.F --

@@ -21,7 +21,6 @@ C  ORIGINAL AUTHORS: Hans Joergen Aa. Jensen and Poul Joergensen (1987).
 C  Reference: H. J. Aa. Jensen, P. Jorgensen, H. Agren, and J. Olsen,
 C             J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)
 C
-#ifdef OLD_REV_LOG
 !===========================================================================
 !NOTE (961114/hjaaj): if solvent is implemented in MP2 then
 !   IF (DOMP2) FLAG(16) = .FALSE.
@@ -38,7 +37,6 @@ C
 !--- Major overhaul of SOPPA code and other code, in particular FCKFRO.
 !December 1993-mjp (Martin J. Packer) --- Revised module for SOPPA
 !===========================================================================
-#endif
 C  /* Deck mp2inp */
       SUBROUTINE MP2INP(WORD1,INPERR,ALLOPT)
 C
@@ -47,6 +45,7 @@ C
 #include "implicit.h"
       PARAMETER (NTABLE = 13)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
+      CHARACTER SR_FUNCS*80 ! needed for RSDHf calculations 
       LOGICAL ALLOPT
 C
 C Used from common:
@@ -126,7 +125,6 @@ C *** Option 5 >SC_SRMP2<  self-consistent short-range contributions included
 C *** Option 6 >SRINTS<  calculate MP2 energy from AOSR2INT integrals
 #ifdef MOD_SRDFT
   106 SRMP2_SRINTS = .TRUE.
-      IPRMP2 = MAX(IPRMP2,1)
 #else
   106 CONTINUE
       call quit(
@@ -193,6 +191,7 @@ C *** Option 13 .SAVE WF1 : save first order wave function
       GO TO 100
 C ==========================================================================
  2000 CONTINUE
+      IF (SRMP2_SRINTS) IPRMP2 = MAX(IPRMP2,1) ! ensure output of energies
       IF (MP2_SCALED) THEN
          MP2_SCALEFAC(1) = P_S + P_T
          MP2_SCALEFAC(2) =     - P_T
@@ -244,11 +243,14 @@ C  3)  SAVE INFORMATION FOR SOPPA
 C
 #include "implicit.h"
 C
-      DIMENSION WRK(LFRSAV)
+      REAL*8    WRK(LFRSAV)
 C
-      LOGICAL FCKFRO, MP2FRZ
+      REAL*8    ESRDFTCMD(3)
+      LOGICAL   FCKFRO, MP2FRZ
       CHARACTER AO2INTFILE_LABEL_SAVE*8
-      PARAMETER ( D0 = 0.0D0 )
+      CHARACTER SR_FUNCS*80                 ! for RSDHf calculation
+      INTEGER   FCKTRA_TYPE_save
+      PARAMETER ( D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0 )
 C
 C Used from common blocks:
 C     GNRINF: DOSRIN,SRINTS,CHIVAL
@@ -258,7 +260,7 @@ C     SCBRHF: NFRRHF()
 C     INFMP2: NPHSYM, MP2FRO
 C     INFINP: FLAG(25), DIRFCK
 C     INFIND: ISX, ISMO
-C     INFTRA: NEWTRA, AO2INTFILE_LABEL
+C     INFTRA: NEWTRA, AO2INTFILE_LABEL, FCKTRA_TYPE
 C
 #include "maxorb.h"
 #include "maxash.h"
@@ -277,12 +279,15 @@ C
 #include "infind.h"
 #include "inftra.h"
 #include "dftcom.h"
+!
+! dfterg.h Manu: needed for RSDHf
+#include "dfterg.h"
 C
       CALL QENTER('MP2CTL')
       CALL GETTIM(CPUMP2,WALMP2)
       IF (IPRMP2 .GE. 0) WRITE (LUPRI,'(//A//A/A)')
      * ' ----- Output from SIRIUS MP2 module -----'
-     *,' Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,'
+     *,' Reference: H.J.Aa.Jensen, P.Jørgensen, H.Ågren, and J.Olsen,'
      *,'            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)'
 C
       IF (SRMP2_SRINTS .AND. .NOT.DO_RSDHF) THEN
@@ -336,38 +341,40 @@ C     Disable "MP2FRO" if result not to be printed
          END DO
       END IF
       CALL FLSHFO(LUPRI)
-      IF (SRMP2_SRINTS) THEN
-         IPRMP2 = MAX(0,IPRMP2)
-C        ... make sure MP2 energy with short-range integrals is printed!
-      END IF
+      CHIVAL_SAVE = CHIVAL
 C
 C     if SRMP2_SRINTS
 C     1)  calculate "EMP2" from AO2SRINT integrals (i.e. short-range integrals),
 C     2)  set SRMP2_SRINTS false, go back to label 10, and redo the
 C         standard srMP2 "EMP2" from AOTWOINT integrals (i.e. long-range integrals)
+C     3)  make sure MP2 energy with short-range integrals is printed!
       IF (SRMP2_SRINTS) THEN
          ISRINTS_LOOP = 0
          EMP2_SR   = DUMMY
          EMP2_LR   = DUMMY
          EMP2FL_SR = DUMMY
          EMP2FL_LR = DUMMY
+         IPRMP2 = MAX(0,IPRMP2)
       END IF
+      FKCTRA_TYPE_save = FCKTRA_TYPE
    10 CONTINUE
       IF (SRMP2_SRINTS) THEN
+         FKCTRA_TYPE = FCKTRA_TYPE_save
          ISRINTS_LOOP = ISRINTS_LOOP + 1
          IF (ISRINTS_LOOP .EQ. 1) THEN
-            WRITE(LUPRI,'(/A)')
-     &      ' MP2 energy expression with short-range integrals'
+            IF (FCKTRA_TYPE .GT. 0) FCKTRA_TYPE = 0 ! FCKTRA not implemented for sr 2-el. integrals
+            CALL HEADER(
+     &      ' MP2 energy expression with short-range integrals',-1)
             AO2INTFILE_LABEL_SAVE = AO2INTFILE_LABEL
             AO2INTFILE_LABEL = 'AOSR2INT'
          ELSE IF (ISRINTS_LOOP .EQ. 2) THEN
-            WRITE(LUPRI,'(/A)')
-     &      ' MP2 energy expression with long-range integrals'
+            CALL HEADER(
+     &      ' MP2 energy expression with long-range integrals',-1)
             AO2INTFILE_LABEL_SAVE = AO2INTFILE_LABEL
             AO2INTFILE_LABEL = 'AOTWOINT'
          ELSE IF (ISRINTS_LOOP .EQ. 3) THEN
-            WRITE(LUPRI,'(/A)') ' MP2 energy expression with '//
-     &      'full (short-range + long-range) integrals'
+            CALL HEADER(' MP2 energy expression with '//
+     &      'full (short-range + long-range) integrals',-1)
             AO2INTFILE_LABEL_SAVE = AO2INTFILE_LABEL
             AO2INTFILE_LABEL = 'AOTWOINT'
             CHIVAL = -1.0D0
@@ -387,7 +394,7 @@ C        ... force new sort of AO integrals
       END IF
 C
 cmjp If response calculation then make space for the correlation coefficients.
-      IF (FLAG(25) .AND. .NOT.SRMP2_SRINTS) THEN
+      IF ( FLAG(25) ) THEN
          CALL MEMGET2('REAL','KAPPA',KKAPPA,NPHTOT(1),WRK,KFREE,LFREE)
          CALL DZERO(WRK(KKAPPA),NPHTOT(1))
       ELSE
@@ -544,6 +551,7 @@ C
      &          ' from  long-range integrals :',EMP2
                EMP2_LR = EMP2
             ELSE IF (ISRINTS_LOOP .EQ. 3) THEN
+               CHIVAL = CHIVAL_SAVE
                EMP2_SRLR = EMP2 - EMP2_SR - EMP2_LR
                WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
      &         ' from       sr-lr integrals :',EMP2_SRLR
@@ -552,6 +560,232 @@ C
      &         ' from sr-sr+sr-lr integrals :',EMP2_SRLR
                WRITE (LUPRI,'(//A,F25.10)') '@     MP2 contribution'//
      &          ' from        full integrals :',EMP2
+!     
+! Manu 06-12-2012: If RSDHf calculation then ... 
+               IF (DO_RSDHF) THEN 
+! set up for computing the src "md" DFT correlation energy       
+!                 SR_FUNCS = 'SRXLDA SRCLDA' ! just for debugging 
+
+                  SR_FUNCS = 'NULL SRCMDLDA' ! no sr exchange,
+!                                              only (complementary "md") 
+!                                              sr correlation functional
+!
+! Manu 27-06-2013 CAUTION !!!!
+! One may want to compute the RSDHf energy with HF-srDFT orbitals 
+! for which "ISJT=.TRUE.", like in HF-srPBEgws. The computation of
+! the srx energy must then be disabled when calculating the "md" src term.
+! 
+                  DOSRX_PBETCS   = .FALSE.
+                  DOSRX_PBEGWS   = .FALSE.
+                  DOSRX_PBERI    = .FALSE.
+                  DOSRX_LDA_S    = .FALSE.
+                  DOSRX_PBEGWS_S = .FALSE.
+!!!!!!!
+
+                  CALL SRFUN_INPUT(SR_FUNCS)
+! Allocate memory for the HF-srDFT density matrix in the MO and AO bases ... 
+                  CALL MEMGET('REAL',KDHFAO,N2BASX,WRK,KFREE,LFREE)
+                  CALL MEMGET('REAL',KDHFMO,N2ORBX,WRK,KFREE,LFREE)
+! ... and compute it                  
+                  CALL GETDHFAO(WRK(KDHFAO),WRK(KDHFMO),WRK(KCMO),
+     &                          WRK(KFREE)) 
+
+! Manu & Yann: april 2014
+! Release memory allocated for DHFMO
+                  CALL MEMREL('Releasing memory',
+     &                          WRK,KFRSAV,KDHFMO,KFREE,LFREE)  
+!
+! Manu debug
+!                 write(lupri,*) 'checking the HF-srDFT DM' //
+!    &                            ' in the AO basis'
+
+!                 CALL OUTPUT(WRK(KDHFAO),1,NBAST,1,NBAST,NBAST,
+!    &                        NBAST,1,LUPRI)
+!
+!  *** Calculate the src "md" DFT contribution ***     
+!
+! memory must be allocated for the potential though it is not used here
+! ...
+                  CALL MEMGET('REAL',KVSRAO,N2BASX,WRK,KFREE,LFREE)
+!                  
+                  CALL DZERO(WRK(KVSRAO),N2BASX)
+
+                  ESRDFTCMD = 0.0D0
+                  IPRMANU = IPRFCK
+!                 IPRMANU = 10 
+                  CALL SRDFT(1,WRK(KVSRAO),WRK(KDHFAO),ESRDFTCMD,
+     &                       .TRUE.,.FALSE.,.FALSE.,.FALSE.,
+     &                       WRK(KFREE),LFREE,IPRMANU)
+C                      SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,EDFTX,EDFTC,DOERG,
+!                            DOGRD,DOATR,WORK,LWORK,IPRINT)
+                   write(lupri,*) 'Esrcmd_dft = ', ESRDFTCMD
+!
+! *** Compute the srHFX term ***
+                  ESRHFX = D0
+                  
+                  CALL DZERO(WRK(KVSRAO),N2BASX) ! reset to zero so that
+!                                                  it can be used for
+!                                                  the srHFX potential 
+
+                  CALL MEMGET('REAL',KDAO,       ! allocate memory for
+     &                        N2BASX,WRK,KFREE,  ! copying KDHFAO in DAO
+     &                        LFREE)
+                  CALL DCOPY(N2BASX,WRK(KDHFAO),1,WRK(KDAO),1)
+!                  
+!                 write(lupri,*) 'print DAO before calling sirfck2'
+!                 CALL OUTPUT(WRK(KDAO),1,NBAST,1,NBAST,NBAST,
+!    &                        NBAST,1,LUPRI)
+
+                  DOSRIN = .TRUE. ! set up
+                  SRINTS = .TRUE. ! set up
+                  DIRFCK = .TRUE. 
+
+                  HFXFAC_SAVE = HFXFAC
+                  HFXFAC = 1.0D0         ! otherwise integrals are
+!                                          multiplied by zero :-/
+
+
+!  using HERFCK ...                  
+!                 write(lupri,*) 'Before calling herfck E_srHFX = ',
+!    &            ESRHFX 
+!  
+                  IPRHER = IPRFCK/100 
+                  AO2INTFILE_LABEL_SAVE =  AO2INTFILE_LABEL
+                  AO2INTFILE_LABEL      = 'AOSR2INT'
+                 IF (LUINTA .LE. 0) CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,
+     &           'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+                  CALL GPCLOSE(LUINTA,'DELETE')
+                  CALL HERFCK(WRK(KVSRAO),WRK(KDAO),1,
+     &                        0,12,IPRHER,WRK(KFREE),LFREE)
+!                 NB! WRK(KDAO) may be destroyed inside HERFCK, do not use below!
+!                 write(lupri,*) 'print VSRAO after calling sirfck2'
+!                 CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,
+!    &                        NBAST,1,LUPRI)
+! Manu & Yann: april 2014
+! Release memory allocated for DAO
+                  CALL MEMREL('Releasing memory',
+     &                          WRK,KFRSAV,KDAO,KFREE,LFREE)  
+!     
+                  HFXFAC = HFXFAC_SAVE   ! recover its initial value
+!                                          (before call to herfck)
+
+                  ESRHFX   = DP5*DDOT(N2BASX,WRK(KDHFAO),
+     &                                1,WRK(KVSRAO),1) ! Ksr
+
+!                 write(lupri,*) 'E_srHFX = ', ESRHFX 
+!     
+#ifdef sirmp2_debug
+!***********************************************************
+! *** Compute the lrHFX term for analysis purposes ***
+!
+                  ELRHFX = D0
+!  using HERFCK ...                  
+!
+                  DOSRIN = .FALSE. ! set up
+                  SRINTS = .FALSE. ! set up
+                  DIRFCK = .TRUE. 
+                  HFXFAC_SAVE = HFXFAC
+                  HFXFAC = 1.0D0         ! otherwise integrals are
+!                                          multiplied by zero :-/
+
+!                 WRK(KDAO) may have been destroyed by HERFCK so we copy
+!                 WRK(KDHFAO) again
+
+                  CALL DZERO(WRK(KDAO),N2BASX) ! reset to zero just to be sure 
+                  CALL DCOPY(N2BASX,WRK(KDHFAO),1,WRK(KDAO),1)
+
+                  IF (LUINTA .LE. 0) 
+     &            CALL GPOPEN(LUINTA,AO2INTFILE_LABEL_SAVE,
+     &                        'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+                  CALL GPCLOSE(LUINTA,'DELETE')
+                  CALL DZERO(WRK(KVSRAO),N2BASX) ! reset WRK(KVSRAO) to zero so that
+!                                                  it can now be used
+!                                                  for the lrHFX potential 
+                  CALL HERFCK(WRK(KVSRAO),WRK(KDAO),1,
+     &                        0,12,IPRHER,WRK(KFREE),LFREE)
+!                 NB! WRK(KDAO) may be destroyed inside HERFCK, do not use below!
+!                 write(lupri,*) 'print VSRAO after calling sirfck2'
+!                 CALL OUTPUT(WRK(KVSRAO),1,NBAST,1,NBAST,NBAST,
+!    &                        NBAST,1,LUPRI)
+!     
+                  HFXFAC = HFXFAC_SAVE   ! recover its initial value
+!                                          (before call to herfck)
+
+                  ELRHFX   = DP5*DDOT(N2BASX,WRK(KDHFAO),
+     &                                1,WRK(KVSRAO),1) ! Klr
+
+!***********************************************************
+#endif
+!                   
+                  CALL MEMREL('Releasing memory',
+     &                          WRK,KFRSAV,KDHFAO,KFREE,LFREE)  
+! *** We can now sum up all the contributions *** 
+
+! Manu debug b
+                  write(lupri,*) ''
+                  write(lupri,*) 'checking energy contributions'
+                  write(lupri,*) 'EMY =', EMY
+                  write(lupri,*) 'ESRDFT =', ESRDFT ! from HF-srDFT
+                  write(lupri,*) 'ESRHFX =', ESRHFX
+!                 write(lupri,*) 'ELRHFX =', ELRHFX 
+!                 write(lupri,*) 'EHFX (lr+sr) =', ELRHFX+ESRHFX 
+                  write(lupri,*) 'ESRDFTCMD =', ESRDFTCMD ! from here
+                  EHF1it = EMY-ESRDFT(1)+ESRHFX
+                  write(lupri,*) 'EHF1it', EHF1it 
+! Manu debug e
+
+                   ERSHF = EMY - LAMSR * ESRDFT(1) + LAMSR * ESRHFX ! RSHf energy (with factor lambda)
+     &                     + LAMSR * ESRDFTCMD(1)
+                   
+                   ERSDHF = ERSHF + (D1 - LAMSR) * EMP2_LR       ! RSDHf energy (with factor lambda)
+     &                     + LAMSR * (EMP2-EMP2_SR)    
+
+                   write(lupri,*) ''
+                   write(lupri,*) ''
+                   write(lupri,*) '********************************'
+     &                            //'******************************'
+                   write(lupri,*) '****************'//
+     &                            ' Calculation of the RSDHf energy'
+     &                            //' *************'
+                   write(lupri,*) '********************************'
+     &                            //'******************************'
+                   WRITE (LUPRI,'(//A,F25.10)')
+     &             '@    RSHf total energy               :',
+     &                                                ERSHF
+                   WRITE (LUPRI,'(/2(/A,F25.10))')
+     &             '@   + lr MP2 contribution            :',
+     &                                              EMP2_LR,
+     &             '@   * (1-scaling factor)             :',
+     &                                             D1-LAMSR
+                   WRITE (LUPRI,'(/2(/A,F25.10))')
+     &             '@   + (fr MP2 - sr MP2) contribution :',
+     &                                         EMP2-EMP2_SR,
+     &             '@   * scaling factor                 :',
+     &                                                LAMSR
+                   WRITE (LUPRI,'(//A,F25.10)')
+     &             '@   = RSDHf total energy             :',
+     &                                               ERSDHF
+                   WRITE (LUPRI,'(//A,F25.10,A)')
+     &             '(     MP2-srDFT total energy         :',
+     &                                          EMY+EMP2_LR,
+     &             ' )'
+                   write(lupri,*) ''
+                   write(lupri,*) ''
+                   write(lupri,*) '********************************'
+     &                            //'******************************'
+
+! for analysis ...
+!                  write(lupri,*) 'E_RSHf (no src) = ', 
+!    &             EMY - ESRDFT + ESRHFX
+!                  write(lupri,*) ''
+!                  write(lupri,*) 'EsrXC_dft = ', ESRDFT
+!                  write(lupri,*) 'ESRCMD = ', ESRDFTCMD 
+!                  write(lupri,*) ''
+!                  write(lupri,*) 'LAMSR = ', LAMSR
+               
+               END IF  ! if DO_RSDHF  
+!
+     
             ELSE
                call quit('MP2CTL: You should never see this output!')
             END IF
@@ -598,7 +832,7 @@ C
 C     Write the correlation coefficients and second order one-density to
 C     the interface file LUSIFC
 C
-      IF (FLAG(25)) THEN
+      IF ( FLAG(25) ) THEN
          CALL MP2IFC(WRK(KDONE),WRK(KKAPPA))
       END IF
 C
@@ -744,7 +978,17 @@ C
 C           now reset name of 2-electron integral file
             AO2INTFILE_LABEL = AO2INTFILE_LABEL_SAVE
             FTRCTL = .TRUE.
-            GO TO 10
+!
+            CHIVAL = CHIVAL_SAVE
+! Manu 04-12-2012: no 'quit' anymore when asking for the computation of
+! the lr-sr MP2 coupling term ...
+!
+!           GO TO 10 ! old code
+            
+            IF (ISRINTS_LOOP .LE. 2) THEN 
+               GO TO 10
+            END IF 
+
 C           ... and go back and calculate the MP2 contributions from
 C               next class of range-separated integrals /hjaaj Oct 09
          ELSE IF (ADDSRI) THEN
@@ -762,13 +1006,6 @@ C               next class of range-separated integrals /hjaaj Oct 09
      *      ' Hartree-Fock total energy        :',EMY,
      *      ' + Scaled MP2 contribution        :',EMP2FL,
      *      ' = Scaled MP2 second order energy :',EMY+EMP2FL
-            ELSE IF (DCPT2) THEN
-               WRITE (LUPRI,'(/A/,3(/A,F25.10))')
-     *      ' NOTE that the orbitals saved on disk are those obtained'//
-     *      ' with frozen orbitals (see above).',
-     *      ' Hartree-Fock total energy        :',EMY,
-     *      ' + DCPT2 contribution             :',EMP2FL,
-     *      ' = DCPT2 energy                   :',EMY+EMP2FL
             ELSE
               WRITE (LUPRI,'(/A/3(/A,F25.10))')
      *     ' NOTE that the orbitals saved on disk are those obtained'//
@@ -778,7 +1015,7 @@ C               next class of range-separated integrals /hjaaj Oct 09
      *     ' = MP2 second order energy :',EMY+EMP2FL
             END IF
          END IF
-
+C
 C        Manu July 07 : we copy (as done previously) CMO1 into CMO2 since we need
 C        the HF-SRDFT orbitals in MP2SRDFTDEN
 C
@@ -846,7 +1083,16 @@ C
 C         now reset name of 2-electron integral file
          AO2INTFILE_LABEL = AO2INTFILE_LABEL_SAVE
          FTRCTL = .TRUE.
-         GO TO 10
+!         
+! Manu 04-12-2012: no 'quit' anymore when asking for the computation of
+!                  the lr-sr MP2 coupling term ...
+!
+!           GO TO 10 ! old code
+            
+            IF (ISRINTS_LOOP .LE. 2) THEN 
+               GO TO 10
+            END IF 
+!            
 C        ... and go back and calculate the MP2 contributions from
 C            long-range integrals /hjaaj Oct 09
       END IF
@@ -1051,7 +1297,7 @@ C
       IMP  = IPHORD(NH+JMP)
       IAH  = IPHORD(JAH)
       ENMA = MP2_LSHIFT - ORBEN(IMP) + ORBEN(IAH)
-      IF (IPRMP2 .GE. 30) THEN
+      IF (IPRMP2 .GE. 25) THEN
          WRITE (LUPRI,'(//A/,2(/A,2I5))')
      *      ' --- TEST OUTPUT FROM MP2DEN',
      *      ' particle indices JMP, IMP     : ',JMP,IMP,
@@ -1063,7 +1309,7 @@ C
      *      ' Orbital energy of AH orbital  :', ORBEN(IAH)
 
          write(lupri,*) 'DONE matrix MP2MUL start:'
-         call output(done,1,4,1,4,norbt, norbt,1,lupri)
+         call output(done,1,NORBT,1,4,norbt, norbt,-1,lupri)
       END IF
       EMP2BF = EMP2
       DO 100 IH = 1,NH
@@ -1107,7 +1353,7 @@ c     &         " DCPT2 work loop", ENMANB,H2M(INP,IBH),H2D(INP,IBH)
                H2D(INP,IBH) = ( D2*H2M(INP,IBH) - H2PHD(IP,IH,IAHMP))
      *                        / ENMANB
             END IF
-            IF (IPRMP2 .GE. 30) THEN
+            IF (IPRMP2 .GE. 25) THEN
                TVALUE = TVALUE + H2D(INP,IBH)*H2D(INP,IBH)
                IF (IPRMP2 .GE. 50 .AND.
      *             H2D(INP,IBH).NE.D0 .AND. H2M(INP,IBH).NE.D0) THEN
@@ -1120,12 +1366,7 @@ c     &         " DCPT2 work loop", ENMANB,H2M(INP,IBH),H2D(INP,IBH)
 C
 C Accumulate MP2 energy :
 C
-           IF (DCPT2) THEN
-c           EMP2 = EMP2 + H2D(INP,IBH)
-              EMP2 = EMP2 + H2M(INP,IBH) * H2D(INP,IBH)
-           ELSE
-              EMP2 = EMP2 + H2M(INP,IBH) * H2D(INP,IBH)
-           END IF
+            EMP2 = EMP2 + H2M(INP,IBH) * H2D(INP,IBH)
 C
 C PARTICLE HOLE PART OF MULLIKEN DISTRIBUTIONS ARE DIVIDED WITH ORBITAL
 C ENERGY DIFFERENCES TO BE ABLE TO CARRY OUT MATRIX MULTIPLICATIONS.
@@ -1192,12 +1433,12 @@ C
      &              H2D(IOFFI+NRHFI,IOFFJ+NFRMPJ), NORBT,1.D0,
      &              DONE(IOFFI+NFRMPI,IOFFI+NRHFI),NORBT)
  1000 CONTINUE
-      IF (IPRMP2 .GE. 30) THEN
+      IF (IPRMP2 .GE. 25) THEN
          WRITE (LUPRI,'(1P,2(/A,2D11.4))')
      *   ' del(EMP2), EMP2 after this distribution :',EMP2-EMP2BF,EMP2,
      *   ' T = sum (a(MA,NB)**2) after this distr. :',TVALUE
          write(lupri,*) 'DONE matrix MP2MUL end:'
-         call output(done,1,4,1,4,norbt, norbt,1,lupri)
+         call output(done,1,NORBT,1,4,norbt, norbt,-1,lupri)
       END IF
  8000 CALL QEXIT('MP2DEN')
       RETURN
@@ -1266,7 +1507,7 @@ C
          NWARN = NWARN + 1
          WRITE(LUPRI,'(/A/A,F12.6,A)')
      &   ' WARNING : MP2 CALCULATION CARRIED OUT INCORRECTLY ',
-     &   ' WARNING : TRACE OF ONE ELECTRON DENSITY MATRIX GIVE ',
+     &   ' WARNING : TRACE OF ONE ELECTRON DENSITY MATRIX GIVES ',
      &   (-ELERMV+ELERCV),' ELECTRONS IN ADDITION TO SPECIFIED NUMBER'
          I = 1
       ELSE

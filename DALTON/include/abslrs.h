@@ -1,3 +1,4 @@
+!  abslrs.h
       INTEGER NMXFREQ
       PARAMETER ( NMXFREQ=300 )
       REAL*8 ABS_DAMP,ABS_THCLR,ABS_RESID(3,NMXFREQ,3,8),               &
@@ -15,7 +16,7 @@
      &     ABS_NISH(8),ABS_NORB(8),ABS_NFREQ_BETA_B,ABS_KLRED(2),       &
      &     ABS_NFREQ_BETA_C,                                            &
      &     LUABSPRI, LUABSVECS,LUSB, LUAB, LUSS, LUAS, LUE1RED,         &
-     &     LUE2RED,LUSRED
+     &     LUE2RED, LUSRED
       CHARACTER*8 ABS_LABOP(12,8)
 !
       COMMON /ABS_LRS1/ ABS_DAMP,ABS_THCLR,ABS_RESID,ABS_FREQ_ALPHA,    &
@@ -34,3 +35,4 @@
      &     LUSB, LUAB, LUSS, LUAS, ABS_NFREQ_BETA_B,ABS_KLRED,          &
      &     LUE1RED,LUE2RED,LUSRED
       COMMON /ABS_LRS4/ ABS_LABOP
+!  end of abslrs.h

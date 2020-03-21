@@ -106,6 +106,7 @@ C
       DATA NCONSV,NWOPSV,MXRLSV,LFRESV /-1,-1,-1,-1/
 C
       CALL QENTER('SIRNEO')
+
 C
 C *** Work space allocation
 C
@@ -246,17 +247,28 @@ C
       NCLIN  = 0
       NOLIN  = 0
       ITMIC  = 0
+
+#ifdef LUCI_DEBUG
+      write(lupri,*) 'SIRNEO LUC_DEBUG IPRI6 raised from X to 101',IPRI6
+      IPRI6  = 101
+#endif
 C
   100 ITMIC  = ITMIC + 1
-         IF (IPRI6.ge.10) WRITE(LUPRI,'(/A,I5)')
+         IF (IPRI6.ge.10) THEN
+            WRITE(LUPRI,'(/A,I5)')
      &      ' ---> Micro iteration no.',ITMIC
+            CALL FLSHFO(LUPRI)
+         END IF
 C
          ITMICB = 0
   200    CONTINUE
             ITMICB = ITMICB + 1
             NTSIM = MIN(MAXSIM,NTSIML)
-            IF (IPRI6.ge.10) WRITE(LUPRI,'(A,2I5)')
-     &      ' ---> Batch no., NTSIM',ITMICB,NTSIM
+            IF (IPRI6.ge.10) THEN
+               WRITE(LUPRI,'(A,2I5)')
+     &         ' ---> Batch no., NTSIM',ITMICB,NTSIM
+               CALL FLSHFO(LUPRI)
+            END IF
 C
 C           test against max. dimension of reduced L
 C
@@ -357,7 +369,7 @@ C           subtract CREF part of sigmavectors:
 C
             ISCVEC = KSVECS
             DO 780 ITSIM = 1,NTSIM
-               TT = DDOT(NCONF,CREF,1,WRK(ISCVEC),1)
+               TT = DDOT_128(NCONF,CREF,1,WRK(ISCVEC),1)
                IF (ABS(TT) .GT. THREPS) THEN
                   IF (P6FLAG(17))
      *               WRITE (LUPRI,7800) ITMIC,(NREDL+ITSIM),TT
@@ -423,7 +435,7 @@ C
 C        CALL NEORED (ICTL,NCSIM,NOSIM,BVECS,SVECS,BETVAL,
 C    *                G,IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
 C
-         IF (P6FLAG(51)) THEN
+         IF (P6FLAG(51)) THEN                         ! edh checks symmetry of reduced matrix
 C           check symmetry of REDL
             CALL NEORED_CHK(IBNDX,WRK(KWRK1),LWRK1)
          END IF
@@ -960,12 +972,12 @@ C                 Check for later if we have any orbital trial vectors
 C                  (or NWOPT .EQ. 0), because then we should include
 C                  an orbital trial vector.
 C
-            IF (IPRI6 .gt. 210) THEN
-               WRITE (LUPRI,'(/A,I3,A)')
-     &           'Printing',NSIMX,' sigma part of residual vectors:'
-               CALL OUTPUT(WRK(KRVCS),1,NVAR,1,NSIMX,
-     &              NVAR,NSIMX,-1,LUPRI)
-            END IF
+         IF (IPRI6 .gt. 210) THEN
+            WRITE (LUPRI,'(/A,I3,A)')
+     &        'Printing',NSIMX,' sigma part of residual vectors:'
+            CALL OUTPUT(WRK(KRVCS),1,NVAR,1,NSIMX,
+     &           NVAR,NSIMX,-1,LUPRI)
+         END IF
          KB = KSC
          REWIND LUIT3
          READ (LUIT3)
@@ -1119,14 +1131,14 @@ C                 we have finished
                   IBNDX(IBNOFF+ISIMX) = 0
                END IF
             ELSE
-               IF (P4FLAG(6)) THEN
+                IF (P4FLAG(6)) THEN
                   IF (JROOTX .EQ. ISTATE) THEN
                      WRITE (LUW4,9020) JROOTX,QCNRM,QONRM,QNRM,' ***'
                      WRITE (LUW4,9022) YCNRM,YONRM,YNRM
                   ELSE
                      WRITE (LUW4,9020) JROOTX,QCNRM,QONRM,QNRM
                   END IF
-               END IF
+                END IF
                IF (JROOTX .EQ. ISTATE .AND. FORCEO) THEN
 C                 assure first trial vector is an orbital vector
                   NOVEC = NOVEC + 1
@@ -1149,16 +1161,21 @@ C                 CI trial vector, prepare for Davidson:
                   DO I = JCRV+1,JCRV+NCONF
                      IF (ABS(WRK(I)) .LT. CTEST) WRK(I) = D0
                   END DO
-               ELSE
+               ELSE 
 C                 orbital trial vector
-                  NOVEC = NOVEC + 1
-                  IBNDX(IBNOFF+ISIMX) = 2
-                  IF (KAPOPT) THEN
-                     WRK((KTHKAP-1)+NOVEC) =
-     *               MAX(FKAPC*QCNRM, FKAPO*QONRM)
-                  END IF
-                  FACTRN = 1.0 D-3
-                  CTEST = FACTRN * QONRM
+                   IF (NWOPT .EQ. 0) THEN
+                      !edh for open shell srdft we enter here??
+                       CALL QUIT('Enter orbital part with NWOPT=0')
+                   ELSE
+                      NOVEC = NOVEC + 1
+                   END IF
+                   IBNDX(IBNOFF+ISIMX) = 2
+                   IF (KAPOPT) THEN
+                      WRK((KTHKAP-1)+NOVEC) =
+     *                MAX(FKAPC*QCNRM, FKAPO*QONRM)
+                   END IF
+                   FACTRN = 1.0 D-3
+                   CTEST = FACTRN * QONRM
                   DO I = JORV+1,JORV+NWOPT
                      IF (ABS(WRK(I)) .LT. CTEST) WRK(I) = D0
                   END DO
@@ -1681,6 +1698,7 @@ C         and for the reduced L-matrix (section 2)
 C         dimension: NVAR and NREDL*(NREDL+1)/2+2*NREDL, rsp.
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "infvar.h"
       DIMENSION BVECS(*),SVECS(NVAR,*), REDL(*),IBNDX(*),G(*)
       DIMENSION EVEC(NREDL,*),EVAL(*)
@@ -1734,7 +1752,8 @@ C
             ISTBO = KBO
             DO 100 L=1,K
                IF (IBNDX(IREDL+L) .EQ. JBCNDX) THEN
-                  REDL(KL+L) = DDOT(NCONF,BVECS(ISTBC),1,SVECS(1,IK),1)
+                  REDL(KL+L) =
+     &               DDOT_128(NCONF,BVECS(ISTBC),1,SVECS(1,IK),1)
                   ISTBC = ISTBC + NCONF
                ELSE
                   REDL(KL+L) =
@@ -1758,7 +1777,7 @@ C
             DO 300 ISIM = 1,NTSIM
                KL = IROW(IREDL+ISIM) + 1
                IF (IBNDX(IREDL+ISIM) .EQ. JBCNDX) THEN
-                  REDL(KL) = DDOT(NCONF,BVECS(ISTBC),1,G,1)
+                  REDL(KL) = DDOT_128(NCONF,BVECS(ISTBC),1,G,1)
                   ISTBC = ISTBC + NCONF
                ELSE
                   REDL(KL) = DDOT(NWOPT,BVECS(ISTBO),1,G(1+NCONF),1)
@@ -1780,7 +1799,7 @@ C
                         IK = IBO
                         IBO = IBO + 1
                      END IF
-                     REDL(KL) = DDOT(NCONF,BVECS,1,SVECS(1,IK),1)
+                     REDL(KL) = DDOT_128(NCONF,BVECS,1,SVECS(1,IK),1)
    25             CONTINUE
                ELSE
                   CALL READT(LUIT3,NWOPT,BVECS)
@@ -1970,6 +1989,10 @@ C
 C           CALL NEXCI(OLSEN,ENER,NCVAR,D,XVEC,
 C       &              RES,DIAG,IPRPHP,WRK,LWRK)
 #endif
+
+!        write(lupri,*) 'neost: bcvec after nexci ==> ',nconf
+!        call wrtmatmn(BVECS(KBC),1,NCONF,1,NCONF,lupri)
+
          END IF
          NCVEC = NCVEC + 1
          ISTBC = ISTBC + NCONF
@@ -2088,9 +2111,17 @@ C
       NDMBC  = MAX(1,NCONF)
       NDMBO  = MAX(1,NWOPT)
       THRLDV = NVAR*THRLDP
+
+!     write(lupri,*) 'neost: bcvec before ortbvc ==> ',nconf
+!     call wrtmatmn(BVECS(KBC),1,NCONF,1,NCONF,lupri)
+
       CALL ORTBVC(NCVEC,NOVEC,NDMBC,NDMBO,NBPREV,IBNDX,LUIT3,
      *            BVECS(KBC),BVECS(KBO),
      *            THRLDV,BVECS(KTT0),BVECS(KBPREV))
+
+!     write(lupri,*) 'neost: bcvec after ortbvc ==> ',nconf
+!     call wrtmatmn(BVECS(KBC),1,NCONF,1,NCONF,lupri)
+
 C     CALL ORTBVC(NBC,NBO,NDMBC,NDMBO,NBPREV,IBNDX,LUBVC,
 C    *            BCVECS,BOVECS,THRLDP,TT0,BPREV)
 C
@@ -2233,7 +2264,7 @@ C        if (CI-type) then
             CALL READT(LUBVC,NDMBC,BPREV)
             DO 1910 J = 1,NBC
                IF (IBNDX(IBC+J).EQ.JBCNDX) THEN
-                  TT = -DDOT(NDMBC,BPREV,1,BCVECS(1,J),1)
+                  TT = -DDOT_128(NDMBC,BPREV,1,BCVECS(1,J),1)
                   CALL DAXPY(NDMBC,TT,BPREV,1,BCVECS(1,J),1)
                END IF
  1910       CONTINUE
@@ -2263,7 +2294,7 @@ C
 C        ... orthogonalize using that prev. vectors are normalized
          DO 2300 J = 1,(I-1)
          IF (IBNDX(IBC+J).EQ.0) GO TO 2300
-            TT = -DDOT(NDMBC,BCVECS(1,J),1,BCVECS(1,I),1)
+            TT = -DDOT_128(NDMBC,BCVECS(1,J),1,BCVECS(1,I),1)
             CALL DAXPY(NDMBC,TT,BCVECS(1,J),1,BCVECS(1,I),1)
  2300    CONTINUE
          TT = DNRM2(NDMBC,BCVECS(1,I),1)
@@ -2683,7 +2714,7 @@ C   asymmetry would indicate probable bug in LINTRN module.
 C
 #include "implicit.h"
       DIMENSION IBNDX(*), WRK(LFREE)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DIFTST = 1.0D-8)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DIFTST = 1.0D-7)
 #include "ibndxdef.h"
 C
 C  Used from common blocks:
@@ -2699,8 +2730,10 @@ C
 C
       LOGICAL CITYPE
 C
+!     start of statement function definition!!!
       REDH(I,J) = WRK((J-1)*NREDH+I)
       REDS(I,J) = WRK((KREDS-1)+(J-1)*NREDL+I)
+!     end of statement function definition!!!
 C
       NREDH  = NREDL - 1
       NCOMAX = MAX(NCONF,NWOPT)
@@ -2785,7 +2818,7 @@ C
          DO 260 J = 1,NREDL
             JSJI = JSJI + 1
             IF (IBNDX(J) .EQ. IBNDX(I)) THEN
-               WRK(JSJI) = DDOT(LBVEC,WRK(JBVECJ),1,WRK(JBVECI),1)
+               WRK(JSJI) = DDOT_128(LBVEC,WRK(JBVECJ),1,WRK(JBVECI),1)
             END IF
             IF (IBNDX(J) .EQ. JBCNDX) THEN
                JBVECJ = JBVECJ + NCONF
@@ -2802,13 +2835,13 @@ C
 C
 C     check reduced matrices
 C
-      WRITE (LUPRI,'(//A/A/A,1P,D10.2,A)')
+        WRITE (LUPRI,'(//A/A/A,1P,D10.2,A)')
      *    ' %%% Non-symmetric elements in redH',
      *    '     and wrong elements in redS',
      *    '     ( threshold is',DIFTST,' ) :'
-      NERROR = 0
-      DO 340 I = 2,NREDH
-         DO 320 J = 1,(I-1)
+        NERROR = 0
+        DO 340 I = 2,NREDH
+          DO 320 J = 1,(I-1)
             DIFF = ABS( REDH(I,J) - REDH(J,I) )
             IF (DIFF .GT. DIFTST) THEN
                NERROR = NERROR + 1
@@ -2837,17 +2870,18 @@ C
      *         ' i, i, reds(i,i)            :',
      *         I,I,REDS(I+1,I+1)
          END IF
-  340 CONTINUE
+  340  CONTINUE
       IF (NERROR .EQ. 0) WRITE (LUPRI,'(A)') ' None, redH is symmetric.'
 C
-      WRITE (LUPRI,'(/A,(/15I5))') ' IBNDX vector:',
-     &   (IBNDX(I), I = 1,NREDL)
-      WRITE (LUPRI,'(//A)') ' Reduced Hessian (as bT*s) :'
-      CALL OUTPUT(WRK(KREDH),1,NREDH,1,NREDH,NREDH,NREDH,1,LUPRI)
-      WRITE (LUPRI,'(//A)') ' Reduced overlap (as bT*b) :'
-      CALL OUTPUT(WRK(KREDS),1,NREDL,1,NREDL,NREDL,NREDL,1,LUPRI)
+        WRITE (LUPRI,'(/A,(/15I5))') ' IBNDX vector:',
+     &    (IBNDX(I), I = 1,NREDL)
+        WRITE (LUPRI,'(//A)') ' Reduced Hessian (as bT*s) :'
+        CALL OUTPUT(WRK(KREDH),1,NREDH,1,NREDH,NREDH,NREDH,1,LUPRI)
+        WRITE (LUPRI,'(//A)') ' Reduced overlap (as bT*b) :'
+        CALL OUTPUT(WRK(KREDS),1,NREDL,1,NREDL,NREDL,NREDL,1,LUPRI)
 C
-      IF (NERROR .GT. 0) CALL QUIT('ERROR detected in NEORED_CHK.')
+        IF (NERROR .GT. 0) CALL QUIT('ERROR detected in NEORED_CHK.')
+
  9999 RETURN
       END
 ! end of sirneo.F

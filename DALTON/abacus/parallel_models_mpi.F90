@@ -21,6 +21,7 @@
 module parallel_models_mpi
 
   use parallel_communication_models_mpi
+  use parallel_models_lucita
 ! use parallel_file_io_models_mpi
 
 #ifdef VAR_MPI
@@ -39,7 +40,8 @@ module parallel_models_mpi
 
   public parallel_models_initialize_mpi
   public parallel_models_finalize_mpi
-  public check_parallel_models_mpi
+
+  logical, public :: lucita_models_enabled = .false.
 
   private
 
@@ -106,6 +108,7 @@ contains
 !     finalize parallel communication models
       call communication_free_mpi(communication_info_mpi,  &
                                   nr_of_process_glb)
+      if(lucita_models_enabled) call check_parallel_models_mpi('lucita')
 
   end subroutine parallel_models_finalize_mpi
 !*******************************************************************************
@@ -125,10 +128,8 @@ contains
         case('all')
 !         call check_all_models
           call quit('parallel model check for all modules not implemented yet')
-#ifdef NEW_LUCITA
         case('lucita')
           call check_lucita_models()
-#endif
         case default 
           call quit('parallel model check for all modules not implemented yet')
       end select

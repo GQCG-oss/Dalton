@@ -29,113 +29,59 @@ C
 #include "parluci.h"
 #include "files.inc"
 #include "clunit.inc"
-#include "units.inc"
       integer irefsm
-      INTEGER LUSCR_MPIL,LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
+      INTEGER LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
       INTEGER LUSC344_MPIL, LUDMMY_MPIL
-      CHARACTER LUSCR_MPIN*11,NLUSCR_MPI*15,LUDMMY_MPIN*5, NLUDMMY_MPI*9
+      character (len=12)             :: mcref_name_generic
+      character (len=16)             :: mcref_name_full
+!
+!
+!  60 - 69 :  Important files retained (DIAG,C,HC etc.)
+!  ---------
+!       60 :    CI diagonal
+!       61 :    CI trial vector(s)
+!       62 :    CI sigma vector(s)
+!       63 :    CI/MCSCF reference vector
+!
+!  70 - 80 :  Scratch files
+!  ---------
 *
-* Assign logical unit numbers for LUCIA:
-*==================================================
-*  Complete revision motivated by MCSCF development
-*==================================================
-*
-*   1 -  9 :  Retained for I/O
-*  ---------
-*        5 :  Standard IN
-*        6 :  Standard OUT
-*
-*  60 - 69 :  Important files retained (DIAG,C,HC etc.)
-*  ---------
-*       60 :    CI diagonal
-*       61 :    CI reference vector
-*       62 :    CI sigma vector
-*
-*  70 - 79 :  Scratch files
-*  ---------
-*
-*  80 - 99 :  Files in use in different context
-*             (e.g. standalone, INS, MOLCAS etc.)
-*  ---------
-*
-*  Timo Fleig    Mar 28, 2002
-*==================================================
-*
-*  Old setup:
-*
-* All file with some kind of input information  :  10 - 19
-* All files containing final results            :  90 - 99
-* Scratch files                                 :  30 - 40
-* Internal files (retained through job)         :  20 - 29
-*
-* =========================
-* Standard input and output
-* =========================
-*. Input file
-      LUIN = 5
-*. Special unit for input file from MOLCAS conversion routine
-*    Timo Fleig
-      LUCMOL = 91
-*. Output file
-      luout = lupri
-* =================
-* Input information
-* =================
-* Input file containing MO-AO transformation matrix
-      LUMOIN = 80
-*. Input file for CI-vectors
-*. restart from file 21 is assumed
-*. Input , two electron integrals - MOLCAS
-      LU2INT = 81
-*. Input , one electron integrals - MOLCAS
-      LU1INT = 82
-*. Input , property one-electron integral files
-      LUPRP  = 83
-*. Sirius interface file
-      LUSIR1 = 84
-*. File containing additional states for transition densities
-      LUEXC = 85
-*. Scratch file for master <--> slave communication
-      LUSCR_MPI = 51
-      LUSCR_MPIN ="SIGMA_PAR" 
-       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
-         WRITE (NLUSCR_MPI,'(A9,A1,I1)') LUSCR_MPIN,'.',LUCI_MYPROC
-         LUSCR_MPIL=13
-       ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
-         WRITE (NLUSCR_MPI,'(A9,A1,I2)') LUSCR_MPIN,'.',LUCI_MYPROC
-         LUSCR_MPIL=14
-       ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
-         WRITE (NLUSCR_MPI,'(A9,A1,I3)') LUSCR_MPIN,'.',LUCI_MYPROC
-         LUSCR_MPIL=15
-       ELSE
-         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
-       ENDIF
-      if (luci_myproc.eq.0)
-     &Open(Unit=LUSCR_MPI,File=NLUSCR_MPI(1:LUSCR_MPIL),
-     &     Status='UNKNOWN',Form='UNFORMATTED')
-
-* =================
-* Internal files
-* =================
-*. CI diagonal
       LUDIA = 60
-*
-      LUDIA_MPIN ="CIDIA"
-       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
-         WRITE (NLUDIA_MPI,'(A5,A1,I1)') LUDIA_MPIN,'.',LUCI_MYPROC
-         LUDIA_MPIL=7
-       ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
-         WRITE (NLUDIA_MPI,'(A5,A1,I2)') LUDIA_MPIN,'.',LUCI_MYPROC
-         LUDIA_MPIL=8
-       ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
-         WRITE (NLUDIA_MPI,'(A5,A1,I3)') LUDIA_MPIN,'.',LUCI_MYPROC
-         LUDIA_MPIL=9
-       ELSE
-         CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
-       ENDIF
-*
+      LUDIA_MPIN ="LUCITA_HDIAG"
+
+      if(luci_myproc .gt. luci_master)then
+        IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+          WRITE (NLUDIA_MPI,'(A12,A1,I1)') LUDIA_MPIN,'.',LUCI_MYPROC
+          LUDIA_MPIL=14
+        ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+          WRITE (NLUDIA_MPI,'(A12,A1,I2)') LUDIA_MPIN,'.',LUCI_MYPROC
+          LUDIA_MPIL=15
+        ELSEIF (LUCI_MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+          WRITE (NLUDIA_MPI,'(A12,A1,I3)') LUDIA_MPIN,'.',LUCI_MYPROC
+          LUDIA_MPIL=16
+        ELSE
+          CALL QUIT("LUCI_NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+        ENDIF
+      else
+        LUDIA_MPIL = 14
+        if(irefsm .le. 8)then
+!         on common block in parluci.h
+          symflabel = symflab_data(irefsm)
+!         write(lupri,*) ' symflabel is: ',symflabel
+        else
+          write(luwrt,*) '  *** error in set_file_handles: assignment'//
+     &                   ' of a symmetry label to the LUCITA_HDIAG'//
+     &                   ' file failed. ***'
+          call quit('*** error in set_file_handles: assignment of
+     &    a symmetry label to the LUCITA_HDIAG file failed. ***')
+        end if
+        write(NLUDIA_MPI,'(a12,a1,a1)') LUDIA_MPIN,'.',symflabel
+      end if
+
       Open(Unit=LUDIA,File=NLUDIA_MPI(1:LUDIA_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
+
+
 *. CI vector
       LUC = 61
       LUC_MPIN ="LUCITA_CVECS"
@@ -152,42 +98,70 @@ C
         ENDIF
       else
         luc_mpil = 14
-        if(irefsm .le. 8)then
-!         on common block in parluci.h
-          symflabel = symflab_data(irefsm)
-!         write(lupri,*) ' symflabel is: ',symflabel
-        else
-          write(luwrt,*) '  *** error in set_file_handles: assignment'//
-     &                   ' of a symmetry label to the LUCITA_CVECS'//
-     &                   ' file failed. ***'
-          call quit('*** error in set_file_handles: assignment of
-     &    a symmetry label to the LUCITA_CVECS file failed. ***')
-        end if
+!       on common block in parluci.h
+        symflabel = symflab_data(irefsm)
+!       write(lupri,*) ' symflabel is: ',symflabel
         write(nluc_mpi,'(a12,a1,a1)') luc_mpin,'.',symflabel
       end if
-
-      if (luci_myproc.eq.0)
+      if(luci_myproc.eq.0)
      &Open(Unit=LUC,File=NLUC_MPI(1:LUC_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
 *. Sigma vector file
       LUHC = 62
-      LUHC_MPIN ="HCFILE"
-       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
-         WRITE (NLUHC_MPI,'(A6,A1,I1)') LUHC_MPIN,'.',LUCI_MYPROC
-         LUHC_MPIL=8
-       ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
-         WRITE (NLUHC_MPI,'(A6,A1,I2)') LUHC_MPIN,'.',LUCI_MYPROC
-         LUHC_MPIL=9
-       ELSE                                ! MPI ID has three digits
-         WRITE (NLUHC_MPI,'(A6,A1,I3)') LUHC_MPIN,'.',LUCI_MYPROC
-         LUHC_MPIL=10
-       ENDIF
-      if (luci_myproc.eq.0)
+      LUHC_MPIN ="LUCITA_HCVEC"
+      if(luci_myproc .gt. luci_master)then
+        IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+          WRITE (NLUHC_MPI,'(a12,A1,I1)') LUHC_MPIN,'.',LUCI_MYPROC
+          LUHC_MPIL=14
+        ELSEIF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+          WRITE (NLUHC_MPI,'(a12,A1,I2)') LUHC_MPIN,'.',LUCI_MYPROC
+          LUHC_MPIL=15
+        ELSE                                ! MPI ID has three digits
+          WRITE (NLUHC_MPI,'(a12,A1,I3)') LUHC_MPIN,'.',LUCI_MYPROC
+          LUHC_MPIL=16
+        ENDIF
+      else
+        LUHC_MPIL = 14
+        write(NLUHC_MPI,'(a12,a1,a1)') LUHC_MPIN,'.',symflabel
+      end if
+      if(luci_myproc.eq.0)
      &Open(Unit=LUHC,File=NLUHC_MPI(1:LUHC_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
+
+!     CI/MCSCF reference vector
+      LUMCREF            = 63
+      mcref_name_generic = "LUCITA_CEPVC"
+
+      if(luci_myproc .gt. luci_master)then
+        IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
+          WRITE (mcref_name_full,'(A12,A1,I1)') 
+     &           mcref_name_generic,'_',LUCI_MYPROC
+          mcreflu_l = 14
+        ELSE IF (LUCI_MYPROC .LT. 100) THEN  ! MPI ID has two digits
+          WRITE (mcref_name_full,'(A12,A1,I2)')
+     &           mcref_name_generic,'_',LUCI_MYPROC
+          mcreflu_l = 15
+        ELSE                                ! MPI ID has three digits
+          WRITE (mcref_name_full,'(A12,A1,I3)')
+     &           mcref_name_generic,'_',LUCI_MYPROC
+          mcreflu_l = 16
+        ENDIF
+      else
+        mcreflu_l = 14
+!       on common block in parluci.h
+        symflabel = symflab_data(irefsm)
+!       write(lupri,*) ' symflabel is: ',symflabel
+        write(mcref_name_full,'(a12,a1,a1)') 
+     &        mcref_name_generic,'.',symflabel
+      end if
+      if(luci_myproc .eq. 0)
+     &Open(Unit=LUMCREF,File=mcref_name_full(1:mcreflu_l),
+     &     Status='UNKNOWN',Form='UNFORMATTED')
+
 * =================
 * Scratch files
 * =================
+
       LUSC1 = 70
       LUSC1_MPIN ="LUSC1"
       LUSC2 = 71
@@ -210,7 +184,7 @@ C
          WRITE (NLUSC3_MPI,'(A5,A1,I3)') LUSC3_MPIN,'.',LUCI_MYPROC
          LUSC123_MPIL=9
       ENDIF
-      if (luci_myproc.eq.0)
+      if(luci_myproc.eq.0)
      &Open(Unit=LUSC1,File=NLUSC1_MPI(1:LUSC123_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
       Open(Unit=LUSC2,File=NLUSC2_MPI(1:LUSC123_MPIL),Status='UNKNOWN',
@@ -228,11 +202,9 @@ C
       LUSC37_MPIN ="LUSC37"
       LUSC38 = 77
       LUSC38_MPIN ="LUSC38"
-      LUSC39 = 78
-      LUSC39_MPIN ="LUSC39"
-      LUSC40 = 79
+      LUSC40 = 78
       LUSC40_MPIN ="LUSC40"
-      LUSC41 = 97
+      LUSC41 = 79
       LUSC41_MPIN ="LUSC41"
       IF (LUCI_MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (NLUSC34_MPI,'(A6,A1,I1)') LUSC34_MPIN,'.',LUCI_MYPROC
@@ -240,7 +212,6 @@ C
          WRITE (NLUSC36_MPI,'(A6,A1,I1)') LUSC36_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC37_MPI,'(A6,A1,I1)') LUSC37_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC38_MPI,'(A6,A1,I1)') LUSC38_MPIN,'.',LUCI_MYPROC
-         WRITE (NLUSC39_MPI,'(A6,A1,I1)') LUSC39_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC40_MPI,'(A6,A1,I1)') LUSC40_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC41_MPI,'(A6,A1,I1)') LUSC41_MPIN,'.',LUCI_MYPROC
          LUSC344_MPIL=8
@@ -250,7 +221,6 @@ C
          WRITE (NLUSC36_MPI,'(A6,A1,I2)') LUSC36_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC37_MPI,'(A6,A1,I2)') LUSC37_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC38_MPI,'(A6,A1,I2)') LUSC38_MPIN,'.',LUCI_MYPROC
-         WRITE (NLUSC39_MPI,'(A6,A1,I2)') LUSC39_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC40_MPI,'(A6,A1,I2)') LUSC40_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC41_MPI,'(A6,A1,I2)') LUSC41_MPIN,'.',LUCI_MYPROC
          LUSC344_MPIL=9
@@ -260,7 +230,6 @@ C
          WRITE (NLUSC36_MPI,'(A6,A1,I3)') LUSC36_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC37_MPI,'(A6,A1,I3)') LUSC37_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC38_MPI,'(A6,A1,I3)') LUSC38_MPIN,'.',LUCI_MYPROC
-         WRITE (NLUSC39_MPI,'(A6,A1,I3)') LUSC39_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC40_MPI,'(A6,A1,I3)') LUSC40_MPIN,'.',LUCI_MYPROC
          WRITE (NLUSC41_MPI,'(A6,A1,I3)') LUSC41_MPIN,'.',LUCI_MYPROC
          LUSC344_MPIL=10
@@ -276,36 +245,13 @@ C
      &     Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC38,File=NLUSC38_MPI(1:LUSC344_MPIL),
      &     Status='UNKNOWN',Form='UNFORMATTED')
-      Open(Unit=LUSC39,File=NLUSC39_MPI(1:LUSC344_MPIL),
-     &     Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC40,File=NLUSC40_MPI(1:LUSC344_MPIL),
      &     Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC41,File=NLUSC41_MPI(1:LUSC344_MPIL),
      &     Status='UNKNOWN',Form='UNFORMATTED')
-* =================
-* Output files
-* =================
-*. output file for CI-vectors
-*. Not in use
-      LUCIVO = 86
-*. Natural orbitals in terms of input orbitals
-*.
-      LUMOUT = 87
-*     Open(Unit=LUMOUT,File='CIAORB',Status='UNKNOWN',Form='FORMATTED')
-*. Dumping 1- and 2- electron integrals in formatted form
-* ( LU90 just defined here, it is not exported )
-      LU90  = 88
+
 *. Dumping symmmetry info, MO-AO expansion matrix and property integral
-      LU91     = 69
-      LUSC_INT = LU91
-*. CC amplitudes in formatted form
-      LU_CCAMP = 90
-* Input for LUCITA, converted
-      LUINP = 95
-* COMFILE from MOLCAS-SCF
-      LUCOM = LUSC36
-* JOBIPH file from MOLCAS-RASSCF
-      LUIPH = LUSC37
+      LU91     = 80
 *
       END
 ***********************************************************************

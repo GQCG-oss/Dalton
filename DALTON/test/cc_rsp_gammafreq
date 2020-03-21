@@ -23,7 +23,7 @@ cat > cc_rsp_gammafreq.info <<'%EOF%'
    Molecule:         HF in C2
    Wave Function:    CCS / 6-31G**
    Test Purpose:     Second hyperpolarizability (cubic response):
-                     - Parallel isotropic average (gamma_||) 
+                     - Parallel isotropic average (gamma_|| ) 
                      - ESHG & THG for one frequency
                      - No use of special symmetries 
 %EOF%
@@ -55,7 +55,7 @@ cat > cc_rsp_gammafreq.dal <<'%EOF%'
 .TITLE
   second hyperpolarizability for the HF molecule
   for a CCS wavefunction compute:
-  - parallel isotropic average (gamma_||) 
+  - parallel isotropic average (gamma_|| ) 
   - ESHG & THG for one frequency
   - no use of special symmetries 
 .CC

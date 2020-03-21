@@ -1856,8 +1856,14 @@ C     DO IL = 1, NEXCSTATE
 C       DO IR = 1, NROOT
 C         ILR = ILR + 1
 C         KLRHOTP = KLRHOT + (ILR-1)*LHONE
-          CALL TRADEN(I12,WORK(KLRHOT),RHO2,NEXCSTATE,
-     &                NROOT,LUEXC,LUC)
+
+!
+!         stefan: insert proper call to SIGDEN_CI
+          call quit('adapt LTRAPRP for the new SIGDEN_CI...')
+!
+!         CALL TRADEN(I12,WORK(KLRHOT),RHO2,NEXCSTATE,
+!    &                NROOT,LUEXC,LUC)
+
 C       END DO
 C     END DO
 *

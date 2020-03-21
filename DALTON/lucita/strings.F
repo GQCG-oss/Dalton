@@ -752,6 +752,7 @@ C?            END IF
       INTEGER*8 KLLOC, KLLZ, KLLREO
 !     for addressing of WORK
 #include "mxpdim.inc"
+#include "priunit.h"
 *./BIGGY
 C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
@@ -775,17 +776,17 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       INTEGER I1(*)
       DIMENSION XI1S(*)
 *
-      NTEST = 00
+      NTEST = 000
       IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ====================== '
-        WRITE(6,*) ' ADAADST_GAS in service '
-        WRITE(6,*) ' ====================== '
-        WRITE(6,*)
-        WRITE(6,*) ' IOB,IOBSM,IOBTP,IAC ', IOB,IOBSM,IOBTP,IAC
-        WRITE(6,*) ' JOB,JOBSM,JOBTP,JAC ', JOB,JOBSM,JOBTP,JAC
-        WRITE(6,*) ' I12, K12 ', I12, K12
-        WRITE(6,*) ' IFRST,KFRST', IFRST,KFRST
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' ====================== '
+        WRITE(lupri,*) ' ADAADST_GAS in service '
+        WRITE(lupri,*) ' ====================== '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' IOB,IOBSM,IOBTP,IAC ', IOB,IOBSM,IOBTP,IAC
+        WRITE(lupri,*) ' JOB,JOBSM,JOBTP,JAC ', JOB,JOBSM,JOBTP,JAC
+        WRITE(lupri,*) ' I12, K12 ', I12, K12
+        WRITE(lupri,*) ' IFRST,KFRST', IFRST,KFRST
       END IF
 *
 *
@@ -1010,6 +1011,7 @@ C     CALL MEMCHK
 
 !     for addressing of WORK
 #include "mxpdim.inc"
+#include "priunit.h"
 *./BIGGY
 C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
@@ -1032,13 +1034,13 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ====================== '
-        WRITE(6,*) ' ADADST_GAS in service '
-        WRITE(6,*) ' ====================== '
-        WRITE(6,*)
-        WRITE(6,*) ' IOB,IOBSM,IOBTP ', IOB,IOBSM,IOBTP
-        WRITE(6,*) ' JOB,JOBSM,JOBTP ', JOB,JOBSM,JOBTP
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' ====================== '
+        WRITE(lupri,*) ' ADADST_GAS in service '
+        WRITE(lupri,*) ' ====================== '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' IOB,IOBSM,IOBTP ', IOB,IOBSM,IOBTP
+        WRITE(lupri,*) ' JOB,JOBSM,JOBTP ', JOB,JOBSM,JOBTP
       END IF
 *
 C?    IF(SCLFAC.NE.1.0D0) THEN
@@ -1062,11 +1064,28 @@ C?    END IF
 *. Supergroup and symmetry of K strings
 *
       ISPGPABS = IBSPGPFTP(ITP)-1+ISPGP
+!     WRITE(lupri,'(a,6i4)')
+!    & ' ISPGP, ISPGPABS, ITP, IBSPGPFTP(ITP), IOBTP, JOBTP: ',
+!    &   ISPGP, ISPGPABS, ITP, IBSPGPFTP(ITP), IOBTP, JOBTP
+
       CALL NEWTYP(ISPGPABS,1,IOBTP,1,K1SPGPABS)
+
+      IF(K1SPGPABS.EQ.0) THEN
+        NK = 0
+        RETURN
+      END IF
+
       CALL NEWTYP(K1SPGPABS,1,JOBTP,1,KSPGPABS)
+
+!     write(lupri,*) ' KSPGPABS',KSPGPABS
+      IF(KSPGPABS.EQ.0) THEN
+        NK = 0
+        RETURN
+      END IF
+
       CALL SYMCOM(2,0,IOBSM,K1SM,ISM)
       CALL SYMCOM(2,0,JOBSM,KSM,K1SM)
-      IF(NTEST.GE.100) WRITE(6,*)
+      IF(NTEST.GE.100) WRITE(lupri,*)
      & ' K1SM,K1SPGPABS,KSM,KSPGPABS : ',
      &   K1SM,K1SPGPABS,KSM,KSPGPABS
 * In ADADS1_GAS we need : Occupation of KSTRINGS
@@ -1738,12 +1757,6 @@ CTF     IOFFI(IOFF) = NSTRINT + 1
 *
 *. Supergroup and symmetry of K strings
 *
-CM    CALL NEWTYP(ISPGRPABS,1,IOBTP,1,KSPGRPABS)
-CM    CALL SYMCOM(2,0,IOBSM,KSM,ISPGPSM)
-CM    NKSTR = NSTFSMSPGP(KSM,KSPGRPABS)
-CM    IF(NTEST.GE.200) WRITE(6,*)
-CM   & ' KSM, KSPGPRABS, NKSTR : ', KSM,KSPGRPABS, NKSTR
-*
 *. Gas structure of K strings
 *
       NGASL = 1
@@ -1928,6 +1941,7 @@ C?      write(6,*) ' KACGRP ', KACGRP
 *          if the string have a negative sign
 *          then the phase equals - 1
       IMPLICIT REAL*8           (A-H,O-Z)
+#include "priunit.h"
       INTEGER STRING,TI,TTO,STRIN2,Z
 *.Input
       DIMENSION STRING(NEL,NSTINI),NEWORD(NSTINO),Z(NORB,NEL+1)
@@ -1940,11 +1954,11 @@ C?      write(6,*) ' KACGRP ', KACGRP
       NTESTL =  1
       NTEST = MAX(IPRNT,NTESTL)
       IF( NTEST .GE. 20 ) THEN
-        WRITE(6,*)  ' =============== '
-        WRITE(6,*)  ' ANNSTR speaking '
-        WRITE(6,*)  ' =============== '
-        WRITE(6,*)
-         WRITE(6,*) ' Number of input electrons ', NEL
+        WRITE(lupri,*)  ' =============== '
+        WRITE(lupri,*)  ' ANNSTR speaking '
+        WRITE(lupri,*)  ' =============== '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Number of input electrons ', NEL
       END IF
       LUOUT = 6
 *
@@ -1958,9 +1972,6 @@ C?      write(6,*) ' KACGRP ', KACGRP
            STRIN2(JEL-1) = STRING(JEL,ISTRIN)
           END DO
           JSTRIN = ISTRNM(STRIN2,NACOB,NEL-1,Z,NEWORD,1)
-C?        WRITE(6,*) ' anni-string and number '
-C?        CALL IWRTMA(STRIN2,1,NEL-1,1,NEL-1)
-C?        WRITE(6,*) ' JSTRIN = ', JSTRIN
 *
           IORBABS = STRING(IEL,ISTRIN)
           IORB = STRING(IEL,ISTRIN)-IORBOF+1
@@ -1971,7 +1982,6 @@ C?        WRITE(6,*) ' JSTRIN = ', JSTRIN
           END IF
 *
           TI(IROW,ISTRIN ) = -IORBABS
-C         TI(IROW,ISTRIN ) = -IORB
           TTO(IROW,ISTRIN) = JSTRIN
           IIISGN = (-1)**(IEL-1)
           IF(LSGSTR.NE.0)
@@ -1985,18 +1995,17 @@ C         TI(IROW,ISTRIN ) = -IORB
       IF ( NTEST .GE. 20) THEN
         MAXPR = 60
         NPR = MIN(NSTINI,MAXPR)
-        WRITE(LUOUT,*) ' Output from ANNSTR : '
-        WRITE(LUOUT,*) '==================='
+        WRITE(lupri,*) ' Output from ANNSTR : '
+        WRITE(lupri,*) '==================='
 *
-        WRITE(6,*)
-        WRITE(LUOUT,*) ' Strings with an electron added or removed'
+        WRITE(lupri,*) ' Strings with an electron added or removed'
         DO ISTRIN = 1, NPR
-           WRITE(6,'(2X,A,I4,A,/,(10I5))')
+           WRITE(lupri,'(2X,A,I4,A,/,(10I5))')
      &     'String..',ISTRIN,' New strings.. ',
      &     (TTO(I,ISTRIN),I = 1,LDIM)
         END DO
         DO ISTRIN = 1, NPR
-           WRITE(6,'(2X,A,I4,A,/,(10I5))')
+           WRITE(lupri,'(2X,A,I4,A,/,(10I5))')
      &     'String..',ISTRIN,' orbitals added or removed ' ,
      &     (TI(I,ISTRIN),I = 1,LDIM)
         END DO
@@ -2043,6 +2052,7 @@ C         TI(IROW,ISTRIN ) = -IORB
 *          if the string have a negative sign
 *          then the phase equals - 1
       IMPLICIT REAL*8           (A-H,O-Z)
+#include "priunit.h"
       INTEGER STRING,TI,TTO,STRIN2,Z
 *.Input
       DIMENSION STRING(NEL,NSTINI),NEWORD(NSTINO),Z(NORB,NEL+1)
@@ -2055,20 +2065,15 @@ C         TI(IROW,ISTRIN ) = -IORB
       NTESTL =  1
       NTEST = MAX(IPRNT,NTESTL)
       IF( NTEST .GE. 20 ) THEN
-        WRITE(6,*)  ' =============== '
-        WRITE(6,*)  ' CRESTR speaking '
-        WRITE(6,*)  ' =============== '
-        WRITE(6,*)
-         WRITE(6,*) ' Number of input electrons ', NEL
+        WRITE(lupri,*)  ' =============== '
+        WRITE(lupri,*)  ' CRESTR speaking '
+        WRITE(lupri,*)  ' =============== '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Number of input electrons ', NEL
       END IF
-C?    WRITE(6,*) ' Reorder array NEWORD '
-C?    CALL IWRTMA(NEWORD,1,NSTINO,1,NSTINO)
-      LUOUT = 6
 *
       DO 1000 ISTRIN = 1,NSTINI
-C?    write(6,*) ' Input string ',istrin,(string(i,istrin),i=1,nel)
         DO 100 IORB = IORBOF, IORBOF-1+NORB
-C?      write(6,*) ' orbital ',iorb
            IPLACE = 0
            IF(NEL.EQ.0) THEN
              IPLACE = 1
@@ -2091,7 +2096,6 @@ C?      write(6,*) ' orbital ',iorb
            END IF
    11     CONTINUE
 *
-C?        write(6,*) ' iplace = ', iplace
           IF(IPLACE.NE.0) THEN
 *. Generate next string
             DO 30 I = 1, IPLACE-1
@@ -2119,18 +2123,18 @@ C?          write(6,*) ' corresponding number ', JSTRIN
       IF ( NTEST .GE. 20) THEN
         MAXPR = 60
         NPR = MIN(NSTINI,MAXPR)
-        WRITE(LUOUT,*) ' Output from CRESTR : '
-        WRITE(LUOUT,*) '==================='
+        WRITE(lupri,*) ' Output from CRESTR : '
+        WRITE(lupri,*) '==================='
 *
-        WRITE(6,*)
-        WRITE(LUOUT,*) ' Strings with an electron added  '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Strings with an electron added  '
         DO ISTRIN = 1, NPR
-           WRITE(6,'(2X,A,I4,A,/,(10I5))')
+           WRITE(lupri,'(2X,A,I4,A,/,(10I5))')
      &     'String..',ISTRIN,' New strings.. ',
      &     (TTO(I,ISTRIN),I = 1,NORB)
         END DO
         DO ISTRIN = 1, NPR
-           WRITE(6,'(2X,A,I4,A,/,(10I5))')
+           WRITE(lupri,'(2X,A,I4,A,/,(10I5))')
      &     'String..',ISTRIN,' orbitals added or removed ' ,
      &     (TI(I,ISTRIN),I = 1,NORB)
         END DO
@@ -2199,11 +2203,11 @@ C?          write(6,*) ' corresponding number ', JSTRIN
       INTEGER NNSTSGP(MXPNSMST,MXPNGAS)
       INTEGER IISTSGP(MXPNSMST,MXPNGAS)
       NTEST = 0000
-      CALL QENTER('GETST')
+      CALL QENTER('GETST2')
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' ============================== '
-        WRITE(6,*) ' Welcome to GETSTR_TOTSM_SPGP '
+        WRITE(6,*) ' Welcome to GETSTR2_TOTSM_SPGP '
         WRITE(6,*) ' ============================== '
         WRITE(6,*)
         WRITE(6,'(A)')  ' Strings to be obtained : '
@@ -2329,7 +2333,7 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
         END IF
       END IF
 *
-      CALL QEXIT('GETST')
+      CALL QEXIT('GETST2')
       RETURN
       END
 ***********************************************************************
@@ -2478,10 +2482,10 @@ C?        write(6,*) ' ISTSMM1 : ', ISTSMM1
           CALL IWRTMA(ISMFGS,1,NGAS,1,NGAS)
         END IF
 *. Obtain all strings of this symmetry
-CT      CALL QENTER('GASSM')
+        CALL QENTER('GASSM')
         CALL GETSTRN_GASSM_SPGP(ISMFGS,ITPFGS,ISTR(1,ISTRBS),NSTR,NEL,
      &                          NNSTSGP,IISTSGP)
-CT      CALL QEXIT('GASSM')
+        CALL QEXIT('GASSM')
 *. Reorder Info : Lexical => actual number
         IF(IDOREO.NE.0) THEN
 *. Lexical number of NEL electrons
@@ -2852,6 +2856,7 @@ C?        write(6,*) ' before call to add_str_group '
 #include "gasstr.inc"
 #include "stinf.inc"
 
+!     call LMEMCHK('before KSTINF')
 *. Start of string information
       CALL MEMMAN(KSTINF,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
       IF(NTEST.GE.10)
@@ -2859,9 +2864,12 @@ C?        write(6,*) ' before call to add_str_group '
 *
 *.  Offsets for occupation and reorder array of strings
 *
+!     call LMEMCHK('before KOCSTR(IGRP)')
+!     write(lupri,*) 'NGRP',NGRP
       DO IGRP = 1, NGRP
         NSTRIN = NSTFGP(IGRP)
         LSTRIN = NSTRIN*NELFGP(IGRP)
+!       write(lupri,*) 'NSTRIN, LSTRIN',LSTRIN,NSTRIN
         CALL MEMMAN(KOCSTR(IGRP),LSTRIN,'ADDS  ',1,'OCSTR ')
         CALL MEMMAN(KSTREO(IGRP),NSTRIN,'ADDS  ',1,'STREO ')
       END DO
@@ -2869,8 +2877,12 @@ C?        write(6,*) ' before call to add_str_group '
 *. Number of strings per symmetry and offset for strings of given sym
 *. for groups
 *
+!     call LMEMCHK('before KNSTSGP')
+!     write(lupri,*) 'NGRP*NSMST',NGRP*NSMST
       CALL MEMMAN(KNSTSGP(1),NSMST*NGRP,'ADDS  ',1,'NSTSGP')
       CALL MEMMAN(KISTSGP(1),NSMST*NGRP,'ADDS  ',1,'ISTSGP')
+
+!     call LMEMCHK('before NSTSO')
 *
 *. Number of strings per symmetry and offset for strings of given sym
 *. for types
@@ -4083,7 +4095,8 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *
       CALL QENTER('STRIN')
 *
-      NTEST = 00
+!     NTEST = 100 ! debug
+      NTEST = 000
       NTEST = MAX(NTEST,IPRNT)
 *
 **.2 : Number of classes per string type and mappings between
@@ -4223,7 +4236,7 @@ C     DIMENSION IOCTYP(MXPNGAS)
      &         NSTFGP(JGRP),IEL,NGSOBP,IGSOB,WORK(KZ(JGRP)),
      &         WORK(KSTREO(JGRP)),0,IDUM,IDUM,
      &         WORK(KSTSTM(IGRP,1)),WORK(KSTSTM(IGRP,2)),NACOB,IEC,
-     /         LROW,NTEST)
+     &         LROW,NTEST)
         END IF
       END DO
 *
@@ -4315,7 +4328,7 @@ CMOD &  = MAX(MAX_STR_OC_BLK,NEL*NSTFSMSPGP(ISTSM,ISPGP))
 *
 * Possible occupation classes
 *
-      CALL OCCLS(2,NMXOCCLS,WORK(KIOCLS),NACTEL,NGAS,
+      CALL OCCLS(2,NMXOCCLS,WORK(KIOCLS),LUCI_NACTEL,NGAS,
      &           IGSOCC(1,1),IGSOCC(1,2),0,0)
 *
 * Maps creation/annihilation of given gas orb from given supergroup
@@ -4326,38 +4339,41 @@ CMOD &  = MAX(MAX_STR_OC_BLK,NEL*NSTFSMSPGP(ISTSM,ISPGP))
 *
       DO ISTTYP = 1,NSTTYP
 *. Creation map from this type
-        IIEL = NELFTP(ISTTYP)
-*. Type of string with one elec more
-        ISTTYPC = 0
-        DO JSTTYP = 1, NSTTYP
-          IF(MOD(ISTTYP,2).EQ.MOD(JSTTYP,2).AND.
-     &       NELFTP(JSTTYP).EQ.IIEL+1           ) ISTTYPC = JSTTYP
-        END DO
-C?      WRITE(6,*) ' ISTTYP and ISTTYPC ',ISTTYP,ISTTYPC
         IF(NSPGPFTP(ISTTYP).GT.0) THEN
+          IIEL = NELFTP(ISTTYP)
+*. Type of string with one elec more
+          ISTTYPC = 0
+          DO JSTTYP = 1, NSTTYP
+            IF(MOD(ISTTYP,2).EQ.MOD(JSTTYP,2).AND.
+     &         NELFTP(JSTTYP).EQ.IIEL+1           ) ISTTYPC = JSTTYP
+          END DO
+!         WRITE(lupri,*) ' ISTTYP and ISTTYPC ',ISTTYP,ISTTYPC
 *
-        IF(ISTTYPC.GE.1.AND.NSPGPFTP(ISTTYPC).GT.0) THEN
-           CALL SPGP_AC(NELFSPGP(1,1),NSPGPFTP(ISTTYP),
-     &                  NELFSPGP(1,1),NSPGPFTP(ISTTYPC),
-     &                  NGAS,MXPNGAS,2,WORK(KSPGPCR),
-     &                  IBSPGPFTP(ISTTYP),IBSPGPFTP(ISTTYPC))
-        ELSE
-        END IF
+          IF(ISTTYPC.GE.1.AND.NSPGPFTP(ISTTYPC).GT.0) THEN
+!           WRITE(lupri,*) ' creation map called'
+            CALL SPGP_AC(NELFSPGP(1,1),NSPGPFTP(ISTTYP),
+     &                   NELFSPGP(1,1),NSPGPFTP(ISTTYPC),
+     &                   NGAS,MXPNGAS,2,WORK(KSPGPCR),
+     &                   IBSPGPFTP(ISTTYP),IBSPGPFTP(ISTTYPC))
+          END IF
 *. Annihilation maps
-        ISTTYPA = 0
-        DO JSTTYP = 1, NSTTYP
-          IF(MOD(ISTTYP,2).EQ.MOD(JSTTYP,2).AND.
-     &       NELFTP(JSTTYP).EQ.IIEL-1           ) ISTTYPA = JSTTYP
-        END DO
-C?      WRITE(6,*) 'ISTTYP, ISTTYPA', ISTTYP,ISTTYPA
-        IF(ISTTYPA.GE.1 .AND.NSPGPFTP(ISTTYPA).GT.0) THEN
-           CALL SPGP_AC(NELFSPGP(1,1),NSPGPFTP(ISTTYP),
-     &                  NELFSPGP(1,1),NSPGPFTP(ISTTYPA),
-     &                  NGAS,MXPNGAS,1,WORK(KSPGPAN),
-     &                  IBSPGPFTP(ISTTYP),IBSPGPFTP(ISTTYPA))
-        END IF
+          ISTTYPA = 0
+          DO JSTTYP = 1, NSTTYP
+            IF(MOD(ISTTYP,2).EQ.MOD(JSTTYP,2).AND.
+     &         NELFTP(JSTTYP).EQ.IIEL-1           ) ISTTYPA = JSTTYP
+          END DO
+!         WRITE(lupri,*) 'ISTTYP, ISTTYPA', ISTTYP,ISTTYPA
+          IF(ISTTYPA.GE.1 .AND.NSPGPFTP(ISTTYPA).GT.0) THEN
+!           WRITE(lupri,*) ' annihilation map called'
+            CALL SPGP_AC(NELFSPGP(1,1),NSPGPFTP(ISTTYP),
+     &                   NELFSPGP(1,1),NSPGPFTP(ISTTYPA),
+     &                   NGAS,MXPNGAS,1,WORK(KSPGPAN),
+     &                   IBSPGPFTP(ISTTYP),IBSPGPFTP(ISTTYPA))
+          END IF
         END IF
       END DO
+!     write(lupri,*) 'annihilation map'
+!     call iwrtmamn(WORK(KSPGPAN),1,NGAS*NTSPGP,1,NGAS*NTSPGP,lupri)
 *
       CALL QEXIT('STRIN')
       END
@@ -4377,6 +4393,7 @@ C?      WRITE(6,*) 'ISTTYP, ISTTYPA', ISTTYP,ISTTYPA
       IMPLICIT REAL*8(A-H,O-Z)
 *
 *
+#include "priunit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "lucinp.inc"
@@ -4390,7 +4407,7 @@ C?      WRITE(6,*) 'ISTTYP, ISTTYPA', ISTTYP,ISTTYPA
       DIMENSION IOCTYP(MXPSTT),IREOSPGP(MXPSTT),ISCR(MXPSTT)
 *
       CALL QENTER('STRTY')
-      NTESTL = 00
+      NTESTL = 000
       NTEST = MAX(IPRNT,NTESTL)
 *. As input NCISPC GAS spaces IGSOCCX are given.
 * Obtain space that cantains all these as special cases
@@ -4399,7 +4416,7 @@ C?    WRITE(6,*) ' NCISPC ', NCISPC
       DO IGAS = 1, NGAS
        MINI = IGSOCCX(IGAS,1,1)
        MAXI = IGSOCCX(IGAS,2,1)
-C?     WRITE(6,*) ' MINI and MAXI for ISPC = 1 ',MINI,MAXI
+!      WRITE(lupri,*) ' MINI and MAXI for ISPC = 1 ',MINI,MAXI
        DO ICISPC = 2, NCISPC
         MINI = MIN(MINI,IGSOCCX(IGAS,1,ICISPC))
         MAXI = MAX(MAXI,IGSOCCX(IGAS,2,ICISPC))
@@ -4410,13 +4427,13 @@ C?     WRITE(6,*) ' MINI and MAXI for ISPC =  ',ICISPC,MINI,MAXI
       END DO
 *
       IF(NTEST.GE.5) THEN
-        WRITE(6,*) ' Compound GAS space : '
-        WRITE(6,*) ' ====================='
-        WRITE(6,'(A)')
-        WRITE(6,'(A)') '         Min. occ    Max. occ '
-        WRITE(6,'(A)') '         ========    ======== '
+        WRITE(lupri,*) ' Compound GAS space : '
+        WRITE(lupri,*) ' ====================='
+        WRITE(lupri,'(A)')
+        WRITE(lupri,'(A)') '         Min. occ    Max. occ '
+        WRITE(lupri,'(A)') '         ========    ======== '
         DO IGAS = 1, NGAS
-          WRITE(6,'(A,I2,3X,I3,9X,I3)')
+          WRITE(lupri,'(A,I2,3X,I3,9X,I3)')
      &    '   GAS',IGAS,IGSOCC(IGAS,1),IGSOCC(IGAS,2)
         END DO
       END IF
@@ -4471,52 +4488,52 @@ C         IF(2*MNGSOC(IGAS).GE.NOBPT(IGAS)) THEN
 C     WRITE(6,*) ' MNHL' , MNHL
 *
       IF(NTEST.GE.5) THEN
-        WRITE(6,*)
-        WRITE(6,'(A)') ' Min and Max occupation in each GAS space: '
-        WRITE(6,'(A)') ' ========================================= '
-        WRITE(6,*)
+        WRITE(lupri,*)
+        WRITE(lupri,'(A)') ' Min and Max occupation in each GAS space: '
+        WRITE(lupri,'(A)') ' ========================================= '
+        WRITE(lupri,*)
         DO IGAS = 1,  NGAS
-          WRITE(6,'(A,I2,4X,2I3)')
+          WRITE(lupri,'(A,I2,4X,2I3)')
      &    '  GAS',IGAS,MNGSOC(IGAS),MXGSOC(IGAS)
         END DO
 *
-        WRITE(6,*) ' Particle (=1) or hole (=2) spaces '
-        WRITE(6,*) ' =================================='
-        CALL IWRTMA(IPHGAS,1,NGAS,1,NGAS)
+        WRITE(lupri,*) ' Particle (=1) or hole (=2) spaces '
+        WRITE(lupri,*) ' =================================='
+        CALL IWRTMAMN(IPHGAS,1,NGAS,1,NGAS,lupri)
        END IF
 *.
 *. Occupation classes corresponding to largest CI space
 *
 C     CALL QENTER('OCCLS')
-      CALL OCCLS(1,NOCCLS,IOCCLS,NACTEL,NGAS,IGSOCC(1,1),IGSOCC(1,2),
-     &           0,0)
+      CALL OCCLS(1,NOCCLS,IOCCLS,LUCI_NACTEL,NGAS,IGSOCC(1,1),
+     &           IGSOCC(1,2),0,0)
       NMXOCCLS = NOCCLS
 *
 * Split into alpha and beta parts
 *
 *. Number of alpha. and beta electrons
 *
-      NAEL = (MS2 + NACTEL ) / 2
-      NBEL = (NACTEL - MS2 ) / 2
+      NAEL = (MS2 + LUCI_NACTEL ) / 2
+      NBEL = (LUCI_NACTEL - MS2 ) / 2
 *
-      IF(NAEL + NBEL .NE. NACTEL ) THEN
-        WRITE(6,*) '  MS2 NACTEL NAEL NBEL '
-        WRITE(6,'(5I4)')   MS2,NACTEL,NAEL,NBEL
-        WRITE(6,*)
+      IF(NAEL + NBEL .NE. LUCI_NACTEL ) THEN
+        WRITE(lupri,*) '  MS2 LUCI_NACTEL NAEL NBEL '
+        WRITE(lupri,'(5I4)')   MS2,LUCI_NACTEL,NAEL,NBEL
+        WRITE(lupri,*)
      &  ' STOP : NUMBER OF ELECTRONS AND MULTIPLICITY INCONSISTENT '
         Call
      &    Abend2(' NUMBER OF ELECTRONS INCONSISTENT WITH MULTIPLICITY ')
       END IF
 *
       IF(NTEST.GE.5) THEN
-        WRITE(6,*) '  MS2 NACTEL NAEL NBEL '
-        WRITE(6,'(5I6)')   MS2,NACTEL,NAEL,NBEL
+        WRITE(lupri,*) '  MS2 LUCI_NACTEL NAEL NBEL '
+        WRITE(lupri,'(5I6)')   MS2,LUCI_NACTEL,NAEL,NBEL
       END IF
 *
-      IF(NAEL + NBEL .NE. NACTEL ) THEN
-        WRITE(6,*) '  MS2 NACTEL NAEL NBEL '
-        WRITE(6,'(5I4)')   MS2,NACTEL,NAEL,NBEL
-        WRITE(6,*)
+      IF(NAEL + NBEL .NE. LUCI_NACTEL ) THEN
+        WRITE(lupri,*) '  MS2 LUCI_NACTEL NAEL NBEL '
+        WRITE(lupri,'(5I4)')   MS2,LUCI_NACTEL,NAEL,NBEL
+        WRITE(lupri,*)
      &  ' STOP : NUMBER OF ELECTRONS AND MULTIPLICITY INCONSISTENT '
         Call
      &    Abend2(' NUMBER OF ELECTRONS INCONSISTENT WITH MULTIPLICITY ')
@@ -4552,9 +4569,9 @@ C     CALL QENTER('OCCLS')
        MNBL = MAX(0,MNBL-MXB)
 *
        IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Occupation numbers for IGAS = ', IGAS
-        WRITE(6,*) ' MXAL MNAL MXBL MNBL ',MXAL,MNAL,MXBL,MNBL
-        WRITE(6,*) ' MXA MNA MXB MNB ',MXA,MNA,MXB,MNB
+        WRITE(lupri,*) ' Occupation numbers for IGAS = ', IGAS
+        WRITE(lupri,*) ' MXAL MNAL MXBL MNBL ',MXAL,MNAL,MXBL,MNBL
+        WRITE(lupri,*) ' MXA MNA MXB MNB ',MXA,MNA,MXB,MNB
        END IF
 *
        MNAB = MIN(MNA,MNB)
@@ -4568,7 +4585,7 @@ C     CALL QENTER('OCCLS')
 *. Additional electrons allowed in hole spaces
        IF(IPHGAS(IGAS).EQ.2)  MXAB = MIN(MXAB + 2,NOBPT(IGAS))
 *
-       IF(NTEST.GE.100) WRITE(6,*) ' MNAB,MXAB',MNAB,MXAB
+       IF(NTEST.GE.100) WRITE(lupri,*) ' MNAB,MXAB',MNAB,MXAB
        NGPSTR(IGAS) = MXAB-MNAB+1
        IBGPSTR(IGAS) = IGRP + 1
        MNELFGP(IGAS) = MNAB
@@ -4594,28 +4611,28 @@ C     CALL QENTER('OCCLS')
       NGRP = IGRP
 *
       IF(NTEST.GE.5) THEN
-        WRITE(6,*)
-        WRITE(6,'(A)') ' Information about Groups of strings '
-        WRITE(6,'(A)') ' =================================== '
-        WRITE(6,*)
-        WRITE(6,*) '     GAS  MNEL  MXEL IBGRP  NGRP'
-        WRITE(6,*) '    ============================'
+        WRITE(lupri,*)
+        WRITE(lupri,'(A)') ' Information about Groups of strings '
+        WRITE(lupri,'(A)') ' =================================== '
+        WRITE(lupri,*)
+        WRITE(lupri,*) '     GAS  MNEL  MXEL IBGRP  NGRP'
+        WRITE(lupri,*) '    ============================'
         DO IGAS = 1, NGAS
-          WRITE(6,'(5(2X,I4))') IGAS,MNELFGP(IGAS),
+          WRITE(lupri,'(5(2X,I4))') IGAS,MNELFGP(IGAS),
      &          MXELFGP(IGAS),IBGPSTR(IGAS),NGPSTR(IGAS)
         END DO
-        WRITE(6,'(A,I3)')
+        WRITE(lupri,'(A,I3)')
      &  ' Total number of groups generated ', NGRP
 *
-        WRITE(6,'(A)') ' Information about each string group '
-        WRITE(6,'(A)') ' ===================================='
-        WRITE(6,*)
+        WRITE(lupri,'(A)') ' Information about each string group '
+        WRITE(lupri,'(A)') ' ===================================='
+        WRITE(lupri,*)
         IITYPE = 0
-        WRITE(6,'(A)') ' GROUP  GAS   NEL      NSTR '
-        WRITE(6,'(A)') ' ==========================='
+        WRITE(lupri,'(A)') ' GROUP  GAS   NEL      NSTR '
+        WRITE(lupri,'(A)') ' ==========================='
         DO IGRP = 1, NGRP
           IITYPE = IITYPE + 1
-          WRITE(6,'(3(2X,I4),2X,I8)')
+          WRITE(lupri,'(3(2X,I4),2X,I8)')
      &    IITYPE,IGSFGP(IGRP),NELFGP(IGRP),NSTFGP(IGRP)
         END DO
       END IF
@@ -4634,12 +4651,12 @@ C     CALL QENTER('OCCLS')
       END DO
 *
       IF(NTEST.GE.5) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ======================================'
-        WRITE(6,*) ' Annihilation / Creation connections'
-        WRITE(6,*) ' ======================================'
-        WRITE(6,*)
-        CALL IWRTMA(ISTAC,NGRP,2,MXPSTT,2)
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' ======================================'
+        WRITE(lupri,*) ' Annihilation / Creation connections'
+        WRITE(lupri,*) ' ======================================'
+        WRITE(lupri,*)
+        CALL IWRTMAMN(ISTAC,NGRP,2,MXPSTT,2,LUPRI)
       END IF
 *.
 *
@@ -4890,27 +4907,25 @@ C?      CALL IWRTMA(IREOSPGP,1,NSPGP,1,NSPGP)
 *     ^ End of loop over types
 *
       IF(NTEST.GE.2) THEN
-       WRITE(6,*) ' Total number of super groups ', NTSPGP
-       WRITE(6,*) ' Number of alpha supergroups  ', NSPGPFTP(1)
-       WRITE(6,*) ' Number of beta  supergroups  ', NSPGPFTP(2)
+       WRITE(lupri,*) ' Total number of super groups ', NTSPGP
+       WRITE(lupri,*) ' Number of alpha supergroups  ', NSPGPFTP(1)
+       WRITE(lupri,*) ' Number of beta  supergroups  ', NSPGPFTP(2)
       END IF
 
-       WRITE(6,*)
-*
       IF (NTEST.GE.5) THEN
-        WRITE(6,*) ' Information about types of strings'
-        WRITE(6,*) ' =================================='
-        WRITE(6,*)
+        WRITE(lupri,*) ' Information about types of strings'
+        WRITE(lupri,*) ' =================================='
+        WRITE(lupri,*)
         DO ITYP = 1, NSTTYP
-          WRITE(6,*)
-          WRITE(6,*) '      Type : ', ITYP
-          WRITE(6,*) '      ==============='
-          WRITE(6,*) '      Number of electrons  ',NELFTP(ITYP)
-          WRITE(6,*) '      Number of super groups ', NSPGPFTP(ITYP)
-          WRITE(6,*) '      Supergroups '
+          WRITE(lupri,*)
+          WRITE(lupri,*) '      Type : ', ITYP
+          WRITE(lupri,*) '      ==============='
+          WRITE(lupri,*) '      Number of electrons  ',NELFTP(ITYP)
+          WRITE(lupri,*) '      Number of super groups ', NSPGPFTP(ITYP)
+          WRITE(lupri,*) '      Supergroups '
           DO ISPGP = 1, NSPGPFTP(ITYP)
             IOFF = IBSPGPFTP(ITYP)
-            CALL IWRTMA(ISPGPFTP(1,IOFF-1+ISPGP),1,NGAS,1,NGAS)
+            CALL IWRTMAMN(ISPGPFTP(1,IOFF-1+ISPGP),1,NGAS,1,NGAS,lupri)
           END DO
         END DO
       END IF

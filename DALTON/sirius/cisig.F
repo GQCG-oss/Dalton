@@ -16,15 +16,13 @@
 !
 !
 C
-#ifdef REV_LOG
-========================================================================
-Revision 1.2  2000/05/05 11:19:33  hjj
-bug fix: now always calculate ci diag. in CIDAG, previously it was only
-done if LUIT2 .ge. 0 (must be a leftover, the code LUIT2 .lt. 0 was not
-used anywhere, rather UPDGRD expected diagonal to be calculated with
-LUIT2 .lt. 0 !!!).
-========================================================================
-#endif
+C========================================================================
+C Revision 1.2  2000/05/05 11:19:33  hjj
+C bug fix: now always calculate ci diag. in CIDAG, previously it was only
+C done if LUIT2 .ge. 0 (must be a leftover, the code LUIT2 .lt. 0 was not
+C used anywhere, rather UPDGRD expected diagonal to be calculated with
+C LUIT2 .lt. 0 !!!).
+C========================================================================
 C  /* Deck tpblm2 */
       SUBROUTINE TPBLM2(A,AT,LBLR,NBLR,LBLC,NBLC,IFLAG,IORD)
 C
@@ -141,6 +139,12 @@ C MOTECC-90: The algorithms used in this module, TRACI, are
 C            described in Chapter 8 Section D.5 of MOTECC-90
 C            "Counter Rotations of CI coefficients"
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
+      use lucita_mcscf_ci_interface_procedures
+      use mcscf_or_gasci_2_define_cfg, only :
+     &    define_lucita_cfg_dynamic
+
 #include "implicit.h"
       DIMENSION CVEC(LCVEC,NCVEC), UMO(*), XNDXCI(*), WRK(LFREE)
 C
@@ -166,7 +170,9 @@ C
 #include "csfbas.h"
 #include "ciinfo.h"
 #include "cbreor.h"
+#include "dummy.h"
       LOGICAL CSFEXP
+      integer :: xctype1, xctype2
 C
 C
       CSFEXP = .NOT.FLAG(27)
@@ -194,32 +200,48 @@ c Local memory
         KLDET2 = KLDET1 + NCDET
         KLFREE = KLDET2 + NCDET
       END IF
-C..   note: C2 only needs max of nia*nib (see TRACI1)
+      lfree_local = lfree -  KLFREE
+
+!     note: C2 only needs max of nia*nib (see TRACI1)
       IF ( KLFREE-1 .GT. LFREE ) CALL ERRWRK('TRACI',KLFREE-1,LFREE)
-c orbital tranformation matrix
-      IF (.NOT. SLREOR) THEN
-         CALL DCOPY(N2ASHX,UMO,1,WRK(KLSOT),1)
-      ELSE
-C        reorder from Sirius order to Lunar order
-         CALL REORMT(UMO,WRK(KLSOT),NASHT,NASHT,XNDXCI(KLTSOB),
-     &               XNDXCI(KLTSOB) )
-      END IF
-      CALL SOTMAT(NASHT,WRK(KLSOT),IFAIL)
+
+!     1p-matrix 
+!     write(lupri,*) ' 1p-mat     '
+!     call wrtmatmn(UMO,1,nasht**2,1,nasht**2,lupri)
+
+      if(ci_program .eq. 'SIRIUS-CI')then
+        IF (.NOT. SLREOR)THEN
+           CALL DCOPY(N2ASHX,UMO,1,WRK(KLSOT),1)
+        ELSE
+!          reorder from Sirius order to Lunar order
+           CALL REORMT(UMO,WRK(KLSOT),NASHT,NASHT,XNDXCI(KLTSOB),
+     &                 XNDXCI(KLTSOB) )
+        END IF
+!       get single orbital transformation matrix
+        CALL SOTMAT(NASHT,WRK(KLSOT),IFAIL)
+
+C..     TRANSPOSE SOT MATRIX IN ACCORDANCE WITH LUNAR DESCRIPTION
+        CALL DGETRN(WRK(KLSOT),NASHT,NASHT)
+c       Store CI offsets in C arrays
+        IPRXXX = MAX(0,IPRTCI - 10)
+        CALL CIOFF(LSYM,1,XNDXCI,IPRXXX)
+c       CALL CIOFF(IREFSM,ICORHC,XNDXCI,NTEST)
+
+      else if(ci_program .eq. 'LUCITA   ')then
+        call dcopy(n2ashx,umo,1,wrk(klsot),1)
+        call sotmat(nasht,wrk(klsot),ifail)   
+      end if
+
       IF ( IFAIL .NE. 0 ) THEN
          WRITE(LUPRI,'(///,A,I5,/)')
      &        ' TRACI : ERROR IN SOTMAT, IFAIL = ',IFAIL
          CALL QUIT(' TRACI : ERROR IN SOTMAT ')
       END IF
-      IF (IPRTCI .GT. 10 ) THEN
-         WRITE(LUPRI,'(/A)') ' SINGLE ORBITAL TRANSFORMATION MATRIX '
-         CALL WRTMAT(WRK(KLSOT),NASHT,NASHT,NASHT,NASHT,0)
+
+      IF(IPRTCI .GT. 10 ) THEN
+        WRITE(LUPRI,'(/A)') ' SINGLE ORBITAL TRANSFORMATION MATRIX '
+        CALL WRTMAT(WRK(KLSOT),NASHT,NASHT,NASHT,NASHT,0)
       END IF
-C..TRANSPOSE SOT MATRIX IN ACCORDANCE WITH LUNAR DESCRIPTION
-      CALL DGETRN(WRK(KLSOT),NASHT,NASHT)
-c Store CI offsets in C arrays
-      IPRXXX = MAX(0,IPRTCI - 10)
-      CALL CIOFF(LSYM,1,XNDXCI,IPRXXX)
-c     CALL CIOFF(IREFSM,ICORHC,XNDXCI,NTEST)
 c
       DO 450 IVEC = 1, NCVEC
         IF(CSFEXP) THEN
@@ -250,18 +272,74 @@ C         CSDTVC(CSFVEC,DETVEC,IWAY,DTOCMT,ICTSDT,IREFSM,ICOPY,NTEST)
 c
 c Rotate in DET expansion
 c
-          CALL TRACI2(WRK(KLSOT),NASHT,LSYM,NAEL,XNDXCI(KIASTR),
-     &                XNDXCI(KTAIJ),XNDXCI(KTATO),XNDXCI(KTASYM),
-     &                XNDXCI(KSTASA),XNDXCI(KSTBAA),NBEL,
-     &                XNDXCI(KIBSTR),XNDXCI(KTBIJ),
-     &                XNDXCI(KTBTO),XNDXCI(KTBSYM),XNDXCI(KSTASB),
-     &                XNDXCI(KSTBAB),NASTR,NBSTR,XNDXCI(KIANNI),
-     &                CVEC(1,IVEC),XNDXCI(KCOFF),WRK(KLC2),
-     &                NOCTPA,XNDXCI(KNSSOA),XNDXCI(KISSOA),
-     &                XNDXCI(KTPFSA),NOCTPB,XNDXCI(KNSSOB),
-     &                XNDXCI(KISSOB),
-     &                XNDXCI(KTPFSB),XNDXCI(KIOCOC),XNDXCI(KICOOS),
-     &                XNDXCI(KCDTAS),MULD2H,MAXSYM,IPRTCI)
+!         default: transform cref but in case we have a multi-root MCSCF switch to xtype1 == 2
+          xctype2               = -1
+          xctype1               =  1
+          if(ncvec > 1) xctype1 =  2
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+            write(lupri,*) ' before tra-ci run: ci-vec # =',ivec
+            call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
+            write(lupri,*) ' before tra-ci run: sot-mat'
+            call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
+#endif
+
+          if(ci_program .eq. 'LUCITA   ')then
+            call define_lucita_cfg_dynamic(lsym,        ! rhs symmetry ! swap see subroutine below
+     &                                     lsym,        ! lhs symmetry ! swap see subroutine below
+     &                                      0,          ! no istaci
+     &                                     0,           ! spin for operator
+     &                                     0,           ! spin for operator
+     &                                     1,           ! one root
+     &                                     ispin,       ! singlet, doublet, triplet, ...
+     &                                     -1,          ! # of davidson iterations
+     &                                     -1,          ! 1/2-particle density calcs
+     &                                     iprtci,      ! print level      
+     &                                     1.0d-10,     ! screening factor
+     &                                     0.0d0,       ! davidson ci convergence
+     &                                     0.0d0,       ! davidson ci convergence (auxiliary)
+     &                                     .false.,     ! do not calculate nat. orb. occ. num. (internally inside LUCITA)
+     &                                     .false.,     ! wave function analysis
+     &                                     .true.,      ! no 2-el operators active
+     &                                     .true.,      ! integrals provided by / return density matrices to the MCSCF environment
+     &                                     .false.,     ! calculate 2-particle density matrix
+     &                                     .false.,     ! calculate transition density matrix
+     &                                     xctype1,     ! vector_exchange_type1
+     &                                     xctype2,     ! vector_exchange_type2
+     &                                     .false.,     ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
+     &                                     .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
+
+
+            call mcscf_lucita_interface(cvec(1,ivec),wrk(klc2),
+     &                                  wrk(klsot),vdummy,
+     &                                  'rotate  Cvec',
+     &                                  wrk(klfree),lfree_local,iprtci)
+
+          else if(ci_program .eq. 'SIRIUS-CI')then
+
+            CALL TRACI2(WRK(KLSOT),NASHT,LSYM,NAEL,XNDXCI(KIASTR),
+     &                  XNDXCI(KTAIJ),XNDXCI(KTATO),XNDXCI(KTASYM),
+     &                  XNDXCI(KSTASA),XNDXCI(KSTBAA),NBEL,
+     &                  XNDXCI(KIBSTR),XNDXCI(KTBIJ),
+     &                  XNDXCI(KTBTO),XNDXCI(KTBSYM),XNDXCI(KSTASB),
+     &                  XNDXCI(KSTBAB),NASTR,NBSTR,XNDXCI(KIANNI),
+     &                  CVEC(1,IVEC),XNDXCI(KCOFF),WRK(KLC2),
+     &                  NOCTPA,XNDXCI(KNSSOA),XNDXCI(KISSOA),
+     &                  XNDXCI(KTPFSA),NOCTPB,XNDXCI(KNSSOB),
+     &                  XNDXCI(KISSOB),
+     &                  XNDXCI(KTPFSB),XNDXCI(KIOCOC),XNDXCI(KICOOS),
+     &                  XNDXCI(KCDTAS),MULD2H,MAXSYM,IPRTCI)
+!    &                  XNDXCI(KCDTAS),MULD2H,MAXSYM,100)
+
+          end if
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' after tra-ci run: ci-vec # =',ivec
+          call wrtmatmn(CVEC(1,IVEC),1,NCDET,1,NCDET,lupri)
+          write(lupri,*) ' after  tra-ci run: sot-mat'
+          call wrtmatmn(WRK(KLSOT),1,n2ashx,1,n2ashx,lupri)
+#undef LUCI_DEBUG
+#endif
         END IF
   450 CONTINUE
 C
@@ -404,6 +482,10 @@ C        CALL TRPMAT(C2,NIA,NIB,C(IOFF))
            IF( IOCOC(IATP,IBTP) .NE. 1 ) GOTO 1880
            NIA = NSTAOS(IATP,IASM)
            NIB = NSTBOS(IBTP,IBSM)
+           IF ( NTEST .GE. 25 ) THEN
+             WRITE(LUPRI,*) ' INITIAL CI BLOCK - alpha strings'
+             CALL WRTMAT(C(IOFF11),NIA,NIB,NIA,NIB,0)
+           END IF
            IASTRT = ISTAOS(IATP,IASM)
            IBSTRT = ISTBOS(IBTP,IBSM)
            IOFF = ICOOS(IBTP,IATP,IASM)
@@ -483,8 +565,7 @@ C
 C  /* Deck cidiag */
       SUBROUTINE CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
 C
-C Written 18-jan-1988 J.O.
-C ( after cidiag of hjaaj )
+C Written 18-jan-1988 J.O.  ( after cidiag of hjaaj )
 C NOH2 parameter 900717-hjaaj
 C
 C Part of routines for determinant based ci
@@ -495,11 +576,16 @@ C  Calculate the diagonal of the CI matrix and,
 C  if LUIT2 .gt. 0, save it on LUIT2.
 C
 C
+!     module dependencies
+      use lucita_mcscf_ci_interface_procedures
+      use mcscf_or_gasci_2_define_cfg, only :
+     &    define_lucita_cfg_dynamic
+
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION FCAC(*),H2AC(*),DIAGC(*)
       DIMENSION XNDXCI(*), WRK(LFREE)
       LOGICAL   NOH2, FNDLAB
-#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFINP : FLAG(*)
@@ -512,6 +598,7 @@ C   SPINFO : ?
 C   CSFBAS : CSF core allocation for XNDXCI
 C
 #include "maxorb.h"
+#include "dummy.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infvar.h"
@@ -532,39 +619,82 @@ C     ... 980820-hjaaj: only CSF for ref.sym. LSYM,
 C         determinants for other symmetries
 C
 C *** Construct diagonal of CI matrix
-      KFIJ  = 1
-      KFJI  = KFIJ  + N2ASHX
-      KW1   = KFJI  + N2ASHX
-      LW1   = LFREE - KW1
-      IF (NOH2) THEN
-         CALL DZERO(WRK(KFIJ),2*N2ASHX)
-      ELSE
-         CALL GETFIJ(WRK(KFIJ),WRK(KFJI),H2AC)
-      END IF
-      IF (.NOT.CSFEXP) THEN
-         CALL DZERO (DIAGC,NCONF)
-         CALL CIDIAD(DIAGC,FCAC,WRK(KFIJ),WRK(KFJI),XNDXCI,ICSYM,
-     *               WRK(KW1),LW1)
-      ELSE
+      if(ci_program .eq. 'LUCITA   ')then
+        KW1   = 1
+        LW1   = LFREE - KW1
+        call define_lucita_cfg_dynamic(icsym,   ! rhs symmetry
+     &                                 icsym,   ! lhs symmetry
+     &                                  0,      ! no istaci
+     &                                  0,      ! spin for operator
+     &                                  0,      ! spin for operator
+     &                                  1,      ! one root
+     &                                 ispin,   ! singlet, doublet, triplet, ...
+     &                                 -1,      ! # of davidson iterations
+     &                                 -1,      ! 1/2-particle density calcs
+     &                                 iprdia,  ! print level      
+     &                                 1.0d-10, ! screening factor
+     &                                 0.0d0,   ! davidson ci convergence
+     &                                 0.0d0,   ! davidson ci convergence (auxiliary)
+     &                                 .false., ! do not calculate nat. orb. occ. num. (internally inside LUCITA)
+     &                                 .false., ! wave function analysis
+     &                                 NOH2,    ! no 2-el operators active
+     &                                 .true.,  ! integrals provided by / return density matrices to the MCSCF environment
+     &                                 .false., ! calculate 2-particle density matrix
+     &                                 .false., ! calculate transition density matrix
+     &                                      -1, ! vector exchange type 1
+     &                                      -1, ! vector exchange type 2
+     &                                 .false., ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
+     &                                 .false.) ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
+
+         call dzero(diagc,nconf)
+         call mcscf_lucita_interface(diagc,vdummy,fcac,h2ac,
+     &                               'return CIdia',wrk(kw1),lw1,
+     &                               iprdia)
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' after diag run: hdiag'
+          call wrtmatmn(diagc,1,nconf,1,nconf,lupri)
+#undef LUCI_DEBUG
+#endif
+      else if(ci_program .eq. 'SIRIUS-CI')then
+        KFIJ  = 1
+        KFJI  = KFIJ  + N2ASHX
+        KW1   = KFJI  + N2ASHX
+        LW1   = LFREE - KW1
+        IF (NOH2) THEN
+           CALL DZERO(WRK(KFIJ),2*N2ASHX)
+        ELSE
+           CALL GETFIJ(WRK(KFIJ),WRK(KFJI),H2AC)
+        END IF
+        IF (.NOT.CSFEXP) THEN
+           CALL DZERO (DIAGC,NCONF)
+           CALL CIDIAD(DIAGC,FCAC,WRK(KFIJ),WRK(KFJI),XNDXCI,ICSYM,
+     *                 WRK(KW1),LW1)
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' after diag run: hdiag'
+          call wrtmatmn(diagc,1,nconf,1,nconf,lupri)
+#undef LUCI_DEBUG
+#endif
+        ELSE
 C
 C.. Change to CSF format
 C
-         KDETDG = KW1
-         KW1    = KDETDG + NDTASM(ICSYM)
-         LW1    = LFREE  - KW1
-         CALL CIDIAD(WRK(KDETDG),FCAC,WRK(KFIJ),WRK(KFJI),XNDXCI,
-     *               ICSYM,WRK(KW1),LW1)
-         CALL CSDIAG(DIAGC,WRK(KDETDG),NCNFTP(1,ICSYM),NTYP,
-     &               XNDXCI(KICTS(1)),NDTFTP,NCSFTP,0,IPRDIA)
-C        CSDIAG(CSFDIA,DETDIA,NCNFTP,NTYP,
-C    &          ICTSDT,NDTFTP,NCSFTP,IFLAG,NTEST)
-      END IF
+           KDETDG = KW1
+           KW1    = KDETDG + NDTASM(ICSYM)
+           LW1    = LFREE  - KW1
+           CALL CIDIAD(WRK(KDETDG),FCAC,WRK(KFIJ),WRK(KFJI),XNDXCI,
+     &                 ICSYM,WRK(KW1),LW1)
+           CALL CSDIAG(DIAGC,WRK(KDETDG),NCNFTP(1,ICSYM),NTYP,
+     &                 XNDXCI(KICTS(1)),NDTFTP,NCSFTP,0,IPRDIA)
+C               CSDIAG(CSFDIA,DETDIA,NCNFTP,NTYP,
+C    &                 ICTSDT,NDTFTP,NCSFTP,IFLAG,NTEST)
+        END IF
+      end if ! ci_program switch
 C
       IF (LUIT2 .GT. 0) THEN
 C
 C *** Write diagonal of CI matrix on LUIT2 (label: 'CIDIAG2 ' )
 C
-         NC4 = MAX(4,NCONF)
          REWIND LUIT2
          IF( FNDLAB(TABLE(4),LUIT2) ) THEN
             BACKSPACE LUIT2
@@ -572,8 +702,16 @@ C
             REWIND LUIT2
          END IF
          WRITE (LUIT2) TABLE(1),TABLE(1),TABLE(1),TABLE(3)
+         NC4 = MAX(4,NCONF)
          CALL WRITT(LUIT2,NC4,DIAGC)
          WRITE (LUIT2) TABLE(1),TABLE(1),TABLE(1),TABLE(4)
+      END IF
+      IF (IPRDIA.GT.0 .OR. IPRSIR .GT. 20) THEN
+         write(lupri,*) 'CIDIAG LUJIT2',LUIT2
+         !call qdump(lupri)
+         write(lupri,'(/A)') 'CIDIAG: first 20 elements of CI diagonal'
+         NPRINT = MIN(20,NCONF)
+         write(lupri,'(I5,F20.10)') (I, DIAGC(I),I=1,NPRINT)
       END IF
 C
 C *** End of subroutine CIDIAG
@@ -715,10 +853,11 @@ C Scratch:
 C   WRK(LFREE)
 C
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
       DIMENSION BCVECS(NCONST,*),FCAC(*),H2AC(*),SCVECS(LSCVEC,*)
       DIMENSION XNDXCI(*), WRK(LFREE)
-#include "iratdef.h"
       LOGICAL   NOH2, IH8SM
       PARAMETER ( NOH2 = .FALSE. , IH8SM = .TRUE. , D0 = 0.0D0 )
 C     NOH2  ... 2-electron part to be included
@@ -726,17 +865,23 @@ C     IH8SM ... integrals have 8-fold symmetry
 C
 C Used from common blocks:
 C   INFORB : NASHT, N2ASHX
-C   INFLIN : LSYMST,NCONST
+C   INFLIN : LSYMST,NCONST (set in sirset.F)
 C   INFTIM : NCALLS,TIMCPU,TIMWAL    ! IDTIM is index for these
 C
 #include "maxorb.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "inflin.h"
+#include "infpri.h"
 C ---
       PARAMETER (IDTIM = 2)
 #include "inftim.h"
+#include "priunit.h"
 C
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      real(8), allocatable :: btmp(:)
+#endif
 C
 C *** SCVECS(I,K) = SUM(J) OF L_CI(I,J)*BCVECS(J,K)
 C
@@ -747,26 +892,82 @@ C  ** One- and two-electron contributions
 C
       CALL GETTIM(T1,W1)
       CALL GETTIM(T2,W2)
-C
-C     Unpack FCAC
-C
-      KUFCAC = 1
-      KW1    = KUFCAC + N2ASHX
-      LW1    = LFREE  - KW1
-      CALL DSPTSI(NASHT,FCAC,WRK(KUFCAC))
-C     ... unpack FCAC using CALL DSPTSI(N,ASP,ASI)
+
       ISPIN1 = 0
       ISPIN2 = 0
 C     ... singlet-singlet coupling of 2-electron integrals
-      DO 100 ISIM = 1, NSIM
-         CALL DZERO(SCVECS(1,ISIM),NCONST)
-         CALL CISIGD(LSYMST,LSYMST,NCONST,NCONST,
-     &               BCVECS(1,ISIM),SCVECS(1,ISIM), WRK(KUFCAC),H2AC,
-     &               NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK(KW1),LW1)
-C        CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
-C    &               NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK,LFREE)
-  100 CONTINUE
+
+      KUFCAC = 1
+      KW1    = KUFCAC + N2ASHX
+      LW1    = LFREE  - KW1
+!     Unpack FCAC for SIRIUS-CI
+      if(ci_program .eq. 'SIRIUS-CI')then
+        CALL DSPTSI(NASHT,FCAC,WRK(KUFCAC))
+!       ... unpack FCAC using CALL DSPTSI(N,ASP,ASI)
+      else if(ci_program .eq. 'LUCITA   ')then
+        call dcopy(NNASHX,FCAC,1,WRK(KUFCAC),1)
+!
+!       set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+        mcscf_ci_trial_vector = .true.
+
+!       set vector exchange type: cref
+        if(cref_is_active_bvec_for_sigma)then 
+          vector_exchange_type1 = 2
+          cref_is_active_bvec_for_sigma = .false.
+        else
+!         set vector exchange type: bvec trial vector
+          vector_exchange_type1 = 2
+        end if
+      end if
+
+#ifdef LUCI_DEBUG
+      write(lupri,*) ' mcscf_ci_trial_vector,  vector_exchange_type1 '//
+     &               ' cref_is_active_bvec_for_sigma , nsim , noh2',
+     &                 mcscf_ci_trial_vector,  vector_exchange_type1,
+     &                 cref_is_active_bvec_for_sigma , nsim, noh2
+      allocate (btmp(nconst))
+#endif
+
+      DO isim = 1,nsim ! loop over sigma vectors to calculate
+
+        call dzero(scvecs(1,isim),nconst)
+
+#ifdef LUCI_DEBUG
+        btmp(1:nconst) = bcvecs(1:nconst,isim)
+        do i = 1, nconst
+          if (abs(bcvecs(i,isim)) .gt. 0.2d0 ) then
+              write(lupri,*) 'big B in',i, bcvecs(i,isim)
+          end if
+        end do
+#endif
+
+        CALL CISIGD(LSYMST,LSYMST,NCONST,NCONST,
+     &              BCVECS(1,ISIM),SCVECS(1,ISIM), WRK(KUFCAC),H2AC,
+     &              NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK(KW1),LW1)
+C       CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
+C    &              NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK,LFREE)
+
+#ifdef LUCI_DEBUG
+        btmp(1:nconst) = btmp(1:nconst) - bcvecs(1:nconst,isim)
+        do i = 1, nconst
+           if (abs(btmp(i)) .gt. 1.0D-14) then
+              write(lupri,*) 'B changed ',i, bcvecs(i,isim), btmp(i)
+           end if
+           if (abs(bcvecs(i,isim)) .gt. 0.2d0 ) then
+              write(lupri,*) 'big B ',i, bcvecs(i,isim), scvecs(i,isim)
+           end if
+        end do
+#endif
+      end do
+
+#ifdef LUCI_DEBUG
+      deallocate(btmp)
+#undef LUCI_DEBUG
+#endif
 C
+!     reset flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .false.
+
       CALL GETTIM(T3,W3)
 C
 C
@@ -807,10 +1008,10 @@ C Scratch:
 C   WRK(LFREE)
 C
 C
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
       DIMENSION CREF(NCONRF),PRPAC(N2ASHX,NSIM),SCVECS(LSCVEC,NSIM)
       DIMENSION XNDXCI(*), WRK(LFREE)
-#include "iratdef.h"
       LOGICAL   NOH2, IH8SM
       PARAMETER ( NOH2 = .TRUE. , IH8SM = .FALSE. , D2 = 2.0D0 )
 #include "thrzer.h"
@@ -824,10 +1025,10 @@ C
 #include "maxorb.h"
 #include "inforb.h"
 #include "inflin.h"
+#include "priunit.h"
 C
 C
 C *** SCVECS(I) = SUM(J) <I|PRP|J> * CREF(J)
-C
 C
       KW1    = 1
       LW1    = LFREE  - KW1
@@ -836,6 +1037,19 @@ C     Set spin couplings
 C
       ISPIN1 = 0
       ISPIN2 = 0
+!
+!     set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .true.
+
+!     set vector exchange type: cref
+      if(cref_is_active_bvec_for_sigma)then 
+        vector_exchange_type1 = 2
+        cref_is_active_bvec_for_sigma = .false.
+      else
+!       set vector exchange type: bvec trial vector
+        vector_exchange_type1 = 2
+      end if
+
 C     ... singlet-singlet coupling of 2-electron integrals
       DO 100 ISIM = 1, NSIM
          CALL DZERO(SCVECS(1,ISIM),NCONST)
@@ -846,8 +1060,88 @@ C        CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
 C    &               NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK,LFREE)
   100 CONTINUE
 C
+!     set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .false.
 C
 C *** End of subroutine CIPRP
+C
+      RETURN
+      END
+C  /* Deck cirpr_triplet */
+      SUBROUTINE CIPRP_TRIPLET(NSIM,CREF,SCVECS,LSCVEC,
+     &  PRPAC,XNDXCI,WRK,LFREE)
+C
+C hjaaj Nov 2015: triplet version of subroutine CIPRP
+C
+C Purpose:
+C   Compute CI sigma vector(s) for NSIM one-electron operators
+C   SCVECS(I) = SUM(J) <I|PRP(triplet)|J> * CREF(J)
+C
+C   calls lunar determinant routines
+C
+C Output:
+C   SCVECS; CI sigma vector(s)
+C
+C Scratch:
+C   WRK(LFREE)
+C
+C
+      use lucita_mcscf_ci_cfg
+#include "implicit.h"
+      DIMENSION CREF(NCONRF),PRPAC(N2ASHX,NSIM),SCVECS(LSCVEC,NSIM)
+      DIMENSION XNDXCI(*), WRK(LFREE)
+      LOGICAL   NOH2, IH8SM
+      PARAMETER ( NOH2 = .TRUE. , IH8SM = .FALSE. , D2 = 2.0D0 )
+#include "thrzer.h"
+C     NOH2  ... No 2-electron part
+C     IH8SM ... integrals do not have 8-fold symmetry
+C
+C Used from common blocks:
+C   INFORB : N2ASHX
+C   INFLIN : LSYMRF,NCONRF,LSYMST,NCONST
+C
+#include "maxorb.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "priunit.h"
+C
+C
+C *** SCVECS(I) = SUM(J) <I|PRP|J> * CREF(J)
+C
+      KW1    = 1
+      LW1    = LFREE  - KW1
+C
+C     Set spin couplings
+C
+      ISPIN1 = 1
+      ISPIN2 = 0
+!
+!     set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .true.
+
+!     set vector exchange type: cref
+      if(cref_is_active_bvec_for_sigma)then 
+        vector_exchange_type1 = 2
+        cref_is_active_bvec_for_sigma = .false.
+      else
+!       set vector exchange type: bvec trial vector
+        vector_exchange_type1 = 2
+      end if
+
+C     ... singlet-singlet coupling of 2-electron integrals
+      DO 100 ISIM = 1, NSIM
+         CALL DZERO(SCVECS(1,ISIM),NCONST)
+         CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST, CREF,SCVECS(1,ISIM),
+     &               PRPAC(1,ISIM),DUMMY,NOH2,IH8SM,
+     &               XNDXCI,ISPIN1,ISPIN2,WRK(KW1),LW1)
+C        CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
+C    &               NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK,LFREE)
+  100 CONTINUE
+C
+!     set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .false.
+C
+C *** End of subroutine CIPRP_TRIPLET
 C
       RETURN
       END
@@ -874,6 +1168,11 @@ C OUTPUT :
 C        HC : H TIMES C, OF SYMMETRY IHCSYM AND LENGTH NHCVEC
 C
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
+      use lucita_mcscf_ci_interface_procedures
+      use mcscf_or_gasci_2_define_cfg, only :
+     &    define_lucita_cfg_dynamic
 #include "implicit.h"
       DIMENSION C(*), HC(*)
       DIMENSION FCAC(*), H2AC(*), WRK(LFREE), XNDXCI(*)
@@ -903,6 +1202,7 @@ C
 C
 C
       LOGICAL CSFEXP
+      integer :: xctype1, xctype2
 C
 C     Transfer spin-couplings to CBESPN
 C
@@ -985,18 +1285,87 @@ C        .. change from CSf basis to determinant basis
             CALL DAXPY(NHCVEC,D1,WRK(KHCDET),1,HC,1)
          END IF
       ELSE
-         IF (NCVEC  .NE. NDTASM( ICSYM) .OR.
-     *       NHCVEC .NE. NDTASM(IHCSYM)) THEN
-            WRITE (LUPRI,*) 'ERROR in CISIGD'
-            WRITE (LUPRI,*) ' ICSYM,  NCVEC, NDTASM( ICSYM):',
-     *                        ICSYM,  NCVEC, NDTASM( ICSYM)
-            WRITE (LUPRI,*) 'IHCSYM, NHCVEC, NDTASM(IHCSYM):',
-     *                       IHCSYM, NHCVEC, NDTASM(IHCSYM)
-            CALL QUIT('NCVEC/NHCVEC disagree with NDTASM(:) in cisigd')
-         END IF
-         CALL CISGD2(ICSYM,IHCSYM,NCVEC,NHCVEC,C,HC,
-     *               FCAC,H2AC,ONLYH1,IH8SM,XNDXCI,WRK,LFREE)
+        IF (NCVEC  .NE. NDTASM( ICSYM) .OR.
+     *      NHCVEC .NE. NDTASM(IHCSYM)) THEN
+           WRITE (LUPRI,*) 'ERROR in CISIGD'
+           WRITE (LUPRI,*) ' ICSYM,  NCVEC, NDTASM( ICSYM):',
+     *                       ICSYM,  NCVEC, NDTASM( ICSYM)
+           WRITE (LUPRI,*) 'IHCSYM, NHCVEC, NDTASM(IHCSYM):',
+     *                      IHCSYM, NHCVEC, NDTASM(IHCSYM)
+           CALL QUIT('NCVEC/NHCVEC disagree with NDTASM(:) in cisigd')
+        END IF
+
+        if(ci_program .eq. 'LUCITA   ')then
+
+!         vector_exchange_type1 is set in calling upper level routine
+          xctype1 = vector_exchange_type1 
+          xctype2 = -1
+
+          call define_lucita_cfg_dynamic(icsym,   ! rhs symmetry
+     &                                   ihcsym,  ! lhs symmetry
+     &                                    0,      ! no istaci
+     &                                   ispin1,  ! spin for operator
+     &                                   ispin2,  ! spin for operator
+     &                                    1,      ! one root
+     &                                   ispin,   ! singlet, doublet, triplet, ...
+     &                                   -1,      ! # of davidson iterations
+     &                                   -1,      ! 1/2-particle density calcs
+     &                                   iprsig,  ! print level      
+     &                                   1.0d-10, ! screening factor
+     &                                   0.0d0,   ! davidson ci convergence
+     &                                   0.0d0,   ! davidson ci convergence (auxiliary)
+     &                                   .false., ! do not calculate nat. orb. occ. num. (internally inside LUCITA)
+     &                                   .false., ! wave function analysis
+     &                                   onlyh1,  ! no 2-el operators active
+     &                                   .true.,  ! integrals provided by / return density matrices to the MCSCF environment
+     &                                   .false., ! calculate 2-particle density matrix
+     &                                   .false., ! calculate transition density matrix
+     &                                   xctype1, ! vector exchange type 1
+     &                                   xctype2, ! vector exchange type 2
+     &                                   .false., ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
+     &                                   .false.) ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' before sigma vec run: c'
+          call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)
+          write(lupri,*) ' before sigma vec run: hc'
+          call wrtmatmn(hc,1,NHCVEC,1,NHCVEC,lupri)
+#endif
+
+          call mcscf_lucita_interface(c,hc,fcac,h2ac,'sigma vec   ',
+     &                                wrk,lfree,iprsig)
+
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' after sigma vec run: c'
+          call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)
+          write(lupri,*) ' after sigma vec run: hc'
+          call wrtmatmn(hc,1,NHCVEC,1,NHCVEC,lupri)
+#endif
+
+        else if(ci_program .eq. 'SIRIUS-CI')then
+
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' before sigma vec run: c'
+          call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)
+          write(lupri,*) ' before sigma vec run: hc'
+          call wrtmatmn(hc,1,NHCVEC,1,NHCVEC,lupri)
+#endif
+
+          CALL CISGD2(ICSYM,IHCSYM,NCVEC,NHCVEC,C,HC,
+     *                FCAC,H2AC,ONLYH1,IH8SM,XNDXCI,WRK,LFREE)
+
+#ifdef LUCI_DEBUG
+          write(lupri,*) ' after sigma vec run: c'
+          call wrtmatmn(c,1,NCVEC,1,NCVEC,lupri)
+          write(lupri,*) ' after sigma vec run: hc'
+          call wrtmatmn(hc,1,NHCVEC,1,NHCVEC,lupri)
+#undef LUCI_DEBUG
+#endif
+        end if
+
       END IF
+
       RETURN
       END
 C  /* Deck cisgd2 */
@@ -1097,7 +1466,7 @@ C
          INTFRM = 1
       END IF
 C
-C     Make sure ISGN1/ISGN2 is defined for the DISTYP's where
+C     Make sure ISGN1/ISGN2 is defined for the DISTYPs where
 C     they are needed in GETIN2. They are now only defined in
 C     RSP2GR /950524-hjaaj
 C
@@ -1154,9 +1523,10 @@ C
      &     XNDXCI(KIBSTR),MXSASM,XNDXCI(KLTSOB),XNDXCI(KSTLOB),
      &     ISPIN1,ISPIN2,IH8SM,INTFRM,WRK(KINDE2),WRK(KF3))
       CALL GETTIM(T2,W2)
-      IF (IPRSIG .GE. 1) WRITE (LUPRI,'(/A,2I10/A,2F10.3)')
-     *   ' CISIGD : KFREE, LFREE =           ',KFREE,LFREE,
-     *   '          CPU and wall time (sec) :',T2-T1,W2-W1
+      IF (IPRSIG .GE. 3) WRITE (LUPRI,'(/A,2I10)')
+     &   ' CISIGD : KFREE, LFREE =           ',KFREE,LFREE
+      IF (IPRSIG .GE. 1) WRITE (LUPRI,'(A,2F10.3)')
+     &   ' CISIGD : CPU and wall time (sec) :',T2-T1,W2-W1
 C
       RETURN
       END
@@ -1184,12 +1554,13 @@ C Scratch:
 C   WRK work area containing :
 C
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
 C
       DIMENSION CREF(NCONRF), SOVECS(NVARPT,NOSIM),EMYX(NOSIM),XNDXCI(*)
       DIMENSION FXCAC(NNASHX,*),H2XAC(NNASHX,NNASHX,*)
       DIMENSION WRK(LFREE)
-#include "iratdef.h"
       PARAMETER (IDTIM = 10)
       PARAMETER ( D2 = 2.0D0 )
       LOGICAL   NOH2, IH8SM
@@ -1204,10 +1575,12 @@ C   INFORB : NASHT,NNASHX,N2ASHX
 C   INFLIN : LSYMRF,LSYMPT,LSYMST,NCONRF,NCONST
 C   INFTIM : NCALLS,TIMCPU,TIMWAL    ! IDTIM is index for these
 C
+#include "priunit.h"
 #include "maxorb.h"
 #include "inforb.h"
 #include "inflin.h"
 #include "inftim.h"
+#include "infinp.h"
 C
 C
       KUFCAC = 1
@@ -1226,11 +1599,20 @@ C
       CALL GETTIM(T2,W2)
       CALL GETTIM(T3,W3)
 C
+!
+!     set flag for orbital trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_orbital_trial_vector = .true.
 C
       DO 300 IOSIM = 1, NOSIM
 C
-         CALL DSPTSI(NASHT,FXCAC(1,IOSIM),WRK(KUFCAC))
-C        ... unpack FXCAC using CALL DSPTSI(N,ASP,ASI)
+         if(ci_program .eq. 'SIRIUS-CI')then
+           CALL DSPTSI(NASHT,FXCAC(1,IOSIM),WRK(KUFCAC))
+C          ... unpack FXCAC using CALL DSPTSI(N,ASP,ASI)
+         else if(ci_program .eq. 'LUCITA   ')then
+           CALL DCOPY(NNASHX,FXCAC(1,IOSIM),1,WRK(KUFCAC),1)
+!          set vector exchange type: cref
+           vector_exchange_type1 = 1
+         end if
          CALL DZERO(SOVECS(1,IOSIM),NCONST)
          CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST,
      &               CREF,SOVECS(1,IOSIM),WRK(KUFCAC),H2XAC(1,1,IOSIM),
@@ -1252,6 +1634,9 @@ C
 C
   300 CONTINUE
 C
+!
+!     re-set flag for orbital trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_orbital_trial_vector = .false.
 C
       CALL GETTIM(T4,W4)
 C

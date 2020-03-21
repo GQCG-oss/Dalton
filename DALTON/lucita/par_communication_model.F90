@@ -12,6 +12,8 @@ module communication_model
 !
 !           written by sknecht, may 2007 for DIRAC MCSCF/KR-CI/LUCITA
 !           adapted for DALTON by sknecht, november 2010.
+!
+  use communicator_type_module
 #ifdef USE_MPI_MOD_F90
   use mpi
   implicit none
@@ -27,18 +29,13 @@ module communication_model
 #endif
 
   public setup_communication_model
-  public close_communication_model
 
   private
 
   save
 
-  integer(kind=MPI_INTEGER_KIND)           :: istat(MPI_STATUS_SIZE)
-  integer(kind=MPI_INTEGER_KIND)           :: ierr
-  integer(kind=MPI_INTEGER_KIND)           :: intra_node_comm_mpi
-  integer(kind=MPI_INTEGER_KIND)           :: inter_node_comm_mpi
-  integer(kind=MPI_INTEGER_KIND)           :: shmem_ijkl_comm_mpi
-  integer(kind=MPI_INTEGER_KIND)           :: shmem_cvec_comm_mpi
+! integer(kind=MPI_INTEGER_KIND)           :: istat(MPI_STATUS_SIZE)
+  integer(kind=MPI_INTEGER_KIND)           :: ierr_mpi
   integer(kind=MPI_INTEGER_KIND),parameter :: one_mpi = 1
 
 contains 
@@ -48,8 +45,6 @@ contains
                                        shared_memory_mode,             &
                                        shared_memory_lvl_ijkl,         &
                                        shared_memory_lvl_cvec,         &
-                                       group_list,                     &
-                                       process_list_glb,               &
                                        process_list_shared_mem_glb,    &
                                        my_process_id_glb,              &
                                        nr_of_process_glb,              &
@@ -92,8 +87,6 @@ contains
      integer, intent(in )   :: communicator_glb
      integer, intent(in )   :: my_process_id_glb
      integer, intent(in )   :: print_unit
-     integer, intent(out)   :: group_list(nr_of_process_glb)
-     integer, intent(out)   :: process_list_glb(nr_of_process_glb)
      integer, intent(out)   :: process_list_shared_mem_glb(nr_of_process_glb)
      integer, intent(out)   :: nr_file_groups
      integer, intent(out)   :: io_mode
@@ -119,6 +112,13 @@ contains
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
 
+!     if communicators are already set RETURN, otherwise initialize arrays and handles and continue
+      if(communicator_info%communicator_type_init)then
+        return
+      else
+        call communicator_init_lucipar(communicator_info, nr_of_process_glb)
+      end if
+
 !     initialize number of process groups sharing, e.g. a c-vector file
       nr_file_groups              =  0
 !     parallel i/o mode in general (1 = MPI-I/O)
@@ -130,41 +130,47 @@ contains
       shared_memory_mode          = .false.
 
 !     1. determine # process groups and store group-IDs in process_list_glb
-      call set_file_groups(process_list_glb,          &
-                           nr_file_groups,            &
-                           my_process_id_glb,         &
-                           nr_of_process_glb,         &
-                           communicator_glb,          &
+      call set_file_groups(communicator_info%total_process_list,     &
+                           nr_file_groups,                           &
+                           my_process_id_glb,                        &
+                           nr_of_process_glb,                        &
+                           communicator_glb,                         &
                            print_unit)
 
 !     2. setup communicators and process-id for the various communication levels
 !        a. intra-node
 !        b. inter-node
 !        c. shared-memory
-      call set_communication_levels(group_list,                  &
-                                    process_list_glb,            &
-                                    process_list_shared_mem_glb, &
-                                    nr_of_process_glb,           &
-                                    my_process_id_glb,           &
-                                    communicator_glb,            &
-                                    shared_memory_lvl_ijkl,      &
-                                    shared_memory_lvl_cvec,      &
-                                    my_intra_node_id,            &
-                                    my_inter_node_id,            &
-                                    my_shmem_ijkl_id,            &
-                                    my_shmem_cvec_id,            &
-                                    intra_node_master,           &
-                                    shmem_master_ijkl,           &
-                                    shmem_master_cvec,           &
-                                    intra_node_size,             &
-                                    inter_node_size,             &
-                                    shmem_ijkl_size,             &
-                                    shmem_cvec_size,             &
-                                    intra_node_comm,             &
-                                    inter_node_comm,             &
-                                    shmem_ijkl_comm,             &
-                                    shmem_cvec_comm,             &
+      call set_communication_levels(communicator_info%intra_node_group_list,   &
+                                    communicator_info%total_process_list,      &
+                                    process_list_shared_mem_glb,               &
+                                    nr_of_process_glb,                         &
+                                    my_process_id_glb,                         &
+                                    communicator_glb,                          &
+                                    shared_memory_lvl_ijkl,                    &
+                                    shared_memory_lvl_cvec,                    &
+                                    my_intra_node_id,                          &
+                                    my_inter_node_id,                          &
+                                    my_shmem_ijkl_id,                          &
+                                    my_shmem_cvec_id,                          &
+                                    intra_node_master,                         &
+                                    shmem_master_ijkl,                         &
+                                    shmem_master_cvec,                         &
+                                    intra_node_size,                           &
+                                    inter_node_size,                           &
+                                    shmem_ijkl_size,                           &
+                                    shmem_cvec_size,                           &
+                                    intra_node_comm,                           &
+                                    inter_node_comm,                           &
+                                    shmem_ijkl_comm,                           &
+                                    shmem_cvec_comm,                           &
                                     intra_node_group_id)                      
+
+      call communicator_switch_lucipar(communicator_info,        &
+                                       intra_node_comm,          &
+                                       inter_node_comm,          &
+                                       shmem_ijkl_comm,          &
+                                       shmem_cvec_comm)
 
   end subroutine setup_communication_model
 !*******************************************************************************
@@ -186,14 +192,14 @@ contains
      integer                          :: process_name_length  
      integer                          :: local_counter_file_groups  
      integer                          :: current_process_id  
-     integer(kind=MPI_INTEGER_KIND)   :: proc_id  
+     integer                          :: proc_id  
      integer                          :: finished_loop  
-     character (len=100)              :: process_name
-     character (len=100)              :: scr_process_name
+     character (len=255)              :: process_name
+     character (len=255)              :: scr_process_name
      integer,             allocatable :: scr_arr_name_length(:)
-     character (len=100), allocatable :: scr_arr_process_name(:)
+     character (len=255), allocatable :: scr_arr_process_name(:)
 !-------------------------------------------------------------------------------
-     integer(kind=MPI_INTEGER_KIND)   :: comm_glb_mpi, len_process_name
+     integer(kind=MPI_INTEGER_KIND)   :: proc_id_mpi, comm_glb_mpi, len_process_name_mpi
 !-------------------------------------------------------------------------------
                                                
       process_list_glb = -1
@@ -214,25 +220,26 @@ contains
       comm_glb_mpi = communicator_glb
       call mpi_allgather(process_name_length,one_mpi,my_MPI_INTEGER,  &
      &                   scr_arr_name_length,one_mpi,my_MPI_INTEGER,  &
-     &                   comm_glb_mpi,ierr)
+     &                   comm_glb_mpi,ierr_mpi)
 
 !     2. collect all names in temporary storage
-      allocate(scr_arr_process_name(nr_of_process_glb*100))
+      allocate(scr_arr_process_name(nr_of_process_glb*255))
       scr_arr_process_name(my_process_id_glb+1) = process_name
 
-      do proc_id = 0, nr_of_process_glb-1
+      do proc_id = 1, nr_of_process_glb
 
-         scr_process_name = process_name
-         len_process_name = scr_arr_name_length(proc_id+1)
+         scr_process_name     = process_name
+         len_process_name_mpi = scr_arr_name_length(proc_id)
+         proc_id_mpi          = proc_id - 1
          call mpi_bcast(scr_process_name,                              &
-                        len_process_name,                              &
+                        len_process_name_mpi,                          &
                         MPI_CHARACTER,                                 &
-                        proc_id,                                       &
+                        proc_id_mpi,                                   &
                         comm_glb_mpi,                                  &
-                        ierr)
+                        ierr_mpi)
 
-         if(my_process_id_glb /= proc_id )then
-           scr_arr_process_name(proc_id+1) = scr_process_name(1:scr_arr_name_length(proc_id+1))
+         if(my_process_id_glb /= proc_id_mpi )then
+           scr_arr_process_name(proc_id) = scr_process_name(1:scr_arr_name_length(proc_id))
          end if
 
       end do
@@ -353,10 +360,9 @@ contains
      integer, intent(out)   :: intra_node_group_id
      integer, intent(out)   :: intra_node_master
 !-------------------------------------------------------------------------------
-     integer                :: key
-     integer                :: color
      integer                :: tmp_group_counter
      integer                :: current_proc
+     integer                :: color, key
 !-------------------------------------------------------------------------------
 
 !     a. intra-node communicator (primarly used as I/O communicator)
@@ -458,50 +464,24 @@ contains
       old_comm_mpi = old_communicator
       color_mpi    = color
       key_mpi      = key
-      call mpi_comm_split(old_comm_mpi,color_mpi,key_mpi,new_comm_mpi,ierr)
+      call mpi_comm_split(old_comm_mpi,color_mpi,key_mpi,new_comm_mpi,ierr_mpi)
       new_communicator = new_comm_mpi
  
 !     collect required information about each group:
 !       - group size
 !       - process id in the group
-      call mpi_comm_size(new_comm_mpi, group_size_mpi,ierr)
-      call mpi_comm_rank(new_comm_mpi, my_id_group_mpi,ierr)
+      call mpi_comm_size(new_comm_mpi, group_size_mpi,ierr_mpi)
+      call mpi_comm_rank(new_comm_mpi, my_id_group_mpi,ierr_mpi)
       group_size  = group_size_mpi
       my_id_group = my_id_group_mpi
 
   end subroutine build_new_communicator_group
 !*******************************************************************************
 
-  subroutine close_communication_model(intra_node_comm,          &
-                                       inter_node_comm,          &
-                                       shmem_ijkl_comm,          &
-                                       shmem_cvec_comm)
-!*******************************************************************************
-!
-!     purpose: reset sub-group communicators.
-!
-!*******************************************************************************
-     integer, intent(inout) :: intra_node_comm
-     integer, intent(inout) :: inter_node_comm
-     integer, intent(inout) :: shmem_ijkl_comm
-     integer, intent(inout) :: shmem_cvec_comm
-!-------------------------------------------------------------------------------
-!-------------------------------------------------------------------------------
-      intra_node_comm_mpi = intra_node_comm
-      inter_node_comm_mpi = inter_node_comm
-      shmem_ijkl_comm_mpi = shmem_ijkl_comm
-      shmem_cvec_comm_mpi = shmem_cvec_comm
-
-      call mpi_comm_free(intra_node_comm_mpi,ierr)
-      call mpi_comm_free(inter_node_comm_mpi,ierr)
-      call mpi_comm_free(shmem_ijkl_comm_mpi,ierr)
-      call mpi_comm_free(shmem_cvec_comm_mpi,ierr)
- 
-  end subroutine close_communication_model
-  
 end module
 #else 
-subroutine comm_model
-! dummy routine for non-mpi compilation
-end
+  ! VAR_MPI not defined
+  subroutine comm_model
+  ! dummy routine for non-mpi compilation
+  end
 #endif

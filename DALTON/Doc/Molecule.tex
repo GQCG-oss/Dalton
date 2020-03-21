@@ -343,10 +343,17 @@ integral\index{performance of integral program} calculation.
 \end{description}
 \item[6] \verb|NAME X Y Z Isotope=18|
 \begin{description}
-\item[NAME] Atom name.  A different name should be used for
-each atom of the same type, although this is not required. Note that
-only the first four characters of the atom name will be used by the
-program.
+\item[NAME] Atom name.
+Note that only the first four characters of the atom name will be used by the program,
+and that the atom name must not contain any blanks.
+A different name is recommended for each atom of the same type, although this is not required.
+If you do not give the atoms different names, then it is hard to distinguish the atoms in
+the output.
+Two atom names, \verb|Gh| and \verb|IP| \index{IP!atom name in .mol file}, have a special meaning: the associated
+atomic orbitals are \emph{not} used in the construction of
+an srDFT integration grid. This is useful for adding, e.g., any ultra-diffuse
+orbitals for describing the ionization potential (IP) limits.
+An example of an ultra-diffuse orbital is one with an exponent of \texttt{1.D-6}.
 \item[X] $x$-coordinate (in atomic units, unless \angstrom{}
 has been requested on line 4 of the input).
 \item[Y] $y$-coordinate.

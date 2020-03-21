@@ -1,0 +1,5 @@
+   RASCISD CINO
+   ----------------------
+   Molecule:         H2O
+   Wave Functions:   RASCISD
+   Test Purpose:     Check that the CI Natural Orbital Coefficients are contructed correctly.

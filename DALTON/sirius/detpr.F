@@ -76,12 +76,18 @@ C
       RETURN
       END
 C  /* Deck prwf */
-      SUBROUTINE PRWF(C,XNDXCI,IOUT,THPWF)
+      SUBROUTINE PRWF(C,XNDXCI,IOUT,THPWF,WORK,LFREE)
 C
 C  880528 hjaaj
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
+      use lucita_mcscf_ci_interface_procedures
+      use mcscf_or_gasci_2_define_cfg, only :
+     &    define_lucita_cfg_dynamic
+
 #include "implicit.h"
-      DIMENSION C(*), XNDXCI(*)
+      DIMENSION C(*), XNDXCI(*), WORK(*)
 C
 C Used from common blocks:
 C  INFINP : LSYM
@@ -90,7 +96,12 @@ C
 #include "maxorb.h"
 #include "infinp.h"
 #include "inforb.h"
+#include "infpri.h"
+#include "ciinfo.h"
+#include "priunit.h"
+#include "dummy.h"
 C
+      integer :: xctype1, xctype2
       MAXPWF = 100
 C
       IF ( NASHT .GT. 1 ) THEN
@@ -110,8 +121,47 @@ C           ... use determinant expansion
             CALL PRMGN(NCSF,C,1,12,IOUT)
 #endif
          END IF
-         CALL ANACIN(C,LSYM,THPWF,MAXPWF,XNDXCI,MULD2H,IOUT,ICSF)
-C        CALL ANACIN(CIVEC,ICSYM,THRES,MAXTRM,XNDXCI,SYMPRO,IOUT,INCSFB)
+         if(ci_program .eq. 'LUCITA   ')then
+           if(icsf .ne. 0) 
+     &     call quit('*** prwf: lucita cannot handle csfs yet ***')
+           kfree = 1
+           lwrk  = kfree-1 + lfree
+
+           xctype1 =  1
+           xctype2 = -1
+
+           call define_lucita_cfg_dynamic(lsym,        ! rhs symmetry
+     &                                    lsym,        ! lhs symmetry
+     &                                     0,          ! no istaci
+     &                                     0,           ! spin for operator
+     &                                     0,           ! spin for operator
+     &                                     1,           ! one root
+     &                                    ispin,       ! singlet, doublet, triplet, ...
+     &                                    -1,          ! # of davidson iterations
+     &                                    -1,          ! 1/2-particle density calcs
+     &                                    iprsir,      ! print level      
+     &                                    1.0d-10,     ! screening factor
+     &                                    0.0d0,       ! davidson ci convergence
+     &                                    0.0d0,       ! davidson ci convergence (auxiliary)
+     &                                    .false.,     ! do not calculate nat. orb. occ. num. (internally inside LUCITA)
+     &                                    .true.,      ! wave function analysis
+     &                                    .false.,     ! no 2-el operators active
+     &                                    .false.,     ! integrals provided by / return density matrices to the MCSCF environment
+     &                                    .false.,     ! calculate 2-particle density matrix
+     &                                    .false.,     ! calculate transition density matrix
+     &                                    xctype1,     ! vector exchange type1
+     &                                    xctype2,     ! vector exchange type2
+     &                                    .false.,     ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
+     &                                    .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
+
+
+           call mcscf_lucita_interface(c,vdummy,vdummy,vdummy,
+     &                                 'analyze Cvec',
+     &                                 work(kfree),lwrk,iprsir)
+         else if(ci_program .eq. 'SIRIUS-CI')then
+           CALL ANACIN(C,LSYM,THPWF,MAXPWF,XNDXCI,MULD2H,IOUT,ICSF)
+C          CALL ANACIN(CIVEC,ICSYM,THRES,MAXTRM,XNDXCI,SYMPRO,IOUT,INCSFB)
+         end if
       ELSE
          WRITE(IOUT,50)C(1)
    50    FORMAT(/'  Configuration no. 1 out of 1, coefficient',F10.6)
@@ -139,11 +189,11 @@ C
 #include "strnum.h"
 C
 c remco
+      real(8), allocatable :: detvec(:), cvec(:)
 #include "maxorb.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "priunit.h"
-      allocatable detvec(:),cvec(:)
 c einde remco
       IF(INCSFB.EQ.0) THEN
 C. SD basis
@@ -152,15 +202,16 @@ C. SD basis
         ELSE
           NCIVAR = NCMASM(ICSYM)
         END IF
-        CALL ANACI2(CIVEC,XNDXCI(KNSSOA),XNDXCI(KNSSOB),NOCTPA,NOCTPB,
-     &              MAXSYM,SYMPRO,THRES,MAXTRM,XNDXCI(KISSOA),
-     &              XNDXCI(KISSOB),NAEL,NBEL,XNDXCI(KIOCOC),ICSYM,
-     &              NCIVAR,ICOMBI,XNDXCI(KIASTR),XNDXCI(KIBSTR),
-     &              XNDXCI(KLTSOB),IOUT)
-      ELSE
-C. CSF basis (INCSFB .ne. 0)
+          CALL ANACI2(CIVEC,XNDXCI(KNSSOA),XNDXCI(KNSSOB),NOCTPA,NOCTPB,
+     &                MAXSYM,SYMPRO,THRES,MAXTRM,XNDXCI(KISSOA),
+     &                XNDXCI(KISSOB),NAEL,NBEL,XNDXCI(KIOCOC),ICSYM,
+     &                NCIVAR,ICOMBI,XNDXCI(KIASTR),XNDXCI(KIBSTR),
+     &                XNDXCI(KLTSOB),IOUT)
+      ELSE ! CSF basis (INCSFB .ne. 0)
+
         CALL ANACSF(CIVEC,XNDXCI(KICONF(1)),XNDXCI(KCFTP),ICSYM,
      &              NAEL+NBEL,THRES,MAXTRM,XNDXCI(KLTSOB),IOUT)
+
         if (DONEVPT) then
            write(lupri,100)
            allocate(detvec(ncdets))

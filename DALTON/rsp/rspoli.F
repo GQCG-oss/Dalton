@@ -1,3 +1,5 @@
+!#define DEBUG_RSPOLI
+#undef DEBUG_RSPOLI
 !
 !  Dalton, a molecular electronic structure program
 !  Copyright (C) 2018 by the authors of Dalton.
@@ -18,17 +20,15 @@
 C
 C FILE: rsp/rspoli.F ("Orbital LInear transformation")
 C
-#ifdef rev_log
-========================================================================
-990427-hjaaj: use if DXAO is symmetric or antisymmetric in IFCTYP
-961228-kr Transfered SOPPA particle-hole matrices in paramater list to RSPOLI
-950513-kr Added comdeck INFVAR and and changed to ISYMDM()=JWOPSY
-940708-hjaaj: SOPPA changes
-940602-hjaaj: do not call QONEDI and QTD for nasht.eq.1
-931124-martin packer: added call to HRPA which adds A(2) and B(2) matrices to FCX
-920721-hinne hettema: implemented RSPSUP (super symmetry averaging)
-========================================================================
-#endif
+!========================================================================
+!990427-hjaaj: use if DXAO is symmetric or antisymmetric in IFCTYP
+!961228-kr Transfered SOPPA particle-hole matrices in paramater list to RSPOLI
+!950513-kr Added comdeck INFVAR and and changed to ISYMDM()=JWOPSY
+!940708-hjaaj: SOPPA changes
+!940602-hjaaj: do not call QONEDI and QTD for nasht.eq.1
+!931124-martin packer: added call to HRPA which adds A(2) and B(2) matrices to FCX
+!920721-hinne hettema: implemented RSPSUP (super symmetry averaging)
+!========================================================================
 
 C  /* Deck rspoli */
       SUBROUTINE RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
@@ -115,9 +115,10 @@ C
       CALL QENTER('RSPOLI')
 C
       IF (IPRRSP .GT. 5) THEN
-         write(lupri,'(//A,2I10/A,3L10/A,L10,I10)')
+         write(lupri,'(//A,2I10/A,5L10/A,L10,I10)')
      &   'Output from "RSPOLI". NCSIM,NOSIM=',NCSIM,NOSIM,
-     &   'TRPLET,HSROHF,DFTADD',TRPLET,HSROHF,DFTADD,
+     &   'TRPLET,HSROHF,DOHSRDFT,DOMCSRDFT,DFTADD',
+     &   TRPLET,HSROHF,DOHFSRDFT,DOMCSRDFT,DFTADD,
      &   'TDHF,NASHT',TDHF,NASHT
       END IF
 C
@@ -238,7 +239,7 @@ C If also single determinant, then nothing to do in MO part
 C
       !IF (DIRFCK .AND. (TDHF .OR. DODFT)) GO TO 1000
       !IF (DIRFCK .AND. KZCONF .EQ. 0) GO TO 1000
-      IF (HSROHF.OR.DODFT) GO TO 1000
+      IF (HSROHF .OR. DODFT) GO TO 1000
       ! ... KS-DFT only works with direct code, even if DIRFCK is false /hjaaj
       IF (DIRFCK .AND. TDHF .AND. NASHT.EQ.1) GO TO 1000 ! .OPEN SHELL HF
       IF (DIRFCK .AND. KZCONF.EQ.0 .AND. NASHT.EQ.0) GO TO 1000
@@ -600,19 +601,29 @@ C       FXCAO,FXVAO,FTCAO,FTVAO must be stored consecutively
 C       DXCAO,DXVAO,DTCAO,DTVAO must be stored consecutively
 C       (requirement for SIRFCK call)
 C
-      NFMAT  = 0
-      IF (DOFXC) NFMAT = NFMAT + NOSIM
+      NFOMAT  = 0
+      IF (DOFXC) NFOMAT = NFOMAT + NOSIM
 C     ... for FXCAO (+ VXxcAO when DFT or srDFT)
-      IF (DOFXV) NFMAT = NFMAT + NOSIM
+      IF (DOFXV) NFOMAT = NFOMAT + NOSIM
 C     ... for FXVAO
-      IF (DOFTC) NFMAT = NFMAT + NCSIM
-C     ... for FTCAO (with V[2c]xcAO when srDFT)
-      IF (DOFTV) NFMAT = NFMAT + NCSIM
+      NFCMAT  = 0
+      IF (DOFTC) NFCMAT = NFCMAT + NCSIM
+C     ... for FTCAO (with V[2c]xcAO when MC-srDFT)
+      IF (DOFTV) NFCMAT = NFCMAT + NCSIM
 C     ... for FTVAO
+      NFMAT = NFOMAT + NFCMAT
+
+      IF (NFMAT .EQ. 0) GOTO 2000 ! may happen for SOPPA
 C
       NDMAT = NFMAT
-      IF (DOHFSRDFT .OR. DOMCSRDFT) NDMAT = NDMAT + 2
-C     ... for DtotAO, DXtotAO for SRDFT:SRDFTLTR
+      IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+         NDMAT = NDMAT + 2
+C        ... for DtotAO, DXtotAO for SRDFT:SRDFTLTR
+         IF (NFOMAT .GT. 0 .AND. NFCMAT .gt. 0) THEN
+            CALL QUIT(
+     &   'NCSIM .gt. 0 .and. NOSIM .gt. 0 not implemented for MCSRDFT')
+         END IF
+      END IF
 C
       CALL MEMGET2('REAL','FXCAO',KFXCAO,NFMAT*N2BASX,WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','DXCAO',KDXCAO,NDMAT*N2BASX,WRK,KFREE,LFREE)
@@ -637,11 +648,19 @@ C
          KFTVAO  = KFTCAO
          KDTVAO  = KDTCAO
       END IF
-      KDTOTAO = KDTVAO + NCSIM*N2BASX
+      IF (DOFTV) THEN
+         KDTOTAO = KDTVAO + NCSIM*N2BASX
+      ELSE
+         KDTOTAO = KDTVAO
+      END IF
 
 #ifdef DEBUG_RSPOLI
       write(lupri,*) 'rspoli: ncsim,nosim',ncsim,nosim
       write(lupri,*) 'rspoli: nfmat,ndmat',nfmat,ndmat
+      write(lupri,*) 'rspoli: dohfsrdft,domcsrdft,soppa',
+     &   dohfsrdft,domcsrdft,soppa
+      write(lupri,*) 'rspoli: dofxc,dofxv,doftc,doftv',
+     &                        dofxc,dofxv,doftc,doftv
       write(lupri,*)
      &  'rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,kfree',
      &           KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,KFREE
@@ -653,28 +672,13 @@ C
 C        Get DtotAO, allocation for DXtotAO in SIRFCK.SRDFT can here be
 C        used temporarily for DVAO if NASHT.gt.0
 C
-         IF (IPRRSP .GT. 50) THEN
-            WRITE(LUPRI,*) 'SRDFT: DTCAO matrix'
-            CALL OUTPUT(WRK(KDTCAO),1,NBAST,1,NBAST,
-     &         NBAST,NBAST,-1,LUPRI)
-            WRITE(LUPRI,*) 'SRDFT: DTVAO matrix'
-            CALL OUTPUT(WRK(KDTVAO),1,NBAST,1,NBAST,
-     &         NBAST,NBAST,-1,LUPRI)
-            WRITE(LUPRI,*) 'SRDFT: total density matrix AO basis DTOTAO'
-            CALL OUTPUT(WRK(KDTOTAO),1,NBAST,1,NBAST,
-     &         NBAST,NBAST,-1,LUPRI)
-         END IF
       END IF
 #endif
 C
 C
 C Manu about MC-srDFT: Note that for ncsim >0 and doftc
-C       the core transition DM (DTCAO) is set
-C       to zero --> the corresponding IFCTYP will therefore be zero.
-C       When calculating the srH contribution to the Hessian in sirfck
-C       DTVAO is added to DTCAO and the srH term calculated with IFCTYP=0, in
-C       other words nothing is calculated ... IFCTYP must be modified before
-C       calling sirfck. see the next "Manu about srdft" ...
+C       the core transition DM (DTCAO) is set to zero
+C       --> the corresponding IFCTYP will therefore be zero.
 C
 C
 C     Transform any transition DMs to the AO basis
@@ -688,25 +692,32 @@ C     Transform any transition DMs to the AO basis
             JAO = JAO + N2BASX
             JMO = JMO + N2ASHX
          END DO
-      END IF
 
-#ifdef DEBUG_RSPOLI
-      IF (IPRRSP .GT. 50) THEN
-            write(lupri,*) 'after calling fckden2'
-            WRITE(LUPRI,*) 'SRDFT: DTCAO matrix'
+         IF (IPRRSP .GT. 50) THEN
+          IF (DOFTC) THEN
+            WRITE(LUPRI,*) 'RSPOLI: first DTCAO matrix of',NCSIM
             CALL OUTPUT(WRK(KDTCAO),1,NBAST,1,NBAST,
      &         NBAST,NBAST,-1,LUPRI)
-            WRITE(LUPRI,*) 'SRDFT: DTVAO matrix'
+          END IF
+          IF (DOFTV) THEN
+            WRITE(LUPRI,*) 'RSPOLI: first DTVAO matrix of',NCSIM
             CALL OUTPUT(WRK(KDTVAO),1,NBAST,1,NBAST,
      &         NBAST,NBAST,-1,LUPRI)
-            WRITE(LUPRI,*) 'SRDFT: total density matrix AO basis DTOTAO'
+          END IF
+         END IF
+      END IF
+
+      IF (IPRRSP .GT. 50) THEN
+         IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
+            WRITE(LUPRI,'(/A)')
+     &         ' RSPOLI SRDFT: total density matrix AO basis DTOTAO'
             CALL OUTPUT(WRK(KDTOTAO),1,NBAST,1,NBAST,
      &         NBAST,NBAST,-1,LUPRI)
+         END IF
       END IF
-#endif
 C
 C Construct NOSIM Inactive and Active density matrices according to eq.27
-C in Chem Phys 119, 227 (1988).
+C in Chem Phys 119, 297 (1988).
 C
 C They should be consecutive in core. We transpose the inactive
 C and active D-matrices and multiply the inactive D-matrix by 2.0
@@ -718,7 +729,7 @@ C
       JOFFAO = 0
       DO IOSIM = 1,NOSIM
          CALL DEQ27(CMO,ZYMAT(1,IOSIM),UDV,WRK(KDXCAO+JOFFAO),
-     *              WRK(KDXVAO+JOFFAO),WRK(KFREE),LFREE)
+     &              WRK(KDXVAO+JOFFAO),WRK(KFREE),LFREE)
          JOFFAO = JOFFAO + N2BASX
       END DO
 C
@@ -775,41 +786,10 @@ C           Coulomb+exchange
          END IF
          JDXCAO = JDXCAO + N2BASX
 C
-         IF (IPRRSP .GT. 60) write(lupri,*)
+         IF (IPRRSP .GT. 10) write(lupri,*)
      &      'Fock matrix I, IX, IFCTYP(I) = ', I, IX ,IFCTYP(I)
 
       END DO ! I = 1,NFMAT
-
-#ifdef MOD_SRDFT
-C
-C Manu about MC-srDFT: in order to calculate the srH Kernel we must reset all values of
-C      IFCTYP for FTCAO to the one obtained for FTVAO (because when calculating
-C      IFCTYP, DTVAO should be considered, and not DTCAO (which is set to zero !)
-C
-      IF ((NCSIM.GT.0).AND.DOFTC.AND.DOMCSRDFT) THEN
-#ifdef DEBUG_RSPOLI
-         write(lupri,*) '****** IFCTYP modified for srH Kernel !!!!'
-         write(lupri,*) '****** with DOFTC true                !!!!'
-#endif
-         DO I=1,NCSIM
-            IFCTYP(NFMAT-2*NCSIM+I)=IFCTYP(NFMAT-NCSIM+I)
-         END DO
-      END IF
-C
-C
-C Manu about MC-srDFT: used same trick in order to calculate the srH contribution to
-C                      the sigma vector when there is an orbital trial vector
-C
-      IF ((NOSIM.GT.0).AND.DOFXC.AND.DOMCSRDFT) THEN
-#ifdef DEBUG_RSPOLI
-         write(lupri,*) '****** IFCTYP modified for srH Kernel !!!!'
-         write(lupri,*) '****** with DOFXC true                !!!!'
-#endif
-         DO I=1,NOSIM
-            IFCTYP(I)=IFCTYP(NOSIM+I)
-         END DO
-      END IF
-#endif
 C
 C
       IF (HSROHF) THEN
@@ -823,6 +803,13 @@ C     Change IFCTYP for all Fa matrices
              IFCTYP(NOSIM+I)=10*(IFCTYP(NOSIM+I)/10) + 2
           END IF
         END DO
+      END IF
+
+      IF (TRPLET) THEN
+         DO I = 1,NFMAT
+            IFCTYP(I) = -IFCTYP(I) ! tell SIRFCK this is triplet
+                                   ! (needed for MC-srDFT)
+         END DO
       END IF
 
       IF (IPRRSP .GT. 60) THEN
@@ -850,7 +837,7 @@ C     Change IFCTYP for all Fa matrices
        write(lupri,*) 'WRK(KFTCAO)='
        CALL OUTPUT(WRK(KFTCAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
-      IF (NCSIM.gt.0) THEN
+      IF (DOFTV.and.NCSIM.gt.0) THEN
        write(lupri,*) 'WRK(KFTVAO)='
        CALL OUTPUT(WRK(KFTVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
@@ -869,7 +856,7 @@ C     Change IFCTYP for all Fa matrices
        write(lupri,*) 'WRK(KDTCAO)='
        CALL OUTPUT(WRK(KDTCAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
-      IF (NCSIM.gt.0) THEN
+      IF (DOFTV.and.NCSIM.gt.0) THEN
        write(lupri,*) 'WRK(KDTVAO)='
        CALL OUTPUT(WRK(KDTVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
@@ -1172,7 +1159,7 @@ C
          END IF
 C
          IF (IPRRSP.GT.30) THEN
-            DO, ICSIM = 1,NCSIM
+            DO ICSIM = 1,NCSIM
                WRITE(LUPRI,'(/A,I5)')
      *         ' FVTD total contribution FOR VECTOR ',ICSIM
                CALL OUTPUT(FVTD(1,1,ICSIM),
@@ -1189,7 +1176,7 @@ C
             END IF
             IF (DOMCSRDFT) THEN
                WRITE(LUPRI,'(/A,I5)')
-     *         'V^[2c]sr_Hxc total contribution FOR VECTOR ',ICSIM
+     *         'V^[2c]sr_Hxc total contribution for conf vector',ICSIM
                CALL OUTPUT(FVTD(1,1,NCSIM+ICSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
             END IF
@@ -1198,7 +1185,7 @@ C
 
          IF (HSROHF.OR.DODFT) THEN
             CALL RSPORB(.TRUE.,NCSIM,FC,WRK(KFC),FVTD,QATD,QBTD,UDV,
-     *               EVECS)
+     &               EVECS)
 C
 C Note: This is to cancel the change of sign in RSPORB
 C       In ordinary ROHF/MCSCF, RSPORB is called with negative
@@ -1221,8 +1208,6 @@ C               standard FTV matrices.
 C               In paper: V^([2c]xc-SR) matrix.
 
             IF (TRPLET) THEN
-               CALL QUIT('ERROR: triplet linear response '//
-     &            'not implemented for MC-srDFT yet')
                JSPIN1 = 1
                JSPIN2 = 0
             ELSE
@@ -1292,10 +1277,8 @@ C
 ! Manu: build the Y part of the sigma vector (due to the Vsr[2c] operator)
 C
 C
+            IF (.NOT. (TDA .OR. CISRPA)) THEN
                JYEVECS=JEVECS+KZVAR
-!
-C
-C
                CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,WRK(KCREF),
      &                  EVECS(JYEVECS),WRK(KSRW),DUMMY,
      &                  .TRUE.,.FALSE.,XINDX,JSPIN1,JSPIN2,
@@ -1321,14 +1304,14 @@ C
                     CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
      *                          KZVAR,2,-1,LUPRI)
                END IF
+            END IF ! not (TDA or CISRPA)
 C
 C
 C     Special MCSRDFT correction, corresponding to the effective operator
 C        V^([2c],xc-SR)
 C     is saved in FVTD(*,*,NCSIM+ICSIM) in RSPOLI.
 C
-               CALL RSP_SRDFTSO( .FALSE.,.TRUE.,UDV,
-     &             FVTD(1,1,NCSIM+ICSIM),EVECS(JEVECS))
+               CALL RSP_SRDFTSO(UDV,FVTD(1,1,NCSIM+ICSIM),EVECS(JEVECS))
 C
                JEVECS = JEVECS + KZYVAR
             END DO ! ICSIM = 1,NCSIM

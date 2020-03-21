@@ -190,7 +190,7 @@ C
                         GOTO 298
                      END IF
                      CALL GPCLOSE(LUPROP,'KEEP')
-                  ELSE IF (LABEL(1:3) .EQ. 'PSO' .OR. 
+                  ELSE IF (LABEL(1:3) .EQ. 'PSO' .OR.
      &                     LABEL(2:4) .EQ. 'PSO') THEN
                      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                           'UNFORMATTED',IDUMMY,.FALSE.)
@@ -259,7 +259,7 @@ C
                         GOTO 297
                      END IF
                      CALL GPCLOSE(LUPROP,'KEEP')
-                  ELSE IF (LABEL(1:3) .EQ. 'PSO' .OR. 
+                  ELSE IF (LABEL(1:3) .EQ. 'PSO' .OR.
      &                     LABEL(2:4) .EQ. 'PSO') THEN
                      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
      &                           'UNFORMATTED',IDUMMY,.FALSE.)
@@ -412,7 +412,7 @@ C
             IF (AQROP(I)) THEN
                 NAQRTO = NAQRTO + 1
                 ! For singlet states couple operator rank to excitation rank
-                IF (ISPIN.EQ.1) OPRANK(I) = ISPINA 
+                IF (ISPIN.EQ.1) OPRANK(I) = ISPINA
             END IF
             IF (BQROP(I)) THEN
                 NBQRTO = NBQRTO + 1
@@ -424,7 +424,7 @@ C
             END IF
   500    CONTINUE
 C
-C  If special processes specified, we need to put the input freq. into 
+C  If special processes specified, we need to put the input freq. into
 C  the relevant frequency arrays.
 C
          IF (QRSPEC) THEN
@@ -507,49 +507,59 @@ C
      *      NBQRFR,' B-frequencies', (BQRFR(I),I=1,NBQRFR)
          WRITE(LUPRI,'(I3,A,(1P,5D14.6))')
      *      NCQRFR,' C-frequencies', (CQRFR(I),I=1,NCQRFR)
-         IF (SOCOLL) WRITE (LUPRI,'(A)') 
+         IF (SOCOLL) WRITE (LUPRI,'(/A)')
      *        ' Quadratic response functions will be collected as '//
      *        'SO-corrections to nuclear shieldings'
-         IF (SSCOLL) WRITE (LUPRI,'(A)') 
+         IF (SSCOLL) WRITE (LUPRI,'(/A)')
      *        ' Quadratic response functions will be collected as '//
      *        'SO-corrections to reduced spin-spin couplings'
          IF (FLAG(16) .AND. .NOT.INERSI) THEN
-            WRITE(LUPRI,'(A,L2,/)')
-     *      ' Equilibrium solvent model requested            : SOLVNT ='
-     *      ,FLAG(16)
+            WRITE(LUPRI,'(/A,L2)')
+     &      ' Equilibrium solvent model requested            : SOLVNT ='
+     &      ,FLAG(16)
             WRITE(LUPRI,'(A,F8.4)')
-     *      ' Dielectric constant                            : EPSOL  ='
-     *      ,EPSOL
+     &      '    Dielectric constant                         : EPSOL  ='
+     &      ,EPSOL
          END IF
          IF (FLAG(16) .AND. INERSI) THEN
-            WRITE(LUPRI,'(A,L2,/)')
-     *      ' Non-equilibrium solvent model requested        : INERSI ='
-     *      ,INERSI
+            WRITE(LUPRI,'(/A,L2)')
+     &      ' Non-equilibrium solvent model requested        : INERSI ='
+     &      ,INERSI
             WRITE(LUPRI,'(A,F8.4)')
-     *      ' Static dielectric constant                     : EPSTAT ='
-     *      ,EPSTAT
+     &      '    Static dielectric constant                  : EPSTAT ='
+     &      ,EPSTAT
             WRITE(LUPRI,'(A,F8.4)')
-     *      ' Optical dielectric constant                    : EPSOL  ='
-     *      ,EPSOL
+     &      '    Optical dielectric constant                 : EPSOL  ='
+     &      ,EPSOL
          END IF
-         IF (QM3 .OR. QMMM) THEN
-          WRITE(LUPRI,*) 'QM/MM response calculation'
+
+         IF (QM3) WRITE(LUPRI,'(/A)')
+     &      ' QM/MM response calculation, type .QM3'
+
+         IF (QMMM) WRITE(LUPRI,'(/A)')
+     &      ' QM/MM response calculation, type .QMMM'
+
+         IF (use_pelib()) THEN
+            WRITE(LUPRI,'(/A/A)')
+     &      ' Polarizable embedding response calculation, type .PEQM',
+     &      ' Environment is modeled using'//
+     &         ' the polarizable embedding scheme (PE library)'
          END IF
-         IF (QRSHG) THEN
-            WRITE (LUPRI,'(A,L2)')
-     *      ' Second harmonic generation                     : SHG    ='
-     *      ,QRSHG
+
+         IF (QMNPMM) THEN
+            WRITE(LUPRI,'(/A)') ' Heterogeneous environment is '// 
+     &                          ' modeled using the QM/NP/MM scheme'
          END IF
-         IF (QRPOCK) THEN
-            WRITE (LUPRI,'(/A,L2)')
-     *      ' Electro-optical Pockels effect                 : POCKEL ='
-     &      ,QRPOCK
-         END IF
-         IF (QROPRF) THEN
-            WRITE (LUPRI,'(A,L2)')
-     *      ' Optical refractivity calculation               : OPTREF ='
-     *      ,QROPRF
-         END IF
+
+         WRITE(LUPRI,'()')
+
+         IF (QRSHG) WRITE (LUPRI,'(A)')
+     &      ' Second harmonic generation;        SHG'
+         IF (QRPOCK) WRITE (LUPRI,'(A)')
+     &      ' Electro-optical Pockels effect;    POCKEL'
+         IF (QROPRF) WRITE (LUPRI,'(A)')
+     &      ' Optical refractivity calculation;  OPTREF'
+
          WRITE(LUPRI,'(/A,I4)')
      *      ' Print level                                    : IPRHYP ='
      *       ,IPRHYP
@@ -571,14 +581,6 @@ C
      *      ' Test of contributions from A2 terms.'
          IF (X2TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from X2 terms.'
-         IF (USE_PELIB()) THEN
-            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
-     &                  ' the polarizable embedding scheme (PE library)'
-         END IF
-         IF (QMNPMM) THEN
-            WRITE(LUPRI,'(/A)') ' Heterogeneous environment is '// 
-     &                          ' modeled using the QM/NP/MM scheme'
-         END IF
       END IF
 C
 C *** END OF HYPINP
@@ -967,8 +969,7 @@ C                 B operators
                GO TO 100
  26            CONTINUE
                   !sonia: mcd B term calculation
-                  !with projection of the redundant 
-                  !exc state vector
+                  !with projection of the redundant exc state vector
                   MCDPRJ=.TRUE.
                   MCDCAL=.TRUE.
                   LABEL='XDIPLEN'
@@ -1002,7 +1003,7 @@ C                 B operators
          THCPP = THCPP*THR_REDFAC
       END IF
 C
-C If two-photon calculation then we assume that the frequencies of the 
+C If two-photon calculation then we assume that the frequencies of the
 C photons match the excitation. At this point we set the frequencies
 C to dummy values, later they become half of the excitation energies.
 C
@@ -1091,45 +1092,52 @@ C
      &      ' Both photon frequencies are half the excitation energy.'
          ELSE
             WRITE(LUPRI,'(/I3,A,(1P,5D14.6))')
-     *      NBSMFR,' B-frequencies', (BSMFR(I),I=1,NBSMFR)
+     &      NBSMFR,' B-frequencies', (BSMFR(I),I=1,NBSMFR)
          END IF
          WRITE (LUPRI,'(/A,I5)') ' Spin of operator A , ISPINA=',ISPINA
          WRITE (LUPRI,'( A,I5)') ' Spin of operator B , ISPINB=',ISPINB
          WRITE (LUPRI,'(2A,I5)') ' Spin of operator C ,'
-     *    ,' (Excitation energy) ISPINC=',ISPINC
+     &    ,' (Excitation energy) ISPINC=',ISPINC
          IF (ISPINA+ISPINB+ISPINC .GT. 0) THEN
             TRPLET = .TRUE.
             TRPFLG = .TRUE.
          END IF
          IF (FLAG(16) .AND. .NOT.INERSI) THEN
-            WRITE(LUPRI,'(A,L2,/)')
-     *      ' Equilibrium solvent model requested            : SOLVNT ='
-     *      ,FLAG(16)
+            WRITE(LUPRI,'(/A,L2)')
+     &      ' Equilibrium solvent model requested            : SOLVNT ='
+     &      ,FLAG(16)
             WRITE(LUPRI,'(A,F8.4)')
-     *      ' Dielectric constant                            : EPSOL  ='
-     *      ,EPSOL
+     &      '    Dielectric constant                         : EPSOL  ='
+     &      ,EPSOL
          END IF
          IF (FLAG(16) .AND. INERSI) THEN
-            WRITE(LUPRI,'(A,L2,/)')
-     *      ' Non-equilibrium solvent model requested        : INERSI ='
-     *      ,INERSI
+            WRITE(LUPRI,'(/A,L2)')
+     &      ' Non-equilibrium solvent model requested        : INERSI ='
+     &      ,INERSI
             WRITE(LUPRI,'(A,F8.4)')
-     *      ' Static dielectric constant                     : EPSTAT ='
-     *      ,EPSTAT
+     &      '    Static dielectric constant                  : EPSTAT ='
+     &      ,EPSTAT
             WRITE(LUPRI,'(A,F8.4)')
-     *      ' Optical dielectric constant                    : EPSOL  ='
-     *      ,EPSOL
+     &      '    Optical dielectric constant                 : EPSOL  ='
+     &      ,EPSOL
          END IF
 
-         IF (QM3 .OR. QMMM) THEN
-          WRITE(LUPRI,*) 'QM/MM response calculation'
-         END IF
+         IF (QM3) WRITE(LUPRI,'(/A)')
+     &      ' QM/MM response calculation, type .QM3'
+
+         IF (QMMM) WRITE(LUPRI,'(/A)')
+     &      ' QM/MM response calculation, type .QMMM'
+
+         IF (use_pelib()) WRITE(LUPRI,'(/A/A)')
+     &      ' Polarizable embedding response calculation, type .PEQM',
+     &      ' Environment is modeled using'//
+     &         ' the polarizable embedding scheme (PE library)'
 
          IF (MCDCAL) THEN
             WRITE (LUPRI,'(A,L1)')
      *       ' B of Magnetic Circular Dichroism requested    : MCDCAL ='
      *      ,MCDCAL
-            !sonia new 
+            !sonia new
             if (MCDPRJ) then
                WRITE (LUPRI,'(A,L1)')
      *       ' Projected B of Magnetic Circular Dichroism    : MCDPRJ='
@@ -1156,10 +1164,6 @@ C
      *      ,MAXITO
          IF (E3TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from E3 and S3 terms.'
-         IF (USE_PELIB()) THEN
-            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
-     &                  ' the polarizable embedding scheme (PE library)'
-         END IF
       END IF
 C
 C *** END OF SMOINP
@@ -1182,7 +1186,7 @@ C
 C
       DIMENSION NEVAL(*)
 C
-C If two-photon calculation is specified we only compute a restricted 
+C If two-photon calculation is specified we only compute a restricted
 C number of excitation vectors.
 C
       IF (TWOPHO) THEN
@@ -1193,7 +1197,7 @@ C
      *          .AND. (NASMOP(IASYM).GT.0) ) THEN
                DO IC = 1,NSMCNV(ICSYM)
                   INUM = INQREX(ICSYM,IC)
-               END DO            
+               END DO
             END IF
          END DO
          END DO
@@ -1392,7 +1396,7 @@ C so we only compute linear response vectors with positive frequencies.
 C
                      INUM=INQRLR(BSMLB(IBSYM,IBOP),BSMFR(IBFR),IBSYM)
                   END DO
-               END DO            
+               END DO
                NBSMFR = NBSMFR + ICEXC
                ICEXC = 0
             END IF

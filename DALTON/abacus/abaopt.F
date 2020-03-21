@@ -2560,8 +2560,11 @@ CRF HERMIT might have updated the symmetry. We need to set NSYM before running S
 C     CALL CLEAR_INCOREMEM()
       END IF
 Cef end
-C ach
-      IF (DFTRUN .OR. DOHFSRDFT .OR. DOMCSRDFT) GRDONE = .FALSE.
+C ach 
+      IF (DFTRUN .OR. SRDFTRUN) THEN
+         DFTGRID_DONE = .FALSE.
+         DFTGRID_DONE_OLD = .FALSE.
+      END IF
       IF (.NOT. EXSIR) THEN
 C
 C        *** For numerical derivatives we might need to  ***
@@ -2580,7 +2583,7 @@ C
 C
 C        Reduce gradient criterion for DFT optimization
 C
-         IF ((DFTRUN .OR. DOHFSRDFT .OR. DOMCSRDFT) .AND. .NOT.NATNRM
+         IF ((DFTRUN .OR. SRDFTRUN) .AND. .NOT.NATNRM
      &      .AND. (GRDTHR .LT. 5.0D-05 .OR. THRSTP .LT. 5.0D-05)) THEN
             GRDTHR = MAX(GRDTHR,5.0D-05)
             THRSTP = MAX(THRSTP,5.0D-05)

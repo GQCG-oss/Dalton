@@ -101,6 +101,41 @@ return(v>r||v<-r)}
 ' $log || ERRLIST="$ERRLIST; $1 energy"
 }
 
+# check_scfsrdft_energy:
+# $1 - calculation type: HF/MC-srDFT
+# $2 - expected energy
+# $3 - max deviation
+check_scfsrdft_energy() {
+[ "$3" = "" ] &&  echo "not enough parameters to check_scf_energy."
+$AWK 'function e(v,r){#print "scf_energy: checking ",v, r;
+return(v>r||v<-r)}
+/Final *'$1' *energy:/{c=1;exit (e($5-('$2'),'$3'))} END{if(!c) exit(1)}
+' $log || ERRLIST="$ERRLIST; $1 energy"
+}
+
+# check_mp2srdft_energy:
+# $1 - calculation type: MP2-srDFT 
+# $2 - expected energy
+# $3 - max deviation
+check_mp2srdft_energy() {
+[ "$3" = "" ] &&  echo "not enough parameters to check_mp2srdft_energy."
+$AWK 'function e(v,r){#print "mp2srdft_energy: checking ",v, r;
+return(v>r||v<-r)}
+/= short-range '$1' second order energy        :/{c=1; exit (e($9-('$2'),'$3'))} END{if(!c) exit(1)} 
+' $log || ERRLIST="$ERRLIST; MP2srdft energy"
+}
+
+# check_RSDHf_energy:
+# $1 - expected energy
+# $2 - max deviation
+check_RSDHf_energy() {
+[ "$2" = "" ] &&  echo "not enough parameters to check_RSDHf_energy."
+$AWK 'function e(v,r){#print "RSDHf_energy: checking ",v, r;
+return(v>r||v<-r)}
+/= RSDHf total energy             :/{c=1;exit (e($7-('$1'),'$2'))} END{if(!c) exit(1)}
+' $log || ERRLIST="$ERRLIST; $1 energy"
+}
+
 # check_MP2_energy:
 # $1 - expected energy
 # $2 - max deviation

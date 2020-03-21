@@ -728,7 +728,7 @@ cC
      &           ABSLRS_MCD
             WRITE(LUPRI,'(A,5(4F12.8))')
      &           ' at frequencies:',(ABS_FREQ_BETA_B(I),
-     &              I=1,ABS_NFREQ_BETA_B)
+     &            I=1,ABS_NFREQ_BETA_B)
          END IF
          IF (ABSLRS_MCHD) THEN
             WRITE (LUPRI,'(A,L4)')
@@ -845,7 +845,7 @@ C
         CALL GPOPEN(LUABSVECS,'ABSVECS','OLD',' ',' ',IDUMMY,.FALSE.)
       END IF
 C
-      CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
+      CALL MEMGET2('REAL','MJWOP',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
      &     KFREE,LFREE)
 C
 C     Determine the QR that is to be calculated
@@ -855,6 +855,7 @@ C
      &     THEN
          CALL ABS_BETA_SETUP
       END IF
+
 C
 C     Determine the CR that is to be calculated
 C     =========================================
@@ -1075,7 +1076,9 @@ C   infvar.h : MAXWOP
 C   inforb.h : NSYM
 #include "abslrs.h"
 #include "absorp.h"
+!MAXWOP
 #include "infvar.h"
+!NSYM
 #include "inforb.h"
 c
 #include "infrsp.h"
@@ -1208,7 +1211,6 @@ C
      &          KFMAO(NNMAX),
      &          KFMMO(NNMAX),KDVAO(NNMAX),KFVAO(NNMAX),KFVMO(NNMAX)
 C
-c      DIMENSION MJWOP(2,MAXWOP,8)
       DIMENSION MJWOP(*),XINDX(*)
       PARAMETER (D2 = 2.0D0)
       PARAMETER (D1 = 1.0D0)
@@ -1414,7 +1416,7 @@ c     &                 .FALSE.,ISYMB,WRK(KFREE),LFREE,IPRDFT)
      &              WRK(KDUM),WRK(KDUM),UDV,
      &              XTMP,ZYMB)
       ELSE
-        CALL FCKOIN(NNMAX,FC,VDUMMY,ZYMB,WRK(KFMMO(1)),VDUMMY)
+        CALL FCKOIN(NNMAX,FC,DUMMY,ZYMB,WRK(KFMMO(1)),VDUMMY)
         CALL RSPORB(.TRUE.,NNMAX,FC,WRK(KFMMO(1)),VDUMMY,
      &               VDUMMY,VDUMMY,UDV,XTMP,ZYMB)
 c         CALL ORBEX(ISYMB,ISYMB,KZYVAR,WRK(KFMMO(I)),VDUMMY,
@@ -2962,4 +2964,4 @@ C
 
       RETURN
       END
-
+! end of DALTON/rsp/abscomplex.F

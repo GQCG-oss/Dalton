@@ -29,7 +29,7 @@
 !       end
 ! #else
 #define GO_ON_COMP
-! #endif      
+! #endif
 #ifdef GO_ON_COMP
       dimension c(*),ne(*),trou(*),part(*),nd(*)
 c      dimension c(*),ast(nela,*),bst(nelb,*),ne(*),trou(*),part(*),nd(*)
@@ -73,7 +73,7 @@ c remco
 c         if (dabs(c(idet)).gt.0.10) then
 c            write(2,'(F10.6,5x,14I3)')c(idet),(astr(jj),jj=1,nela)
 c            write(2,'(15x,14I3)')(bstr(jj),jj=1,nelb)
-c         endif 
+c         endif
 c remco
 c        if(nela.eq.nelb)then
          if(mult.eq.1)then
@@ -480,7 +480,7 @@ c******************************************************************
 c
 c      n=numero di orbitali singoli occupati
 c      k=numero di elettroni spaiati alpha
-c      iel(i),i=1,k = posizione dell'i-esimo elettrone 
+c      iel(i),i=1,k = posizione dell'i-esimo elettrone
 c                     nelle n caselle
 c
        integer iel
@@ -526,16 +526,16 @@ c
  111   continue
        enddo
        npos=npos+iel(k)-iel(k-1)-1
-       
-       
+
+
  110   if (zsz0) then
           if (npos*2.le.ntot) then
              npos=npos*2-1
           else
-             npos=(ntot-npos)*2+2	 
+             npos=(ntot-npos)*2+2
           endif
        endif
-       
+
        return
        end
 c---------------------------------------------------------------

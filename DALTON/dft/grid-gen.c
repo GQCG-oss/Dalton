@@ -1040,7 +1040,7 @@ boxify_save_batch_local(GridGenMolGrid *mg, FILE *f, integer cnt,
 static integer last;
 static int mynum, nodes;
 static void
-grid_par_init(real *radint, integer *angmin, integer *angint, integer *grdone) {
+grid_par_init(real *radint, integer *angmin, integer *angint, integer *DFTGRID_DONE) {
     integer arr[4];
     /* Executed by master and all slaves */
     MPI_Comm_rank(MPI_COMM_WORLD, &mynum);
@@ -1052,7 +1052,7 @@ grid_par_init(real *radint, integer *angmin, integer *angint, integer *grdone) {
     else if(selected_partitioning == &partitioning_becke_corr) arr[2] = 1;
     else if(selected_partitioning == &partitioning_ssf) arr[2] = 2;
     else /* if(selected_partitioning == &partitioning_block)*/ arr[2] = 3;
-    arr[3] = *grdone;
+    arr[3] = *DFTGRID_DONE;
     MPI_Bcast(radint, 1,             MPI_DOUBLE,      0, MPI_COMM_WORLD);
     MPI_Bcast(arr,    ELEMENTS(arr), fortran_MPI_INT, 0, MPI_COMM_WORLD);
     *angmin = arr[0];
@@ -1066,7 +1066,7 @@ grid_par_init(real *radint, integer *angmin, integer *angint, integer *grdone) {
     case 2: selected_partitioning = &partitioning_ssf; break;
     default: selected_partitioning = &partitioning_block; break;
     }
-    *grdone = arr[3];
+    *DFTGRID_DONE = arr[3];
 }
 
 static char*
@@ -1760,24 +1760,24 @@ grid_par_slave(const char *fname, real threshold)
 struct DftGridReader_ {
     FILE *f;
 };
-void FSYM2(get_grid_paras)(integer *grdone, real *radint, integer *angmin, integer *angint);
+void FSYM2(get_grid_paras)(integer *DFTGRID_DONE, real *radint, integer *angmin, integer *angint);
 void FSYM2(set_grid_done)(void);
 
 DftGridReader*
 grid_open(integer nbast, real *dmat, real *work, integer *lwork, integer verbose)
 {
     DftGridReader *res = dal_new(1, DftGridReader);
-    integer grdone, angmin, angint;
+    integer DFTGRID_DONE, angmin, angint;
     real radint;
     char *fname;
 
     switch(gridType) {
     case GRID_TYPE_STANDARD:
-        FSYM2(get_grid_paras)(&grdone, &radint, &angmin, &angint);
+        FSYM2(get_grid_paras)(&DFTGRID_DONE, &radint, &angmin, &angint);
 #ifdef VAR_MPI
-        grid_par_init(&radint, &angmin, &angint, &grdone);
+        grid_par_init(&radint, &angmin, &angint, &DFTGRID_DONE);
 #endif
-        if(!grdone) {
+        if(!DFTGRID_DONE) {
             integer atom_cnt;
             integer lwrk = *lwork - nbast;
             GridGenAtom* atoms = grid_gen_atom_new(&atom_cnt);
@@ -1787,28 +1787,28 @@ grid_open(integer nbast, real *dmat, real *work, integer *lwork, integer verbose
             
 #ifdef VAR_MPI
             if(mynum == 0) {
-                grid_generate("DALTON.QUAD", atom_cnt, atoms,
+                grid_generate("DALTON.cQUAD", atom_cnt, atoms,
                               radint, NULL, &dt,
                               angmin, angint, work, lwork, verbose);
                 grid_par_shutdown();
             } else 
-                grid_par_slave("DALTON.QUAD", radint);
+                grid_par_slave("DALTON.cQUAD", radint);
             /* Stop on barrier here so that we know all nodes managed to save
              * their files. */
             MPI_Barrier(MPI_COMM_WORLD);
 #else
-            grid_generate("DALTON.QUAD", atom_cnt, atoms,
+            grid_generate("DALTON.cQUAD", atom_cnt, atoms,
                           radint, NULL, &dt,
                           angmin, angint, work, lwork, verbose);
 #endif
             free(atoms);
             FSYM2(set_grid_done)();
         }
-        fname = grid_get_fname("DALTON.QUAD", mynum);
+        fname = grid_get_fname("DALTON.cQUAD", mynum);
         res->f=fopen(fname, "rb");
         free(fname);
         if(res == NULL) {
-            perror("DFT quadrature grid file DALTON.QUAD not found.");
+            perror("DFT quadrature grid file DALTON.cQUAD not found.");
             free(res);
             abort();
         }
@@ -1828,8 +1828,8 @@ grid_open(integer nbast, real *dmat, real *work, integer *lwork, integer verbose
             abort();
         }
         do_cartesian_grid(nbast, dmat, res);
-        if( (res->f=fopen("DALTON.QUAD", "rb")) == NULL) {
-            perror("DFT quadrature grid file DALTON.QUAD not found.");
+        if( (res->f=fopen("DALTON.cQUAD", "rb")) == NULL) {
+            perror("DFT quadrature grid file DALTON.cQUAD not found.");
             free(res);
             abort();
         }

@@ -836,7 +836,7 @@ C
      &      ' larger than',ABS(THRESH)
          SCALE = D1 / C2NRM
       ELSE
-         WRITE (LUOUT,'(/A,1P,D12.4)')
+         WRITE (LUOUT,'(/A,1P,D10.2)')
      &      ' Print of vector elements larger than',ABS(THRESH)
          SCALE = D1
       END IF
@@ -869,7 +869,7 @@ C     *** We have reached the print limit
 C
          WRITE (LUOUT,910) IPR
       END IF
-  910 FORMAT(/' Print limit of',I6,' elements has been reached.')
+  910 FORMAT(/'INFO: Print limit of',I6,' elements has been reached.')
       C2SUM = SQRT(C2SUM)
       IF (IZER .EQ. NDIM) THEN
          WRITE (LUOUT,920) NDIM
@@ -1188,8 +1188,14 @@ C
 C     May 2010, Hans Joergen Aa. Jensen
 C     Purpose: N_NAN returns number of NAN entries in AVEC(1:N)
 C
-      REAL*8 AVEC(N)
-      N_NAN  = N_NOT_EQUAL(N,AVEC,AVEC)
+      LOGICAL IS_NAN
+      INTEGER N, I, J
+      REAL*8  AVEC(N)
+      J = 0
+      DO I = 1,N
+         IF ( IS_NAN(AVEC(I),AVEC(I)) ) J = J + 1
+      END DO
+      N_NAN  = J
       RETURN
       END
 C === Deck n_not_equal ===============

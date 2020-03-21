@@ -92,7 +92,7 @@ C
       IF (NASHT .GT. 1 .AND. .NOT. HSROHF)
      *   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
       CALL READMO (CMO,9)
-      CALL RDCREF (CREF)
+      CALL RDCREF(CREF,.true.)
 C
 C
 C
@@ -386,13 +386,24 @@ C Step 0: WRK space allocation:
 C
       LWRK   = LFRSAV + KFRSAV - 1
 C .. 1.1 .. (MAKDV, TRACI)
+C     If spin-dependent srDFT then both charge and spin density 1-el matrices
+      IF (DFT_SPINDNS) THEN
+         NDV = 2
+      ELSE
+         NDV = 1
+      END IF
       KDV    = KFRSAV
-      KWRK1  = KDV    + NNASHX
+      KWRK1  = KDV    + NDV*NNASHX
+      KDSV   = KDV    + NNASHX
       LWRK1  = LWRK   - KWRK1
 C .. 1.2 .. (FCKMAT)
       KFC    = KWRK1
       KFV    = KFC    + NNORBT
-      KWRK2  = KFV    + NNORBT
+      IF (DFT_SPINDNS) THEN
+         KWRK2  = KFV    + 2*NNORBT
+      ELSE
+         KWRK2  = KFV    + NNORBT
+      END IF
       IF (SRHYBR) KWRK2 = KWRK2 + NNORBT
 C     ... space for extra matrix for SRHYBR
 C         but we do not use this matrix in SIRCNO /hjaaj oct 04
@@ -412,14 +423,32 @@ C
          CALL MAKDV(CVECS(1,ICREF),WRK(KDV),INDXCI,WRK(KWRK1),LWRK1)
 C        CALL MAKDV(CREF,DV,INDXCI,WRK,LFREE)
          IF (SUPSYM) CALL AVEDV(WRK(KDV))
+         IF (NDV .EQ. 2) THEN
+            IF (DFT_LOCALSPIN) THEN
+#ifdef MOD_SRDFT
+               CALL MAKE_DS_LOCALSPIN(WRK(KDV),WRK(KDSV),
+     &            WRK(KWRK1),LWRK1)
+#else
+               CALL QUIT('Sorry! Local spin not in this version')
+#endif
+            ELSE
+               CALL MAKDSV(CVECS(1,ICREF),WRK(KDSV),INDXCI,
+     &            WRK(KWRK1),LWRK1)
+            END IF
+            IF (SUPSYM) CALL AVEDV(WRK(KDSV))
+         END IF
       ELSE IF (HSROHF) THEN
          DO I = 1, NASHT
             II = KDV + I*(I+1)/2 - 1
             WRK(II) = D1
+            IF (NDV.EQ.2) WRK(NNASHX+II)=D1
          END DO 
       ELSE IF (NASHT .EQ. 1) THEN
          WRK(KDV) = NACTEL
          IF (GETOCC) AOCC(1) = WRK(KDV)
+         IF (NDV.EQ.2) WRK(KDSV)=MOD(NACTEL,2)
+      END IF
+      IF (NDV .EQ. 2) THEN
       END IF
       IF (TRTONO) THEN
          TRTONO = .FALSE.
@@ -451,10 +480,15 @@ C
       CALL FCKMAT((NASHT.EQ.0),WRK(KDV),CMO,EMY,WRK(KFC),WRK(KFV),
      *            WRK(KWRK2),LWRK2)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMY,FC,FV,WRK,LFREE)
-      IF (NASHT .GT. 0) CALL DAXPY(NNORBT,D1,WRK(KFV),1,WRK(KFC),1)
+      IF (NASHT .GT. 0) THEN
+         CALL DAXPY(NNORBT,D1,WRK(KFV),1,WRK(KFC),1)
+         IF (DFT_SPINDNS) THEN
+            CALL DAXPY(NNORBT,D1,WRK(KFV+NNORBT),1,WRK(KFC),1)
+         END IF
+      END IF
       IF (SUPSYM) CALL AVEFCK(WRK(KFC))
 C
-C     If (TRTOCO) then extract FDAC=FCAC+FVAC for TRACI to canon. orb.
+C     If (TRTOCO) then extract FDAC=FCAC+FVAC+FSAC for TRACI to canon. orb.
 C
       IF (TRTOCO) CALL GETAC(WRK(KFC),WRK(KDV))
 C
@@ -823,6 +857,7 @@ C
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
+      integer :: spindens_lvl_save
 C
       CALL QENTER('GETNO ')
       KFREE  = KFRSAV
@@ -841,6 +876,10 @@ C
 C
 C     Calculate natural orbital transformation and
 C     natural orbital occupation numbers
+
+      !> turn off spin-density calculation (if requested by user input)
+      spindens_lvl_save = spindens_lvl
+      spindens_lvl      = 0
 C
       CALL MEMGET('REAL',KDV  ,NNASHX,WRK,KFREE,LFREE)
       CALL MEMGET('WORK',KWRK1,LWRK1 ,WRK,KFREE,LFREE)
@@ -858,6 +897,8 @@ C
          CALL MAKDV(CVEC,WRK(KDV),INDXCI,WRK(KWRK1),LWRK1)
          LSYM   = LSYMSV
       END IF
+      !> restore spin-density level
+      spindens_lvl = spindens_lvl_save
 C
       IF (NASHT .GT. 0) THEN
          IF (IPRINT .GE. 10) THEN

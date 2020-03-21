@@ -36,8 +36,8 @@ f.add(string = 'Point group',
       rel_tolerance = 1.0e-5)
 
 #cmass
-f.add(string = 'Center-of-mass',
-      rel_tolerance = 1.0e-5)
+#f.add(string = 'Center-of-mass',
+#      rel_tolerance = 1.0e-5)
 
 #shield
 f.add(from_string = 'Indirect spin-spin coupling between ',

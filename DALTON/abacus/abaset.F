@@ -62,6 +62,7 @@ C   INFINP : ISTATE,ISPIN,NACTEL,POTNUC,LSOLMX,RSOL(3)
 C   INFOPT : EMCSCF,EPOT,EMY,EACTIV,ESOLT
 C   PAST   : PASDIP, PASORT, PASRES
 C   CBISOL : SOLVNT, ...
+C   DFTCOM : DFT_SPINDNS
 C   pcmlog.h : PCM
 C
 #include "gnrinf.h"
@@ -71,13 +72,13 @@ C
 #include "inforb.h"
 #include "infvar.h"
 #include "infpri.h"
-#include "cbdtra.h"
 #include "inftap.h"
 #include "past.h"
 #include "cbisol.h"
 #include "pcmlog.h"
 #include "cbirhs.h"
 #include "spinfo.h"
+#include "dftcom.h"
 C
       CALL QENTER('SETSIR  ')
       DST = SECOND( )
@@ -116,6 +117,15 @@ C
      *            NISH,NASH,NORB,NBAS,
      *            NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
      *            NAS1, NAS2, NAS3
+      IF (MCTYPE .GT. 900) THEN
+         IF (.NOT. DFT_SPINDNS .AND. ISPIN.NE.1) THEN
+         ! it is OK to have reset DFT_SPINDNS to false in RESPONS or ABACUS
+         ! for singlet reference states.
+            CALL QUIT('ERROR in SETSIR:'//
+     &      'DFT_SPINDNS true on SIRIFC, but not in input')
+         END IF
+         MCTYPE = MCTYPE - 1000
+      END IF
       HSROHF = (MCTYPE .EQ. -1)
 C
       REWIND LUSIFC
@@ -315,10 +325,6 @@ C     Reset some of them:
 C     FLAG( 4) = (NASHT .EQ. NORBT)
 C     ... Full CI case (flag(4) true means CI case)
 C     ... 910118-hjaaj: NO, may be a RAS calc. (e.g. MC-SD)
-C
-C     Set DERTRA control parameters in COMMON /CBDTRA/
-C
-      IPRTRD = IPRNTR
 C
 C     call NSETUP to define CI variables, Sirius unit numbers etc.
 C

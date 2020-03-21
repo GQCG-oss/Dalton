@@ -49,6 +49,9 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
+      use lucita_mcscf_srdftci_cfg
+      use lucita_mcscf_ci_cfg
+
 #ifdef HAS_PCMSOLVER
       use pcm_config, only: pcm_configuration, pcm_cfg
 #endif
@@ -477,7 +480,7 @@ C     if MC/CI and NO's not already printed
 C        980903-hjaaj: IPRI4 = IPRUSR + 5 as default in sirinp.F
          IF (NASHT .GT. 1) THEN
             CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-            CALL RDCREF(WRK(KCREF))
+            CALL RDCREF(WRK(KCREF),.true.)
          END IF
          CALL GETNO(WRK(KCREF),LSYM,WRK(KOCC),WRK(KUNO),WRK(KCMO),
      *              .FALSE.,.FALSE.,.TRUE.,MOISNO,WRK(KCINDX),
@@ -598,14 +601,33 @@ C        else MCSCF with only reference vector saved (NRSAVE)
          END IF
 C
          CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KWRK2),LWRK2,0)
+         if(ci_program .eq. 'LUCITA   '.and. srdft_ci_with_lucita)then
+           luci_cvec = 99
+           open(file='srdft-lucita-final.cvec',unit=luci_cvec,
+     &          status='old',
+     &          form='unformatted',action='read',position='rewind')
+         end if
          DO 105 I = ILOW,IHGH
             WRITE (LUPRI,1050) THRPWF,I
             IF (I .EQ. ISTATE .AND. .NOT. CICALC) WRITE (LUPRI,1051)
             IF (I .EQ. ISTACI .AND.       CICALC) WRITE (LUPRI,1052)
-            CALL READT(LUIT1,NCONF,WRK(KCREF))
-            CALL PRWF(WRK(KCREF),WRK(KCINDX),LUPRI,THRPWF)
-C           CALL PRWF(C,INDXCI,IOUT,THRPWF)
+            if(ci_program .eq. 'LUCITA   '.and.srdft_ci_with_lucita)then
+              call dzero(wrk(kcref),nconf)
+              call readvcd_exp(luci_cvec,wrk(kcref),0,-1)
+              !> set logical flag in order to save the vector on LUCITA internal files
+              vector_exchange_type1                                 = 1
+              vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types +
+     &        vector_exchange_type1) = .true.
+            else
+              CALL READT(LUIT1,NCONF,WRK(KCREF))
+            end if
+            CALL PRWF(WRK(KCREF),WRK(KCINDX),LUPRI,THRPWF,
+     &                WRK(KWRK2),LWRK2)
+C           CALL PRWF(C,INDXCI,IOUT,THRPWF,WORK,LFREE)
   105    CONTINUE
+         if(ci_program .eq. 'LUCITA   '.and. srdft_ci_with_lucita)then
+           close(luci_cvec,status='keep')
+         end if
          CALL MEMREL('SIROUT.PRWF',WRK,KFRSAV,KCINDX,KFREE,LFREE)
       END IF
   110 CONTINUE

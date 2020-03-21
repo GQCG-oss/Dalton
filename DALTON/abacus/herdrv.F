@@ -1915,7 +1915,7 @@ C  /* Deck hr2inp */
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D1 = 1.0D0,D0 = 0.0D0)
-      PARAMETER (NTABLE = 15)
+      PARAMETER (NTABLE = 16)
 C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -1930,7 +1930,8 @@ C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
      &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.ERF   ',
-     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', 'xXXXXXX', 'xXXXXXX'/
+     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.ERFGAU', '.COMLAM',
+     &            'xXXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR2INP')
@@ -2049,8 +2050,9 @@ C&&&        Vee=Vsr+Vlr ; Vlr=erf(\chi*r_12)/(r_12)
  37            CALL QUIT('Error reading CHIVAL for *TWOINT/.ERF')
    11          CONTINUE
 C&&& ERFEXP: Value of \chi in separation of two-electron operator
-C&&&         Vee=Vsr+Vlr ; Vlr=erf(\chi*r_12)+N*exp(\chi)/(r_12)
-               ERFEXP = .TRUE.
+C&&&         NEW VERSION March 2010 mnp+hjaj
+               ERFEXP(0) = .TRUE.
+               ERFEXP(2) = .TRUE.
                READ (LUCMD,*,ERR=39) CHIVAL
                GO TO 100
  39            CALL QUIT('Error reading CHIVAL for *TWOINT/.ERFEXP')
@@ -2067,16 +2069,43 @@ C&&& KSPT2M
                GO TO 100
  38            CALL QUIT('Error reading CHIVAL for *TWOINT/.MU ')
    14          CONTINUE
-C&&& not in use
+C&&& ERFGAU: Value of \chi in separation of two-electron operator
+C&&&         Vee=Vsr+Vlr ; Vlr=erf(\chi*r_12)+N*exp(\chi)/(r_12)
+               ERFEXP(0) = .TRUE.
+               ERFEXP(1) = .TRUE.
+               READ (LUCMD,*,ERR=141) CHIVAL
                GO TO 100
+  141          CALL QUIT('Error reading CHIVAL for *TWOINT/.ERFGAU')
    15          CONTINUE
+
+C K. Sharkas and J. Toulouse beg
+C COMLAM : COMplement LAMbda: value of lambda for linear separation of the electron-electron interaction: Vee= lambda/r_12 + (1-lambda)/r_12
+C K. Sharkas, A. Savin, H. J. Aa. Jensen, J. Toulouse, J. Chem. Phys. 137, 044104 (2012)
+C For now, range separation must also be activated (with very large mu) when using the linear separation.
+C Example of input:
+C**INTEGRALS
+C*TWOINT
+C.DOSRIN
+C.COMLAM
+C 0.25 (value of lambda)
+C.ERF
+C 10000000000 (large value of mu)
+C
+C See in srdft.F for the associated lambda-dependent density functionals.
+
+               COMLAM = .TRUE.
+               READ (LUCMD,*,ERR=151) VLAMBDA
+               GO TO 100
+  151          CALL QUIT('Error reading Lambda for *TWOINT/.COMLAM')
+C K. Sharkas and J. Toulouse end
+   16          CONTINUE
 C&&& not in use
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in HR2INP.'
+     &            '" not recognized in HR2INP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal prompt in HR2INP.')
             END IF
@@ -2110,13 +2139,20 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
                   WRITE (LUPRI,'(A)') 
      &              ' DFT optimization is run .DIRECT' 
                ELSE
-                  IF (ERFEXP) THEN
+                  IF (ERFEXP(1)) THEN
                      WRITE (LUPRI,410)
+                  ELSE IF (ERFEXP(2)) THEN
+                     WRITE (LUPRI,420)
                   ELSE
                      WRITE (LUPRI,400)
                   ENDIF
                   WRITE (LUPRI,'(A,F10.5)')
      &            '              with the coupling parameter : ',CHIVAL
+                  IF (COMLAM) THEN
+                     WRITE (LUPRI,'(2A,E15.5)')
+     &                 ' Two-electron integrals calculated',
+     &                 ' for linear coupling with Lambda = ',VLAMBDA
+                  ENDIF
             ENDIF
             END IF
             IF (DIRCAL) THEN
@@ -2153,7 +2189,8 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
             END IF
          END IF
  400  FORMAT(/' DFT-hybrid : Using a Erf type two-elec. operator')
- 410  FORMAT(/' DFT-hybrid : Using a Erf+Exp type two-elec. operator')
+ 410  FORMAT(/' DFT-hybrid : Using a Erf+Gau type two-elec. operator')
+ 420  FORMAT(/' DFT-hybrid : Using a Erf+Exp type two-elec. operator')
       END IF
  199  CALL QEXIT('HR2INP')
       RETURN

@@ -156,7 +156,7 @@ C           and subtract from input CMO matrix
       KFRSAV = KFREE
 
 !     translate sirius integral level code to FCKTRA and NEWTRA integral level code
-      call TRALVL(JTRSIR, NTRLVL)
+      call N_TRALVL(JTRSIR, NTRLVL) 
       IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) NTRLVL = NTRLVL + 1
       ! we need third order, because USEDRC not defined for FCKTRA
 #if FCKTRA_DEBUG > 0
@@ -166,15 +166,18 @@ C           and subtract from input CMO matrix
       flush(LUPRI)
 #endif
 
-!     call TRASET(sirntra.F) in order to be able to call TRALIM(sirntra.F)
+!     call N_TRASET(sirntra.F) in order to be able to call N_TRALIM(sirntra.F)
 !     which sets :
 !        ICDTRA: index array for C,D distributions (**|CD) to calculate
 !        ITRTYP(1:NORBT) = number of integral indices in which this orbital
 !                          enters (i.e. 0,1,2,3, or 4)
-      call TRASET(-1,LWORK)
-
+      call N_TRASET(-1,LWORK)
+#if FCKTRA_DEBUG > 0
+      IPRTRA = MAX(IPRTRA,FCKTRA_DEBUG)
+      write(lupri,*) 'DEBUG: IPRTRA set to',IPRTRA
+#endif
       allocate(ITRTYP(NORBT))
-      call TRALIM(NTRLVL,ICDTRA,ITRTYP)
+      call N_TRALIM(NTRLVL,ICDTRA,ITRTYP)
       deallocate ( ITRTYP )
 
       REWIND(LUINTM)
@@ -357,7 +360,7 @@ C --- start of executable code
 ! Used from include files:
 !  infpri.h : IPRFCK
 !  inftra.h : IPRTRA
-!  infinp.h : DIRFCK
+!  infinp.h : DIRFCK, ADDSRI
 !  inforb.h : N2BASX, NORBT,NNORBX, ...
 !  infind.h : ISMO(:)
 !  inftap.h : LUMINT
@@ -384,7 +387,8 @@ C --- start of executable code
       real*8  TCPU0,TCPU1,TCPU2,TWAL0,TWAL1,TWAL2
       real*8  TCPU_FCK,TCPU_WR,TWAL_FCK,TWAL_WR
 
-      logical NOSSUP_SAVE, ONLY_J_SAVE, ABCD_EQ_BACD
+      logical NOSSUP_SAVE, ONLY_J_SAVE, ADDSRI_save
+      logical ABCD_EQ_BACD
       real*8  HFXFAC_SAVE
 
       allocate ( ICD_REC(MX_NDMAT) )
@@ -408,6 +412,10 @@ C --- start of executable code
 #endif
       flush(lupri)
 #endif
+
+!     if srdft, only long range integrals
+      ADDSRI_save = ADDSRI
+      ADDSRI = .FALSE.
 
 !     for RDSUPM calls
       NOSSUP_SAVE = NOSSUP
@@ -569,6 +577,7 @@ C --- start of executable code
       HFXFAC = HFXFAC_SAVE
       NOSSUP = NOSSUP_SAVE
       ONLY_J = ONLY_J_SAVE
+      ADDSRI = ADDSRI_save
 
       deallocate ( ICD_REC )
       deallocate ( IFCTYP )
@@ -911,7 +920,7 @@ C --- start of executable code
 #endif
 
 !    We check that orbital information has been transferred to slaves,
-!    and then we call SETORB to define infind.h (we need ISMO(:))
+!    and then we call SETORB to define inforb.h and infind.h (we need ISMO(:))
 
       IF (NORBT .LE. 0) THEN
          CALL QUIT(

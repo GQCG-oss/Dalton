@@ -57,7 +57,8 @@ C
       DIMENSION LUIN1LIST(*), LUIN2LIST(*), LUOUTLIST(*)
       DIMENSION RNRM(MAXIT,*), EIG(MAXIT,*)
       DIMENSION SCRRED(*)
-      LOGICAL CONVER, RTCNV(*)
+      LOGICAL CONVER
+      integer RTCNV(*)
       INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN1
       INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
       INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
@@ -185,13 +186,13 @@ C
 C
 C     check for convergence
 C
-      IF(RNORM .lt. TEST .OR. ( ITER .gt. 2 .and. 
-     &  ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.E_CONV)) THEN
+      IF(RNORM .lt. TEST)then ! .OR. ( ITER .gt. 2 .and. 
+!    &  ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.E_CONV)) THEN
 C
-        RTCNV(IROOT) = .TRUE.
+        RTCNV(IROOT) = 0
       ELSE
 C
-        RTCNV(IROOT) = .FALSE.
+        RTCNV(IROOT) = iroot
         CONVER       = .FALSE.
       END IF
 C
@@ -617,8 +618,18 @@ C
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT, IOFFSET_LUOUT2
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER NUM_BLK
+      INTEGER NUM_BLK, IROUND, I_ZERO, I_REMOVED
+      real(8), parameter :: THR_CVEC  =  1.0d-03
+!     real(8), parameter :: THR_CVEC  = -1.0d-03
       LOGICAL STORE_F
+
+!     print *, 'THR_CVEC ==>', THR_CVEC
+
+      IROUND    = 0
+ 10   CONTINUE
+      IROUND    = IROUND + 1
+      I_ZERO    = 0
+      I_REMOVED = 0
 C
 C     initialize scratch offsets
       NUM_BLK           = 0
@@ -1038,6 +1049,19 @@ CSK  &                LUWRT)
 
 C
         CALL DSCAL(LEBATCH(ISBATCH),FACTOR,VEC2,1)
+
+        IF(THR_CVEC .GT. 0.0D0 .AND. IROUND .EQ. 1) THEN
+          DO I = 1,LEBATCH(ISBATCH)
+            IF(ABS(VEC2(I)) .LT. THR_CVEC) THEN
+              IF(VEC2(I) .EQ. 0.0D0) THEN
+                I_ZERO = I_ZERO + 1
+              ELSE
+                VEC2(I) = 0.0D0
+                I_REMOVED = I_REMOVED + 1
+              END IF
+            END IF
+          END DO
+        END IF
 C
 C       set new offset
 C
@@ -1069,6 +1093,26 @@ C       keep track of correct offset
         NUM_BLK         = NUM_BLK + NUM_ACTIVE_BATCH
 C
       END DO
+      ! need to do an MPI_ALLREDUCE to check whether any slave has removed an element in the trial vector
+      IF(THR_CVEC .GT. 0.0D0 .AND. IROUND .EQ. 1) THEN
+         I_REMOVED_total = 0
+         I_ZERO_total    = 0
+         CAll redvec_rel(I_REMOVED,I_REMOVED_total,1,1,
+     &               MPI_SUM,MPI_COMM_WORLD,-1)
+         CAll redvec_rel(I_ZERO,I_ZERO_total,1,1,
+     &                MPI_SUM,MPI_COMM_WORLD,-1)
+         IF(I_REMOVED_total .GT. 0) THEN
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+            WRITE(luwrt,'(/A,I12,A,I4,A,1P,D10.2,I14)')
+     &       'info: Removed',I_REMOVED_total,
+     &       ' elements in new CI trial vector no.',IADD,
+     &       '; threshold & zeroes',THR_CVEC, I_ZERO_total
+#undef LUCI_DEBUG
+#endif
+            GO TO 10
+         END IF
+      END IF
 C
       END
 ***********************************************************************
@@ -1468,7 +1512,9 @@ C**********************************************************************
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) :: mynew_comm_mpi
+      integer(kind=MPI_INTEGER_KIND) :: ierr
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "wrkspc.inc"
       DIMENSION ISCLFAC_GROUP(*), LUCLIST(*) 
@@ -1498,13 +1544,13 @@ C
 #ifdef LUCI_DEBUG
       WRITE(luwrt,*) '  start of subroutine UPDATE_LUC_LIST2 speaking'
       WRITE(luwrt,*) 'LUCLIST:'
-      CALL IWRTMAMN(LUCLIST,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
+      CALL IWRTMAMN(LUCLIST,1,NUM_BLOCKS2,1,NUM_BLOCKS2,luwrt)
       WRITE(luwrt,*) 'ISCLFAC_GROUP:'
-      CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
+      CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,luwrt)
       WRITE(luwrt,*) 'WORK(KSCALLOC2):'
-      CALL IWRTMAMN(WORK(KSCALLOC2),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
+      CALL IWRTMAMN(WORK(KSCALLOC2),1,NUM_BLOCKS2,1,NUM_BLOCKS2,luwrt)
       WRITE(luwrt,*) 'WORK(KSCALLOC3):'
-      CALL IWRTMAMN(WORK(KSCALLOC3),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUCIWT)
+      CALL IWRTMAMN(WORK(KSCALLOC3),1,NUM_BLOCKS2,1,NUM_BLOCKS2,luwrt)
 #endif
 C
       starttimer = MPI_WTIME()
@@ -1552,8 +1598,9 @@ C     &                               IGROUPLIST,IPROCLIST,IRILP)
 C
 
         END IF
+           mynew_comm_mpi = mynew_comm
            CALL MPI_BCAST(ISCLFAC_GROUP,NUM_BLOCKS2,
-     &                    my_MPI_INTEGER,0,MYNEW_COMM,IERR)
+     &                    my_MPI_INTEGER,0,MYNEW_COMM_MPI,IERR)
 *
       ELSE
 *
@@ -1628,6 +1675,8 @@ C
      &                  IABSOLUTE_WEIGHT)
 C
       IF(IDISTROUTE.EQ.1) THEN
+        call quit('dist strategy 1 disabled - not all variables are'//
+     &            ' set properly if PRINT_BATCH_INFO is disabled...')
         CALL DISTBLKND_1(NBLOCK,WORK(KCWEIGHTF),NBLOCKD,WORK(KIBTOTW),
      &                   WORK(KBLCKWT),NVAR,WORK(KICCTOS),IBLOCKL,
      &                   IPROCLIST,WORK(KCWEIGHT),IABSOLUTE_WEIGHT)
@@ -1736,7 +1785,7 @@ C
 *SUBVAL: VALUE OF SORTED ELEMENTS
 
       IMPLICIT REAL*8           ( A-H,O-Z)
-      INTEGER*8 KGATHERA, KGATHERB, KGATHERC, KGATHERD, KGATHERE
+      INTEGER*8 KGATHERA, KGATHERB, KGATHERC, KGATHERD
 !               for addressing of WORK
 #include "maxorb.h"
 #include "infpar.h"
@@ -1824,8 +1873,8 @@ C
         END IF
         IOFF_SCR = IOFF_SCR + LBL
 C       set to lbl to true value
-        LBL = IBLOCKL(II)
-        IBASE = IBASE + LBL
+        LBL      = IBLOCKL(II)
+        IBASE    = IBASE + LBL
 C
  1000 CONTINUE
 *
@@ -1846,13 +1895,12 @@ C
       CALL MEMMAN(KGATHERB,LUCI_NMPROC*NSUBMX,'ADDL  ',2,'PARRA2')
       CALL MEMMAN(KGATHERC,LUCI_NMPROC*NSUBMX,'ADDL  ',1,'PARIA1')
       CALL MEMMAN(KGATHERD,LUCI_NMPROC*NSUBMX,'ADDL  ',1,'PARIA2')
-      CALL MEMMAN(KGATHERE,NSUBMX,'ADDL  ',1,'PARIA3')
 *. We gather all lowest values from each node 
 *. and build up a combined list of those
       CALL GATHER_LOW_PAR(NSUB,NSUBMX,SUBVAL,ISCAT,
      &                    WORK(KGATHERA),WORK(KGATHERB),
      &                    WORK(KGATHERC),WORK(KGATHERD),
-     &                    WORK(KGATHERE),NTESTG)
+     &                    NTESTG)
 *     update SCR1 and ISCR1
       CALL DCOPY(NSUBMX,SUBVAL,1,SCR,1)
       CALL ICOPVE(ISCAT,ISCR,NSUBMX)

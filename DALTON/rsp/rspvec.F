@@ -2185,6 +2185,15 @@ C                        WRITE(LUPRI,'(/A,3ES18.7)')
                         WRITE(LUPRI,'(/A,3F12.6)')
      *   ' omega B, excitation energy, moment :',
      *      BSMFR(IBFR),EXCITA(MSYMC,IC,ISPINC+1),SMOM
+
+                        ALAB = ASMLB(MSYMA, IAOP)
+                        BLAB = BSMLB(MSYMB, IBOP)
+                        OMEGA_B = BSMFR(IBFR)
+                        OMEGA_C = EXCITA(MSYMC, IC, ISPINC+1)
+                        CALL PRINT_QR_SINGLE_RESIDUE(LUPRI,
+     &                      ALAB, BLAB, OMEGA_B, IC, OMEGA_C, SMOM
+     &                      )
+
                            IF (PHOSPH .OR. CPPHOL) THEN                 !MK
                            IF (ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPLEN ' .AND.!MK
      &                     BSMLB(MSYMB,IBOP)(2:8).EQ.' SPNORB' ) THEN   !MK
@@ -2257,6 +2266,7 @@ C                        WRITE(LUPRI,'(/A,3ES18.7)')
                              PHOSEV(IDIP,IHSO,IC)=SMOM                  !MK
                            END IF                                       !MK
                            END IF                                       !MK
+
                            IF (TWOPHO) THEN
                               IA=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
                               IB=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))

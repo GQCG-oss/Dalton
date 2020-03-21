@@ -1,0 +1,6 @@
+   rsp_mcabslrs
+   ------------
+   Molecule:         LiH
+   Wave Function:    CASSCF
+   Test Purpose:     Response calculations (first order) with damping (absorption) 
+                     using the old CPP solver

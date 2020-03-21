@@ -37,6 +37,7 @@ C        .le. 0 : LBL (length of next record) is read from LUIN
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) THEN
@@ -76,7 +77,51 @@ C
 C
       RETURN
       END
+
+      subroutine readvcd_exp(LUIN,SEGMNT,IREW,LBLK)
+C
+C read VECTOR ON FILE LUIN TO vector segmnt
+C
+C
+C LBLK DEFINES STRUCTURE OF FILE
+C   LBLK .gt. 0 : LBL (length of next record) is equal to LBLK
+C        .le. 0 : LBL (length of next record) is read from LUIN
+*
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
+      DIMENSION SEGMNT(*)
+      integer :: ioff
+C
+      IF( IREW .NE. 0 ) THEN
+        REWIND LUIN
+      END IF
+C
+C LOOP OVER BLOCKS
+C
+      ioff = 1
+ 1000 CONTINUE
+        IF(LBLK .GT. 0 ) THEN
+          LBL = LBLK
+        ELSE
+          READ(LUIN) LBL
+        END IF
+        IF( LBL .GE. 0 ) THEN
+          IF(LBLK .GE.0 ) THEN
+            KBLK = LBL
+          ELSE
+            KBLK = -1
+          END IF
+          NO_ZEROING = 1
+          CALL FRMDSC2(SEGMNT(ioff),LBL,KBLK,LUIN,IMZERO,IAMPACK,
+     &                 NO_ZEROING)
+          ioff = ioff + lbl
+        END IF
+      IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
+C
+      END
 ***********************************************************************
+
       SUBROUTINE COPVCDP(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 C
 C COPY VECTOR ON FILE LUIN TO FILE LUOUT
@@ -1188,6 +1233,56 @@ C
         END IF
 C
       IF( LBL .GE. 0 .AND. LBLK .LE. 0) GOTO 1000
+C
+      RETURN
+      END
+***********************************************************************
+      SUBROUTINE manipulate_vcd(LUIN,LUOUT,constant,SEGMNT,IREW,LBLK)
+C
+C add constant to each element of the VECTOR ON FILE LUIN AND STORE ON LUOUT
+! copy luout to luin at the end
+C
+C
+C LBLK DEFINES STRUCTURE OF FILES
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION SEGMNT(*)
+      real(8) :: constant
+C
+      IF( IREW .NE. 0 ) THEN
+        REWIND LUIN
+        REWIND LUOUT
+      END IF
+C
+C LOOP OVER BLOCKS
+C
+ 1000 CONTINUE
+        IF ( LBLK .GT. 0 ) THEN
+          LBL = LBLK
+        ELSE
+          READ(LUIN) LBL
+          WRITE(LUOUT) LBL
+        END IF
+C
+        IF ( LBL .GE. 0 ) THEN
+          IF(      LBLK .GE.0 ) THEN
+            KBLK = LBL
+          ELSE
+            KBLK = -1
+          END IF
+C
+          CALL FRMDSC_LUCI(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
+          IF(LBL .GT. 0 )then
+            do i = 1, lbl
+              segmnt(i) = segmnt(i) + constant
+            end do
+          end if
+          CALL TODSC_LUCI(SEGMNT,LBL,KBLK,LUOUT)
+        END IF
+C
+      IF( LBL .GE. 0 .AND. LBLK .LE. 0) GOTO 1000
+
+      call copvcd(luout,luin,segmnt,-1,-1)
 C
       RETURN
       END

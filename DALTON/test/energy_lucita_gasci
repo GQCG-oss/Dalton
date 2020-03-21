@@ -81,6 +81,9 @@ cat > energy_lucita_gasci.dal <<'%EOF%'
 .MXCIVE
  6
 .ANALYZ
+.NATORB
+.SPDENS
+ 1
 *ORBITAL INPUT
 .NOSUPSYM
 **END OF INPUT
@@ -157,43 +160,39 @@ CTRL[6]=1
 ERROR[6]="SCF ENERGY NOT CORRECT"
 
 # LUCITA setup
-CRIT1=` $GREP "Orbitals as initial wave .* HF_SCF" $log | wc -l`
-CRIT2=` $GREP "Type of calculation .* GASCI" $log | wc -l`
-CRIT3=` $GREP "Number of roots to be obtained * 2" $log | wc -l`
-CRIT4=` $GREP "Number of active electrons .* 8" $log | wc -l`
-CRIT5=` $GREP "Spin multiplicity .... * 1" $log | wc -l`
-TEST[7]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
-CTRL[7]=5
+CRIT2=` $GREP "Type of calculation \..* GASCI" $log | wc -l`
+CRIT3=` $GREP "Number of roots to be obtained \..* 2" $log | wc -l`
+CRIT4=` $GREP "Number of active electrons \..* 8" $log | wc -l`
+CRIT5=` $GREP "Spin multiplicity \..* 1" $log | wc -l`
+TEST[7]=`expr $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
+CTRL[7]=4
 ERROR[7]="SETUP OF LUCITA NOT CORRECT"
 
 # GAS spaces
-CRIT1=`$GREP "GAS 1 * 2   1   1   0" $log | wc -l`
-CRIT2=`$GREP "GAS 2 * 4   2   2   1" $log | wc -l`
-CRIT3=`$GREP "GAS 3 * 3   1   1   0" $log | wc -l`
-CRIT4=`$GREP "GAS 1 * 5 * 8" $log | wc -l`
-CRIT5=`$GREP "GAS 2 * 6 * 8" $log | wc -l`
-CRIT6=`$GREP "GAS 3 * 8 * 8" $log | wc -l`
-TEST[8]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
-CTRL[8]=6
+CRIT1=`$GREP "GAS 1 * 2   1   1   0  * 5  *8" $log | wc -l`
+CRIT2=`$GREP "GAS 2 * 4   2   2   1  * 6  *8" $log | wc -l`
+CRIT3=`$GREP "GAS 3 * 3   1   1   0  * 8  *8" $log | wc -l`
+TEST[8]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[8]=3
 ERROR[8]="GAS SPACES NOT CORRECT"
 
 # CI energies
-CRIT1=`$GREP "11  * 1  * -2573.1078445... * 7....(D|E)-05 * converged " $log | wc -l`
-CRIT2=`$GREP "11  * 2  * -2572.7700594... * [12]....(D|E)-04 * converged " $log | wc -l`
+CRIT1=`$GREP " 1  * -2573.1078445... * .....(D|E)-05 * converged" $log | wc -l`
+CRIT2=`$GREP " 2  * -2572.7700594... * .....(D|E)-0[45] * converged" $log | wc -l`
 TEST[9]=`expr $CRIT1 \+ $CRIT2`
 CTRL[9]=2
 ERROR[9]="CI CONVERGENCE NOT CORRECT"
 
-CRIT1=`$GREP "Sum =  * 4.007398" $log | wc -l`
-CRIT2=`$GREP "Sum =  * 1.989598" $log | wc -l`
-CRIT3=`$GREP "Sum =  * 0*.013405" $log | wc -l`
+CRIT1=`$GREP "Sum =  * 4.00739" $log | wc -l`
+CRIT2=`$GREP "Sum =  * 1.98959" $log | wc -l`
+CRIT3=`$GREP "Sum =  * 0*.01340" $log | wc -l`
 TEST[10]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[10]=4
 ERROR[10]="NATORB OCCUPATIONS ROOT 1 NOT CORRECT"
 
-CRIT1=`$GREP "Sum =  * 4.010582" $log | wc -l`
-CRIT2=`$GREP "Sum =  * 1.987829" $log | wc -l`
-CRIT3=`$GREP "Sum =  * 0*.013758" $log | wc -l`
+CRIT1=`$GREP "Sum =  * 4.01058" $log | wc -l`
+CRIT2=`$GREP "Sum =  * 1.9878[23]" $log | wc -l`
+CRIT3=`$GREP "Sum =  * 0*.01375" $log | wc -l`
 TEST[11]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=4
 ERROR[11]="NATORB OCCUPATIONS ROOT 2 NOT CORRECT"

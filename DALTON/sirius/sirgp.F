@@ -1057,7 +1057,7 @@ C
  9999 CALL QEXIT('GETAC2')
       RETURN
 C
-C     End of GETAC1.
+C     End of GETAC2.
 C
       END
 C  /* Deck getvir */
@@ -1670,12 +1670,14 @@ C
       DIMENSION FMAT(*), DMAT(*), ISYMDM(*), WORK(*)
 C
 C Used from common blocks:
+C  gnrinf.h: DOSRIN
 C  INFORB  : NBAST,N2BASX
 C  INFTAP  : LUSUPM
 C  CBIHRS  : parameters for FORMSUP
 C  frame.h : POTNUC
 C  DFTCOM  : HFXFAC
 C
+#include "gnrinf.h"
 #include "inforb.h"
 #include "inftap.h"
 #include "cbihrs.h"
@@ -1684,7 +1686,7 @@ C
 C
 C     Local variables:
 C
-      LOGICAL      FNDLAB, FNSUPM_OK, F_EXIST
+      LOGICAL      FNDLAB, FNSUPM_OK, F_EXIST, DOSRIN_save
       LOGICAL*4    NOSYM
       character*8  FNSUPM_local
 
@@ -1746,10 +1748,13 @@ C
             IF (I.GT.1) CALL QUIT('CALL FORMSUP failed')
             inquire(file='AOTWOINT',EXIST=F_EXIST)
             IF (.NOT. F_EXIST) THEN
+               DOSRIN_save = DOSRIN
+               DOSRIN = .FALSE. ! do not generate AOSR2INT here when srDFT
                CALL newTIMER('START ')
                CALL MAKE_AOTWOINT(WORK,LFREE)
                CALL newTIMER('MAKE_AOTWOINT')
                CALL FLSHFO(LUPRI)
+               DOSRIN = DOSRIN_save
             END IF
             CALL newTIMER('START ')
             CALL FORMSUP(WORK,LFREE,NOSSUP,HFXFACSUP,THRSUP,IPRSUP)
@@ -2297,11 +2302,12 @@ C
       RETURN
       END
 C  /* Deck rdcref */
-      SUBROUTINE RDCREF(CREF)
+      SUBROUTINE RDCREF(CREF,set_cref_xc_flag_lucita)
 C
 C 26-Sep-1990 Hans Joergen Aa. Jensen
 C Read reference CI vector from LUIT1
 C
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
       DIMENSION CREF(*)
       PARAMETER ( D1 = 1.0D0 )
@@ -2318,6 +2324,7 @@ C
 #include "infvar.h"
 #include "inftap.h"
 C
+      logical, intent(in) :: set_cref_xc_flag_lucita
       CHARACTER*8 RTNLBL(2), STAR8
       DATA STAR8/'********'/
 C
@@ -2356,6 +2363,14 @@ C        else only reference vector saved
       ELSE IF (NCONF .EQ. 1) THEN
          CREF(1) = D1
       END IF
+
+!     set logical flag for new reference CI vector in WRK(KCREF) - 
+!     in the interface to lucita we use this info to save/broadcast the new
+!     reference vector on lucita internal sequential/parallel MPI-I/O files
+      vector_exchange_type1                      = 1
+      vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types  +
+     &                                vector_exchange_type1) = 
+     &                                set_cref_xc_flag_lucita
 C
       RETURN
       END
@@ -2414,8 +2429,9 @@ CPHPMAERKE  ... PHP not implemented for SOLVNT in this version.
             CALL READT (LUIT2,NCONF,WRK)
             CALL DAXPY (NCONF,DP5,WRK,1,DIAGL,1)
          END IF
-         DO 100 I = 1,NCONF
-  100       DIAGL(I) = DIAGL(I) - EACTVN
+         DO I = 1,NCONF
+            DIAGL(I) = DIAGL(I) - EACTVN
+         END DO
       ELSE
          DIAGL(1) = D0
       END IF

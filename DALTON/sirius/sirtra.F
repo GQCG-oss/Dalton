@@ -1705,6 +1705,9 @@ C  KTRLVL, abs(KTRLVL) is transformation level, DELDA = (KTRLVL.lt.0)
 C  CMO,   MO coefficients
 C  WORK,  work array
 C  KWORK, actual length of work array
+!  
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -1812,6 +1815,9 @@ C
          CALL MEMREL('TRACTL_1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
          ! ITRLVL_LAST is set inside TRACTL_1, if integral transformation is not abandoned
       END IF
+
+!     set flag for new integrals (required for parallel MCSCF/CI with lucita)
+      mcscf_ci_update_ijkl = .true.
 
       IF (IPRTRA .GE. 0) THEN
          CALL GETTIM(TCPU,TWALL)
@@ -2317,9 +2323,9 @@ C           and subtract from input CMO matrix
                J = J + ABS(MISH_TEST(ISYM)) + ABS(MASH_TEST(ISYM))
             END DO
             IF (ABS(WORK(I)) .LE. THRZER .AND. J .EQ. 0) THEN
-               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/T12,A)')
-     *            ' TRACTL_1: Integral transformation abandoned,',
-     *            'the required MO integrals are already available.'
+               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A)')
+     &            ' TRACTL_1: Integral transformation abandoned,'//
+     &            ' the required MO integrals are already available.'
                LBINTM = LBINTM_1
                GO TO 9999
             END IF

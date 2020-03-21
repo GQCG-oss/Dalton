@@ -181,9 +181,14 @@ C
       CALL SIRPHP(WRK(KLDIA),EACTVN,INDXCI,FCAC,H2AC,
      *            WRK(KBVECS),LBVST)
 C     CALL SIRPHP(DIAGL,EACTVN,XNDXCI,FCAC,H2AC,WRK,LWRK)
-      CALL SNRST (NCSIM,NOSIM,CREF,G,IBNDX,EACTVN,WRK(KLDIA),
+      IF (IPRSIR .gt. 20) THEN
+         write(lupri,*) 'EACTVN, lowest 20 elements of CI-dioag',EACTVN
+         NN = MIN(NCONF,20)
+         write(lupri,'(I10,F20.10)') (I,WRK(KLDIA-1+I),I=1,NN)
+      END IF
+      CALL SNRST (NCSIM,NOSIM,CREF,G,IBNDX,WRK(KLDIA),
      *            WRK(KBVECS),LBVST)
-C     CALL SNRST (NCSIM,NOSIM,CREF,G,IBNDX,EACTVN,DIAGL,BVECS,LBVECS)
+C     CALL SNRST (NCSIM,NOSIM,CREF,G,IBNDX,DIAGL,BVECS,LBVECS)
       NTSIM = NCSIM + NOSIM
 C
 C *************************************
@@ -429,7 +434,7 @@ C
       END
 C  /* Deck snrst */
       SUBROUTINE SNRST (NCSIM,NOSIM,CREF,G,IBNDX,
-     *                  EACTVN,DIAGL,BVECS,LBVECS)
+     *                  DIAGL,BVECS,LBVECS)
 C
 C Written 11-Feb-1985 Hans Joergen Aa. Jensen (was in SIRNEO)
 C Revision 9-Jan-1986 hjaaj+pj (+DIAGL, will now also be called
@@ -487,13 +492,19 @@ C     (so the user is warned)
 C
       IF (NCONF .GT. 1) THEN
          NNEG = 0
-         DO 100 I = 1,NCONF
-            IF (DIAGL(I).LT.D0) NNEG = NNEG + 1
-  100    CONTINUE
+         DIALG_MIN = D0
+         DO I = 1,NCONF
+            IF (DIAGL(I).LT.D0) THEN
+               DIAGL_MIN = MIN(DIAGL_MIN,DIAGL(I))
+               NNEG = NNEG + 1
+            END IF
+         END DO
          IF (NNEG .GT. 0) THEN
             NWARN = NWARN + 1
-            WRITE (LUW4,'(/A,I5,A)') ' ***WARNING from SNRST:',NNEG,
-     *         ' negative elements of CI diagonal'
+            WRITE (LUW4,'(/A,I5,A,1P,D10.2)')
+     &         ' ***WARNING from SNRST:',NNEG,
+     &         ' negative elements of CI diagonal.'//
+     &         ' Lowest value',DIAGL_MIN
          END IF
       END IF
 C
@@ -615,7 +626,7 @@ C
   120          CONTINUE
             END IF
          ELSE IF (NWOPT.GT.0 .AND. .NOT.GETBVO) THEN
-C           if csf vector didn't work out, try an orbital if possible
+C           if csf vector did not work out, try an orbital if possible
             GETBVO = .TRUE.
             GO TO 25
 C    ^--------------
@@ -761,7 +772,7 @@ C
       CALL DZERO(WRK(KWKAP),NWOPT)
 C
 C     CONSTRUCT  (A-B)*X(I) WHERE X(I) IS THE SOLUTION TO THE
-C     I'TH SET OF NEWTON-RAPHSON EQUATIONS
+C     Ith SET OF NEWTON-RAPHSON EQUATIONS
 C
       REWIND LUIT5
 C
@@ -899,7 +910,7 @@ C            will destroy KAPOPT performance.
       END IF
       IF (SYMTRZ .AND. NCSIM .EQ. 1) THEN
 C        ... symmetrize CI vector so that numerical
-C            inaccuracy won't break symmetry;
+C            inaccuracy will not break symmetry;
 C            WARNING : if symmetry were broken in residual vectors,
 C                      and thus in sigma vectors, then this will
 C                      lead to constant residual.

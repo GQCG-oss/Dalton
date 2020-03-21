@@ -362,7 +362,7 @@ C
 C     PURPOSE:
 C
 C      A STRING IS GIVEN IN FORM A SEQUENCE OF ZEROES
-C      AND ONE ' S
+C      AND ONES
 C
 C      REINTERPRET THIS AS :
 C
@@ -444,7 +444,7 @@ C       Obtain determinants for each configuration and determine
 C.. 2 : the corresponding adress and phaseshift to reform into
 C       string form and ordering.
 C
-c. Offset arrays for SD's in string order
+c. Offset arrays for SDs in string order
       CALL CIOFF(IREFSM,1,XNDXCI,NTEST)
 c
       CALL CNTOST(ICONF,ICTSDT,IWORK,IDFTP(1),IREFSM,
@@ -1397,6 +1397,7 @@ C
       IF (IPRPHP .GE. 50) THEN
          WRITE(LUPRI,*) 'NEWCI: OLSEN =',OLSEN
          WRITE(LUPRI,*) 'NEWCI: ENER  =',ENER
+         WRITE(LUPRI,*) 'NEWCI: NPCVAR=',NPCVAR
       END IF
       KFREE = 1
       LFREE = LWRK
@@ -1871,7 +1872,7 @@ c
 c ARGUMENTS :
 c ===========
 c   PHP    : hamilton matrix in subspace ( output)
-c   IPCSF  : CSF's defining subspace (output)
+c   IPCSF  : CSFs defining subspace (output)
 c   IPCNF  : Configurations defining subspace (output )
 c   MXPDIM : Largest allowed dimension of subspace (Input)
 c   XNDXCI : List with Ci-information as obtained in DETINF(INPUT)
@@ -1888,13 +1889,13 @@ c   LSCR   : length of SCR
 c   NCONF  : Number of configurations of symmetry IREFSM
 c   IPWAY  : Defines way of choosing Primary space
 c    = 2   : use the first configurations (until atmost
-c            MXPDIM CSF's have been included )
+c            MXPDIM CSFs have been included )
 c   NPCNF  : Number of primary configurations obtained (output)
-c   NPCSF  : Number of primary CSF's obtained  (OUTPUT)
+c   NPCSF  : Number of primary CSFs obtained  (OUTPUT)
 c   IDODIA : Diagonalize primary matrix
 c   EIGVEC : Eigenvectors of primary subspace
 c   EIGVAL : Eigenvalues of primary subspace
-c   DIAG   : Hamilton diagonal over CSF's
+c   DIAG   : Hamilton diagonal over CSFs
 c
 c For SIRIUS interface :
 c FIJKL,RJ,RK,ILTSOB
@@ -1902,7 +1903,7 @@ c
 c Externals :
 c    FNDMNX,WRTMAT,ISTVC2,XTRDI
 c    GETCNF,CNHCN
-c Jeppe Olsen , Summer of '89
+c Jeppe Olsen , Summer of 89
 c
 #include "implicit.h"
 #include "priunit.h"
@@ -1940,7 +1941,7 @@ c
   101   CONTINUE
 c
       ELSE IF( IPWAY .EQ. 1) THEN
-c          Obtain lowest CSF's
+c          Obtain lowest CSFs
 c
 c 1 :  local Diagonal elements over configurations
 c
@@ -1957,7 +1958,7 @@ c
             IICSF = IICSF + NIRREP
   290     CONTINUE
   300   CONTINUE
-        IF( NTEST .GE. 15 ) THEN
+        IF( NTEST .GE. 55 ) THEN
           WRITE(LUPRI,*) ' CI diagonal over configurations '
           WRITE(LUPRI,*) ' ================================'
           CALL WRTMAT(SCR(KLDIA),1,NCONF,1,NCONF,0)
@@ -2028,14 +2029,14 @@ C             CALL GETCNF(SCR(KRCONF),IRTYP,IPCNF(ICNR),ICONF,IREFSM,NEL
         CALL QUIT('Illegal IPWAY in PHPCSF')
       END IF
 c
-      IF(NTEST .GE. 2 ) THEN
+      IF(NTEST .GE. 3 ) THEN
         WRITE(LUPRI,*) ' Output from PHPCSF '
         WRITE(LUPRI,*) ' ================== '
         WRITE(LUPRI,*)
      &  ' Number of Configurations in primary subspace',NPCNF
         WRITE(LUPRI,*)
      &  ' Number of CSFs in primary subspace          ',NPCSF
-        IF( NTEST .GE. 5 ) THEN
+        IF( NTEST .GE. 6 ) THEN
           WRITE(LUPRI,*) ' Configurations included : '
           CALL IWRTMA(IPCNF,1,NPCNF,1,NPCNF)
           WRITE(LUPRI,*) ' CSFs included : '
@@ -2050,7 +2051,7 @@ c* size of largest possible subblock
       DO 10 ITYP = 1, NTYP
         MXCSFC = MAX(MXCSFC,NCSFTP(ITYP) )
    10 CONTINUE
-      IF( NTEST .GE.2 ) WRITE(LUPRI,*)
+      IF( NTEST .GE.4 ) WRITE(LUPRI,*)
      &' Largest number of CSFs for given configuration  ', MXCSFC
 c
       KLFREE = 1
@@ -2112,10 +2113,10 @@ c
 C.       EXTRACT EIGENVALUES
          CALL XTRCDI(PHP,EIGVAL,NPCSF,1)
 c
-         IF(NTEST.GT.0)
-     &   WRITE(LUPRI,*) ' Range of eigenvalues in subspace ',
+         IF(NTEST.GE.3)
+     &   WRITE(LUPRI,*) ' PHP: Range of eigenvalues in subspace ',
      &             EIGVAL(1),EIGVAL(NPCSF)
-         IF(NTEST .GE. 2 ) THEN
+         IF(NTEST .GE. 6 ) THEN
            WRITE(LUPRI,*) ' Eigenvalues of subspace hamiltonian '
            CALL WRTMAT(EIGVAL,1,NPCSF,1,NPCSF,0)
            IF( NTEST .GE.20 ) THEN
@@ -2134,7 +2135,7 @@ c Obtain configuration number K .
 c Occupation in KCNF
 c Type in KTYP
 c
-c Jeppe Olsen , summer of '89
+c Jeppe Olsen , summer of 89
 c
 #include "implicit.h"
 #include "priunit.h"

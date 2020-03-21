@@ -16,12 +16,11 @@
 !
 !
 C
-#ifdef REV_LOG
 C===========================================================================
 CRevision 1.2  2000/05/24 19:02:25  hjj
 Cnew GETREF calls, fixing CSF problem for triplet
 C===========================================================================
-#endif
+
       SUBROUTINE A3INIT(KZYVR,KZYV1,KZYV2,IGRSYM,ISYMV1,ISYMV2,
      *                 OPLBL,IOPSYM,VEC1,VEC2,A3TRS,XINDX,UDV,
      *                 CMO,MJWOP,WRK,LWRK)

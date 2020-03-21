@@ -15,330 +15,2099 @@
 !  code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 !
-
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE CIEIG5(MV7,INICI,EROOTL,VEC1,
-     &                  VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
-     &                  LU41,NDIM,NBLK,NROOTSL,MAXVEC,MXCIIT,LUINCI,
-     &                  IPRT,PEIGVC,NPRDET,H0,IPNTR,NP1,NP2,NQ,H0SCR,
-     &                  EIGSHF,ICISTR,LBLK,IDIAG,VEC3,THRES_E,
-     &                  NBATCH,LBATCHB,LBATCHE,LBLOCK,IBLOCK,INIDEG,
-     &                  E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,IBLK_TO_CLS,
-     &                  NCLS,CLS_C,CLS_E,CLS_CT,CLS_ET,CLS_A,ICLS_L,
-     &                  BLKS_A,CLS_DEL,CLS_DELT,ISKIPEI,I2BLK,ICLS_A2,
-     &                  MXLNG,IROOTHOMING,IBASSPC,EBASC,CBASC,NSPC,
-     &                  MULSPC,IPAT,LPAT,ISPC,IBLOCKAR,
-     &                  IBLKDSTND,RCCTOS,IPROCLIST,IGROUPLIST
-#ifdef VAR_MPI
-     &                  ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
-     &                  LU6LIST,LU7LIST,LUCLIST
-#endif
-     &                  )
 
+      SUBROUTINE MICDV6(VEC1,VEC2,C2,LU1,LU2,RNRM,EIG,nfinal_vec,
+     &                  FINEIG,root_converged,root_residual,
+     &                  MAXIT,NVAR,
+     &                  LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,MAXVEC,NINVEC,
+     &                  APROJ,AVEC,WORK,IPRTXX,
+     &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
+     &                  E_CONV,IROOTHOMING,LUWRTOUT,c_state_of_interest,
+     &                  doensemble,weight)
 *
-* Master routine for CI diagonalization
+* Iterative eigen solver, requires two blocks in core
 *
-* Modified to handle PQ - preconditioner , May 1990
-* PICO,MICDV4 added spring of 1991
+* Multiroot version
 *
-      IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KSIOIO, KSBLTP, KSVST, KLXLBT, KLXLEBT, KLXI1BT, KLXIBT
-!               for addressing of WORK
-C
-#ifdef VAR_MPI
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
-      DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
-      DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
-      DIMENSION LU7LIST(*), LU6LIST(*)
-#endif
-#include "priunit.h"
+* From MICDV4, Jeppe Olsen, April 1997
+*              Modified : Oct 97 : root homing added
+*
+* Input :
+* =======
+*        LU1 : Initial set of vectors
+*        VEC1,VEC2 : Two vectors,each must be dimensioned to hold
+*                    largest blocks
+*        LU3,LU4   : Scratch files
+*        LUDIA     : File containing diagonal of matrix
+*        NROOT     : Number of eigenvectors to be obtained
+*        MAXVEC    : Largest allowed number of vectors
+*                    must atleast be 2 * NROOT
+*        NINVEC    : Number of initial vectors ( atleast NROOT )
+*        NPRDIM    : Dimension of subspace with
+*                    nondiagonal preconditioning
+*                    (NPRDIM = 0 indicates no such subspace )
+*   For NPRDIM .gt. 0:
+*          PEIGVC  : EIGENVECTORS OF MATRIX IN PRIMAR SPACE
+*                    Holds preconditioner matrices
+*                    PHP,PHQ,QHQ in this order !!
+*          PEIGVL  : EIGENVALUES  OF MATRIX IN PRIMAR SPACE
+*          IPNTR   : IPNTR(I) IS ORIGINAL ADRESS OF SUBSPACE ELEMENT I
+*          NP1,NP2,NQ : Dimension of the three subspaces
+*
+* H0SCR : Scratch space for handling H0, at least 2*(NP1+NP2) ** 2 +
+*         4 (NP1+NP2+NQ)
+*           LBLK : Defines block structure of matrices
+* On input LU1 is supposed to hold initial guesses to eigenvectors
+*
+*
+       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "parluci.h"
-#include "files.inc"
-#include "mxpdim.inc"
-C     Definition of c and sigma
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
-C        /ORBINP/ : NACOB used
-#include "orbinp.inc"
-#include "cicisp.inc"
-#include "strbas.inc"
-#include "cstate.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "csm.inc"
-#include "wrkspc.inc"
-#include "gasstr.inc"
-#include "cgas.inc"
-C        Used: NSMOB
-#include "lucinp.inc"
-#include "cprnt.inc"
-#include "glbbas.inc"
-#include "oper.inc"
-      LOGICAL CA
-C
-C
-      DIMENSION VEC1(*),VEC2(*)
-C     DIMENSION INIDET(100)
-      PARAMETER( LLWRK =100000)
-      integer, allocatable  :: iscr1(:)
-      real(8), allocatable  :: scr1(:)
-*. Output from Subspace dagonalization
-      DIMENSION H0(*),IPNTR(*),H0SCR(*),PEIGVC(*)
-*.
-      DIMENSION EROOTL(NROOTSL)
-      INTEGER   RCCTOS(*)
+       DIMENSION VEC1(*),VEC2(*),C2(*)
+       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
+       DIMENSION APROJ(*),AVEC(*),WORK(*)
+       DIMENSION H0(*),IPNTR(1)
+       DIMENSION H0SCR(*)
+       LOGICAL, intent(in) :: doensemble
+       real*8 , intent(in) :: weight(nroot)
+*
+* Dimensioning required of local vectors
+*      APROJ  : MAXVEC*(MAXVEC+1)/2
+*      AVEC   : MAXVEC ** 2
+*      WORK   : MAXVEC*(MAXVEC+1)/2
+*      H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
+*
+*      IROOTHOMING : Do roothoming, i.e. select the
+*      eigenvectors in iteration n+1 as the approximations
+*      with largest overlap with the previous space
+*
+      real(8), intent(out) :: FINEIG(nroot)
+      real(8), intent(out) :: root_residual(nroot)
+      integer, intent(out) :: root_converged(nroot)
+      integer, intent(out) :: nfinal_vec
+      integer, intent(in)  :: c_state_of_interest
 
-!     use dynamic instead of static allocation (+ common block)
-      allocate(iscr1(llwrk))
-      allocate(scr1(llwrk))
-C
-C     parameter used in parallel scheme /sk march 2007/
-C
-      IAMSURE = 1
-*
-      IF( IPRT.GT. 1 )  WRITE(luwrt,'(/A)')
-     &'          *** information from ci diagonalization  ***'
-!     NTEST = 9999 ! NTEST=0
-      NTEST = 0
-C
-C               ====================================
-C  1 :               INITIAL VARIATIONAL SUBSPACE
-C               ====================================
-C
-      IF( INICI .EQ. 0 ) THEN
-        IF(NPRDET .EQ. 0 ) THEN
-C         ==================================================
-C          Initial guess from lowest elements of CI diagonal
-C         ==================================================
-C
-C         in order treat degeneracies, the lowest 4 * NROOTSL
-C         elements are obtained
-C
-          NFINDM = MIN(NDIM,4*NROOTSL)
-C
-          IF (LUCI_NMPROC .GT. 1) THEN
-#ifdef VAR_MPI
-              CALL FNDMND_PAR(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
-     &                    ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,
-     &                    SCR1,IBLOCKAR,IBLKDSTND,NUM_BLOCKS2,IPRT)
-#endif
-          ELSE
-             CALL FNDMND(LUDIA,LBLK,VEC1,NFINDM,NFINDA,
-     &            ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,SCR1,IPRT)
-          END IF
-          CALL REWINE(LU1,-1)
-          IBASE = 1
-          TEST = 1.0D-10
-          DO 100 IROOTSI = 1, NROOTSL
-*. Number of degenerate elements
-            NDEG = 1
-            XVAL = SCR1(IBASE)
-   90       CONTINUE
-            IF(IBASE-1+NDEG+1.LE.NFINDA) THEN
-              IF (ABS(SCR1(IBASE-1+NDEG+1)-XVAL).LE.TEST) THEN
-                NDEG = NDEG + 1
-                GOTO 90
-              END IF
-            END IF
-*
-            IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
-              WRITE(luwrt,'(/A,I5/A)')
-     &        ' INFO !  DEGENERATE INITIAL VECTORS FOR CI ROOT',IROOTSI,
-     &        ' INFO !  ONLY ONE PARTNER USED, CHECK YOUR RESULTS!'
-              NDEG = 1
-            END IF
+      LOGICAL CONVER,LUCEND
+      REAL*8 INPRDD, INPROD
+      DOUBLE PRECISION tottime,endtime,starttime
+      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
+*     New characters used for timing in send of VEC from LU3
+      CHARACTER CPULUSTEP*12, WALLLUSTEP*12
+*     New characters used for timing in cpback of sigma vec and calc of
+*     aproj(ij)
+      CHARACTER CPUFSTEP*12, WALLFSTEP*12
+*     New characters used for timing in step3
+      CHARACTER CPUTSTEP*12, WALLTSTEP*12
+*     XJEP is used for ROOTHOMING
+      real(8), allocatable ::  xjep(:)
+      integer, allocatable :: ixjep(:)
+      character (len=13)   :: convergence
 
-*. Initial guess in compressed form in SCR1
-            SCALE = NDEG
-            SCALE =1.0D0 / SQRT(SCALE)
-            DO 250 II = 1,NDEG
-*. Anti symmetric combination
-              IF(INIDEG.EQ.-1) THEN
-                SCR1(II) = (-1.0D0)**II * SCALE
-*. Symmetric combination
-              ELSE IF (INIDEG.EQ.1.OR.INIDEG.EQ.0) THEN
-                SCR1(II) =  SCALE
-              END IF
-  250       CONTINUE
-            IF(IDIAG.EQ.2) THEN
-              JPACK = 1
-            ELSE
-              JPACK = 0
-            END IF
-            IF (LUCI_NMPROC .GT. 1) THEN
-#ifdef VAR_MPI
-               CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,
-     &                      IBLOCKAR,IBLKDSTND,NUM_BLOCKS2,JPACK,
-     &                      IROOTSI,LU1LIST)
-#endif
-            ELSE
-               CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
-     &                  LUDIA,JPACK)
-            END IF
-            IBASE = IBASE + NDEG
-  100     CONTINUE
-        ELSE
-* =====================================
-*. Initial approximations are in PEIGVC
-* =====================================
-          CALL REWINE(LU1,-1)
-          IF(IDIAG.EQ.2) THEN
-            JPACK = 1
-          ELSE
-            JPACK = 0
-          END IF
-          DO 1984 IROOTSI = 1, NROOTSL
-            CALL WRSVCD(LU1,LBLK,VEC1,IPNTR,
-     &           PEIGVC((IROOTSI-1)*NPRDET+1),NPRDET,NDIM,LUDIA,JPACK)
- 1984     CONTINUE
-        END IF
-      END IF
-*
-* ======================================================
-* Initial CI vectors are already on file LU1, do nothing
-* ======================================================
-*
-      IF( INICI .LT. 0 ) THEN
-*.      vectors assumed already in LU1/ILU1 (parallel)
-        IF(IPRT.GT. 1 )
-     &  WRITE(luwrt,*)' Initial CI vector assumed in place '
-      END IF
-*
-*                 ========================
-* 2 :                  Diagonalization
-*                 ========================
-*
-!     release scratch memory
-      deallocate(iscr1)
+!     in the Davidson we perform only sigma vector calculations
+      ISIGDEN = 1
 
-      CALL QENTER('CIEIG')
-* Inverse iteration modified Davidson with 2 vectors in core
-      IF(IPRT .GE. 5 ) THEN
-         WRITE(luwrt,'(A,I3)')
-     &   '  Number of roots to be converged..  ',NROOTSL
-         WRITE(luwrt,'(A,I3)')
-     &   '  Largest allowed number of vectors..',MAXVEC
-         WRITE(luwrt,'(A,I3)')
-     &   '  Allowed number of CI iterations  ..',MXCIIT
-      END IF
+      lucend = .FALSE.
 
-*     allocations for SCR1
-      KRNRM  = 1
-      KEIG   = KRNRM + MXCIIT*NROOTSL
-      KFIN   = KEIG  + MXCIIT*NROOTSL
-      KAPROJ = KFIN + NROOTSL
-      KAVEC  = KAPROJ + MAXVEC*(MAXVEC+1)/2
-      KWORK  = KAVEC + MAXVEC ** 2
-      KLFREE = KWORK + MAXVEC*(MAXVEC+1)
-      IF( IPRT .GE. 5 ) THEN
-         WRITE(luwrt,*) ' KRNRM KEIG KFIN KAPROJ KAVEC KWORK KLFREE '
-         WRITE(luwrt,'(6I8)')KRNRM,KEIG,KFIN,KAPROJ,KAVEC,KWORK,KLFREE
-      END IF
-      IF( KLFREE-1 .GT. LLWRK) THEN
-           WRITE(luwrt,'(A,2I5)' )
-     &     ' Not enough memory in CIEIG5 : neeeded and available ',
-     &     KLFREE-1, LLWRK
-           WRITE(luwrt,'(A,2I5)' )
-     &     ' Increase parameter LLWRK in CIEIG5 to   ', KLFREE-1
-           Call Abend2( ' insufficient memory in cieig5 ' )
+      MYNEW_ID   = 0
+      MYNEW_COMM = 0
+C
+      WRITE(LUWRTOUT,'(/10X,A)')
+     &' **************************************************'
+      WRITE(LUWRTOUT,'(10X,A)')
+     &'     entering MICDV6 (sequential solver routine)   '
+      WRITE(LUWRTOUT,'(10X,A )')
+     &' **************************************************'
+*
+       IPICO = 0
+       IF(IPICO.NE.0) THEN
+         MAXVEC = MIN(MAXVEC,2)
        END IF
 *
-      IF (LUCI_NMPROC .GT. 1) THEN
-#ifdef VAR_MPI
-C
-C     partition CI vector with max. batch length using LBLOCK
-C
-      IDUM = 0
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'CIEIG5')
-C
-      IATP = 1
-      IBTP = 2
-      NOCTPA = NOCTYP(IATP)
-      NOCTPB = NOCTYP(IBTP)
-C     Offset for supergroups
-      IOCTPA = IBSPGPFTP(IATP)
-      IOCTPB = IBSPGPFTP(IBTP)
-C
-      NAEL = NELEC(IATP)
-      NBEL = NELEC(IBTP)
-C     Arrays giving allowed type combinations
-      CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
-      CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
-     &                IGSOCCX,NOCTPA,NOCTPB,
-     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
-     &                MXPNGAS,NGAS,WORK(KSIOIO),0)
-C
-      KSVST = 1
-C     Arrays giving block type
-      CALL MEMMAN(KSBLTP,NSMST,'ADDL  ',2,'SBLTP ')
-      CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KSBLTP),WORK(KSVST))
-C     Arrays for partitioning of sigma
-      NTTS = MXNTTS
-      CALL MEMMAN(KLXLBT ,NTTS   ,'ADDL  ' ,1,'CLBT  ')
-      CALL MEMMAN(KLXLEBT ,NTTS  ,'ADDL  ' ,1,'CLEBT ')
-      CALL MEMMAN(KLXI1BT,NTTS   ,'ADDL  ' ,1,'CI1BT ')
-      CALL MEMMAN(KLXIBT ,8*NTTS ,'ADDL  ' ,1,'CIBT  ')
-C     partition the CI-vactor in batches
-      ITTSS_ORD = 2
-C
-      CALL PART_CIV_PAR1(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
-     &                   WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,
-     &                   LBLOCK_LUCI,
-     &                   WORK(KSIOIO),ISMOST(1,ISSM),
-     &                   NBATCH,WORK(KLXLBT),WORK(KLXLEBT),
-     &                   WORK(KLXI1BT),WORK(KLXIBT),0,ITTSS_ORD,
-     &                   IBLKDSTND,IBLOCKI)
-*
-       I_USE_MICDV6 = 1
-       CALL MICDV6_PAR(VEC1,VEC2,SCR1(KRNRM),SCR1(KEIG),
-     &                 EROOTL,MXCIIT,NDIM,NROOTSL,
-     &                 MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
-     &                 SCR1(KWORK),IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
-     &                 H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
-     &                 luwrt,IBLOCKAR,IBLKDSTND,
-     &                 RCCTOS,
-     &                 LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
-     &                 LU6LIST,LU7LIST,LUCLIST,NBATCH,
-     &                 WORK(KLXLBT),WORK(KLXLEBT),WORK(KLXI1BT),
-     &                 WORK(KLXIBT),IPROCLIST,IGROUPLIST)
-
-#endif
-      ELSE ! (LUCI_NMPROC .GT. 1) THEN
-       I_USE_MICDV6 = 1
-       CALL MICDV6(VEC1,VEC2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
-     &             EROOTL,MXCIIT,NDIM,LU3,LU4,LU5,LU6,LU7,
-     &             LUDIA,NROOTSL,
-     &             MAXVEC,NROOTSL,SCR1(KAPROJ),SCR1(KAVEC),
-     &             SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
-     &             H0SCR,-1,EIGSHF,THRES_E,IROOTHOMING,luwrt)
-      END IF ! (LUCI_NMPROC .GT. 1) THEN
-
-      ENOT = SCR1(KFIN)
-!     release scratch memory
-      deallocate(scr1)
-
-      CALL QEXIT('CIEIG')
-
-#ifdef VAR_MPI
-      IF (LUCI_NMPROC .GT. 1) THEN
-C       eliminate local memory
-        IDUM = 0
-        CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
-      END IF ! (LUCI_NMPROC .GT. 1) THEN
+!      IPRT = 9999 ! IPRT = 0000  DEBUG
+       IPRT = 0000
+       lbl  = 0
+c      IPRT = IPRTXX
+#ifdef LUCI_DEBUG
+         WRITE(LUWRTOUT,*) ' Initial set of eigenvectors '
+         CALL REWINE(LU1,-1)
+         DO IROOT = 1, NROOT
+           WRITE(LUWRTOUT,1066) IROOT, LBLK, LBL
+           CALL WRTVCD(VEC1,LU1,0,LBLK)
+         END DO
 #endif
 *
+       IOLSTM = 1
+       IF(IPRT.GT.1.AND.IOLSTM.NE.0)
+     & WRITE(LUWRTOUT,*) ' Inverse iteration modified Davidson '
+       IF(IPRT.GT.1.AND.IOLSTM.EQ.0)
+     & WRITE(LUWRTOUT,*) ' Normal Davidson method '
+       IF( MAXVEC .LT. 2 * NROOT ) THEN
+         WRITE(LUWRTOUT,*)' Sorry MICDV6 wounded , MAXVEC .LT. 2*NROOT '
+         WRITE(LUWRTOUT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
+         WRITE(LUWRTOUT,*) ' Raise MXCIV to be at least 2 * Nroot '
+         WRITE(LUWRTOUT,*) ' Enforced stop on MICDV6 '
+         Call Abend1( 20 )
+       END IF
+*
+      if(iroothoming.eq.1)then
+        write(luwrtout,*) ' Root homing performed '
+        allocate(xjep( maxvec*3))
+        allocate(ixjep(maxvec*3))
+      end if
+*
+      KAPROJ = 1
+      KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
+      CONVER = .FALSE.
+!     set convergence thresholds
+!     norm   
+      THRQC  = E_CONV
+!     THRQC  = 1.0d-04
+!     energy change
+!     THRQE  = E_CONV * 1.0d-10
+      THRQE  = E_CONV
+*
+* ===================
+*.Initial iteration
+* ===================
+      ITER = 1
+      CALL REWINE(LU1,-1)
+      CALL REWINE(LU2,-1)
+*
+      DO IVEC = 1,NINVEC
+        CALL REWINE(LU5,-1)
+        CALL REWINE(LU6,-1)
+        CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
+*       Check timings for sigma vector generation
+        CALL GETTIM(CPUSIG1,WALLSIG1)
+
+        CALL SIGDEN_CI(VEC1,VEC2,C2,LU5,LU6,cdummy,sdummy,ISIGDEN,-1,
+     &                 xxs2dum)
+
+        CALL GETTIM(CPUSIG2,WALLSIG2)
+        WALLTID = SECTID(WALLSIG2-WALLSIG1)
+        if(ivec .eq. 1)then
+          write(luwrtout,9777) WALLTID
+        else
+          write(luwrtout,9778) WALLTID
+        end if
+*. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
+        CALL REWINE(LU6,-1)
+        CALL COPVCD(LU6,LU2,VEC1,0,LBLK)
+*. Projected matrix
+        CALL REWINE(LU2,-1)
+          DO JVEC = 1, IVEC
+             CALL REWINE(LU5,-1)
+             IJ = IVEC*(IVEC-1)/2 + JVEC
+             APROJ(IJ) = INPRDD(VEC1,VEC2,LU2,LU5,0,LBLK)
+          END DO ! loop over IVEC
+       END DO ! loop over NINVEC
+*
+       IF( IPRT .GE.5 ) THEN
+         WRITE(LUWRTOUT,*) ' INITIAL PROJECTED MATRIX  '
+         CALL PRSYM(APROJ,NINVEC)
+       END IF
+*. Diagonalize initial projected matrix
+       CALL COPVEC(APROJ,WORK(KAPROJ),NINVEC*(NINVEC+1)/2)
+       CALL EIGEN_LUCI(WORK(KAPROJ),AVEC,NINVEC,0,1)
+       DO IROOT = 1, NROOT
+         EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
+       END DO
+*
+       IF(IPRT .GE. 3 ) THEN
+         WRITE(LUWRTOUT,*) 
+     &   ' Eigenvalues of initial iteration (with shift)'
+         WRITE(LUWRTOUT,'(5F18.13)')
+     &   ( EIG(1,IROOT)+EIGSHF,IROOT=1,NROOT)
+       END IF
+       IF( IPRT  .GE. 5 ) THEN
+        WRITE(luwrt,*) ' Eigenvalues of initial iteration (no shift)'
+        WRITE(luwrt,'(5F18.13)')
+     &  ( EIG(1,IROOT),IROOT=1,NROOT)
+       END IF
+*. Transform vectors on LU1 so they become the actual
+*. eigenvector approximations
+C     TRAVCD(VEC1,VEC2,NVECIN,NVECOUT,LUIN,LUOUT,
+C    &                  ICOPY,LBLK,LUSCR1,LUSCR2)
+       CALL REWINE(LU3,-1)
+       CALL TRAVCD(VEC1,VEC2,AVEC,NINVEC,NROOT,LU1,LU3,1,LBLK,LU4,LU5)
+*. And the sigma vectors
+       CALL REWINE(LU3,-1)
+       CALL TRAVCD(VEC1,VEC2,AVEC,NINVEC,NROOT,LU2,LU3,1,LBLK,LU4,LU5)
+*
+       IF(IPRT.GE.600) THEN
+         WRITE(LUWRTOUT,*) ' Initial set of eigenvectors '
+         CALL REWINE(LU1,-1)
+         DO IROOT = 1, NROOT
+           WRITE(LUWRTOUT,1066) IROOT, LBLK, LBL
+ 1066 FORMAT(/'lets see IROOT =', 3I4/)
+           CALL WRTVCD(VEC1,LU1,0,LBLK)
+         END DO
+*
+         WRITE(LUWRTOUT,*) ' Initial set of sigma vectors '
+         CALL REWINE(LU2,-1)
+         DO IROOT = 1, NROOT
+           WRITE(LUWRTOUT,1067) IROOT
+ 1067 FORMAT(/'lets see IROOT again=', I4/)
+           CALL WRTVCD(VEC1,LU2,0,LBLK)
+         END DO
+       END IF
+*. And the corresponding Hamiltonian matrix, no problems
+*. with numerical stabilities, so just use eigenvalues
+       CALL dzero(APROJ,NINVEC*(NINVEC+1)/2)
+       DO IROOT = 1, NROOT
+        APROJ(IROOT*(IROOT+1)/2) = EIG(1,IROOT)
+       END DO
+*
+       NVEC = NROOT
+CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
+ 12    CONTINUE 
+       IF (MAXIT .EQ. 1 ) GOTO  1001
+*
+*
+* ======================
+*. Loop over iterations
+* ======================
+*
+ 1000 CONTINUE
+        CALL GETTIM(CPUITR1,WALLITR1)
+        write(LUWRTOUT,*)
+        write(LUWRTOUT,'(A21,3X,I3)') ' Info from iteration ',ITER
+        write(LUWRTOUT,*) '_______________________'
+        ITER = ITER + 1
+*
+* ===============================
+*.1 New directions to be included
+* ===============================
+*
+* 1.1 : R = H*X - EIGAPR*X
+*
+       IADD = 0
+       CONVER = .TRUE.
+*
+       CALL REWINE(LU1,-1)
+       CALL REWINE(LU2,-1)
+*
+       DO 100 IROOT = 1, NROOT
+*. Save current eigenvector IROOT on LU7
+         CALL SKPVCD(LU1,IROOT-1,VEC1,1,LBLK)
+         CALL REWINE(LU7,-1)
+         CALL COPVCD(LU1,LU7,VEC1,0,LBLK)
+*. Calculate (HX - EX ) and store on LU5
+*. Current eigenvector is  on LU7, corresponding sigma vector
+*. on LU2
+         EIGAPR = EIG(ITER-1,IROOT)
+         ONE = 1.0D0
+*
+         CALL REWINE(LU7,-1)
+         CALL REWINE(LU5,-1)
+         FACTOR = - EIGAPR
+         CALL VECSMD(VEC1,VEC2,ONE,FACTOR,LU2,LU7,LU5,0,LBLK)
+*
+         IF ( IPRT  .GE. 10 ) THEN
+           WRITE(LUWRTOUT,*) '  ( HX - EX ) '
+           CALL WRTVCD(VEC1,LU5,1,LBLK)
+         END IF
+*  Strange place to put convergence but ....
+         RNORM = SQRT( INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK) )
+         RNRM(ITER-1,IROOT) = RNORM
+         WRITE(LUWRTOUT,'(A19,I8,1p,1E15.5,0p,3X,1F19.10)')
+     &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
+*
+         CALL FLSHFO(LUWRTOUT)
+*
+!        write(LUWRTOUT,*) 'RNORM, THRQC, abs, THRQE',
+!    &                      RNORM, THRQC, 
+!    &                      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)),
+!    &                      THRQE
+
+!hjajj/s IF(RNORM.LT. THRQC .OR.
+!    &      (ITER.GT.2.AND.
+!    &      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.THRQE)) THEN
+         IF(RNORM.LT. THRQC)THEN
+            root_converged(IROOT) = 0
+         ELSE
+            root_converged(IROOT) = iroot
+            CONVER = .FALSE.
+         END IF
+         if(c_state_of_interest /= 0)then
+           if(root_converged(abs(c_state_of_interest)) == 0)then ! desired root converged - we are done!
+             conver = .true. 
+           end if
+         end if
+         !> do not converge any undesired root
+         if(doensemble)then
+           if(abs(weight(iroot)) == 0.0d0)then
+             root_converged(IROOT) = 0
+           end if
+         end if
+         IF( ITER .GT. MAXIT) GOTO 100
+* =====================================================================
+*. 1.2 : Multiply with inverse Hessian approximation to get new directio
+* =====================================================================
+*. (H0-E) -1 *(HX-EX) on LU6
+CSK         print*,'NP1,NP2,NQ ',NP1,NP2,NQ
+         IF( root_converged(IROOT) .gt. 0) THEN
+           IF(IPRT.GE.3) THEN
+             WRITE(LUWRTOUT,*) ' Correction vector added for root',IROOT
+           END IF
+           IADD = IADD + 1
+           CALL REWINE(LUDIA,-1)
+           CALL REWINE(LU5,-1)
+           CALL REWINE(LU6,-1)
+           CALL H0M1TD(LU6,LUDIA,LU5,LBLK,NP1+NP2+NQ,IPNTR,
+     &                 H0,-EIGAPR,H0SCR,XH0IX,
+     &                 NP1,NP2,NQ,VEC1,VEC2,IPRT)
+C     H0M1TD(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
+C    &                  H0,SHIFT,WORK,XH0PSX,
+C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG)
+           IF ( IPRT  .GE. 600) THEN
+             WRITE(LUWRTOUT,*) '  (D-E)-1 *( HX - EX ) '
+             CALL WRTVCD(VEC1,LU6,1,LBLK)
+           END IF
+CSK        print*,'IOLSTM ',IOLSTM
+*
+           IF(IOLSTM .NE. 0 ) THEN
+* add Olsen correction if neccessary
+* (H0 - E )-1  * X on LU5
+             CALL REWINE(LU5,-1)
+             CALL REWINE(LU7,-1)
+             CALL REWINE(LUDIA,-1)
+*
+             CALL H0M1TD(LU5,LUDIA,LU7,LBLK,Np1+Np2+NQ,
+     &                   IPNTR,H0,-EIGAPR,H0SCR,XH0IX,
+     &                   NP1,NP2,NQ,VEC1,VEC2,IPRT)
+*
+* Gamma = X(T) * (H0 - E) ** -1 * X
+             CALL REWINE(LU5,-1)
+             CALL REWINE(LU7,-1)
+             GAMMA = INPRDD(VEC1,VEC2,LU5,LU7,0,LBLK)
+CSK             WRITE(LUWRTOUT,*) ' Gamma = ', Gamma
+             IF(IPRT.GE.1000) WRITE(LUWRTOUT,*) ' Gamma = ', Gamma
+* is X an eigen vector for (H0 - 1 ) - 1
+             CALL REWINE(LU5,-1)
+             CALL REWINE(LU7,-1)
+              VNORM =
+     &        SQRT(VCSMDN(VEC1,VEC2,-GAMMA,1.0D0,LU7,LU5,0,LBLK))
+CSK              write(LUWRTOUT,*) ' VNORM = ', VNORM
+              IF(IPRT.GE.1000) write(LUWRTOUT,*) ' VNORM = ', VNORM
+              IF(VNORM .GT. 1.0D-7 ) THEN
+                IOLSAC = 1
+              ELSE
+                IOLSAC = 0
+              END IF
+              IF(IOLSAC .EQ. 1 ) THEN
+             IF(IPRT.GE.5) WRITE(LUWRTOUT,*) ' Olsen Correction active '
+CSK                WRITE(LUWRTOUT,*) ' Olsen Correction active '
+                DELTA = INPRDD(VEC1,VEC2,LU7,LU6,1,LBLK)
+                FACTOR = -(DELTA/GAMMA)
+                IF(IPRT.GE.5) WRITE(LUWRTOUT,*) ' DELTA,GAMMA,FACTOR'
+                IF(IPRT.GE.5) WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
+CSK                WRITE(LUWRTOUT,*) ' DELTA,GAMMA,FACTOR'
+CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
+                CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU6,LU5,LU7,1,LBLK)
+                CALL COPVCD(LU7,LU6,VEC1,1,LBLK)
+*
+                IF(IPRT.GE.600) THEN
+                  WRITE(LUWRTOUT,*) ' Modified trial vector '
+                  CALL WRTVCD(VEC1,LU6,1,LBLK)
+                END IF
+*
+              END IF
+            END IF
+*. 1.3 Orthogonalize to all previous vectors
+*.. Vectors on LU1
+*
+           CALL REWINE( LU1 ,LBLK)
+           DO IVEC = 1, NROOT
+               CALL REWINE(LU6,-1)
+               WORK(IVEC) = -INPRDD(VEC1,VEC2,LU1,LU6,0,LBLK)
+           END DO
+           IF(IPRT.GE.1000) THEN
+             Write(LUWRTOUT,*) ' Overlap with vectors on LU1'
+             call WRTMT_LU(work,1,nroot,1,nroot)
+           END IF
+           ONE = 1.0D0
+           CALL REWINE(LU1,-1)
+           CALL MVCSMD(LU1,WORK,LU7,LU5,VEC1,VEC2,NROOT,1,LBLK)
+           CALL VECSMD(VEC1,VEC2,ONE,ONE,LU7,LU6,LU5,1,LBLK)
+           IF(IPRT.GE.1000) THEN
+             write(LUWRTOUT,*) ' orthogonalized to vectors on LU1'
+             CALL WRTVCD(VEC1,LU5,1,LBLK)
+           END IF
+*.. Vectors on LU3
+           IF(NVEC+IADD-1-NROOT.GT.0) THEN
+             CALL REWINE( LU3 ,LBLK)
+             DO IVEC = 1, NVEC+IADD-1-NROOT
+                 CALL REWINE(LU6,-1)
+                 WORK(IVEC) = -INPRDD(VEC1,VEC2,LU3,LU6,0,LBLK)
+             END DO
+             ONE = 1.0D0
+             CALL REWINE(LU3,-1)
+             CALL MVCSMD(LU3,WORK,LU7,LU6,VEC1,VEC2,NVEC+IADD-1-NROOT,
+     &            1,LBLK)
+             CALL VECSMD(VEC1,VEC2,ONE,ONE,LU7,LU5,LU6,1,LBLK)
+           ELSE
+             CALL REWINE(LU3,-1)
+             CALL COPVCD(LU5,LU6,VEC1,1,LBLK)
+           END IF
+*. 1.4 Normalize vector
+           SCALE = INPRDD(VEC1,VEC1,LU6,LU6,1,LBLK)
+           FACTOR = 1.0D0/SQRT(SCALE)
+           CALL REWINE(LU6,LBLK)
+           CALL SCLVCD(LU6,LU3,FACTOR,VEC1,0,LBLK)
+           IF(IPRT.GE.600) THEN
+             CALL SCLVCD(LU6,LU7,FACTOR,VEC1,1,LBLK)
+             WRITE(LUWRTOUT,*) '   normalized     (D-E)-1 *( HX - EX ) '
+             CALL WRTVCD(VEC1,LU7,1,LBLK)
+           END IF
+*
+         END IF
+  100 CONTINUE
+*
+      IF( CONVER ) THEN
+         GOTO  1001
+      END IF
+      IF( ITER.GT. MAXIT) THEN
+         ITER = MAXIT
+         GOTO 1001
+      END IF
+*
+*
+* ====================================================
+*  2 : Optimal combination of new and old directions
+* ====================================================
+*
+*  2.1: Multiply new directions with matrix
+*
+      IF(IPRT.GE.1000) THEN
+       IF (luci_MYPROC.EQ.luci_MASTER) THEN
+        WRITE(LUWRTOUT,*) ' Vectors on LU3'
+        WRITE(LUWRTOUT,*) 'NVEC-NROOT+IADD =',NVEC-NROOT+IADD
+        CALL REWINE(LU3,-1)
+        DO IVEC = 1, NVEC-NROOT+IADD
+          CALL WRTVCD(VEC1,LU3,0,LBLK)
+        END DO
+       END IF
+       CALL REWINE(LU3,-1)
+      END IF
+*
+      CALL SKPVCD(LU3,NVEC-NROOT,VEC1,1,LBLK)
+      CALL SKPVCD(LU4,NVEC-NROOT,VEC1,1,LBLK)
+*
+*     
+ 150  DO IVEC = 1, IADD
+        CALL REWINE(LU5,LBLK)
+        CALL REWINE(LU6,LBLK)
+        CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
+
+!       write(luwrtout,*) 'new trial vec ...'
+!       CALL WRTVCD(VEC1,LU5,1,LBLK)
+*Check timings for sigma vector generation
+        CALL GETTIM(CPUSIG1,WALLSIG1)
+        CALL SIGDEN_CI(VEC1,VEC2,C2,LU5,LU6,cdummy,sdummy,ISIGDEN,-1,
+     &                 xxs2dum)
+        CALL GETTIM(CPUSIG2,WALLSIG2)
+        WALLTID = SECTID(WALLSIG2-WALLSIG1)
+        if(ivec .eq. 1)then
+          WRITE(LUWRTOUT,9400) WALLTID
+        else
+          WRITE(LUWRTOUT,9401) WALLTID
+        end if
+        CALL REWINE(LU6,LBLK)
+        CALL COPVCD(LU6,LU4,VEC1,0,LBLK)
+*2.2 Augment projected matrix
+        CALL REWINE( LU1,LBLK)
+        DO JVEC = 1, NROOT
+          CALL REWINE(LU6,LBLK)
+          IJ = (IVEC+NVEC)*(IVEC+NVEC-1)/2 + JVEC
+          APROJ(IJ) = INPRDD(VEC1,VEC2,LU1,LU6,0,LBLK)
+!         write(LUWRT,*) 'ij, aproj(ij):',ij,aproj(ij)
+        END DO
+
+        CALL REWINE(LU3,LBLK)
+C       DO JVEC = NROOT+1, NVEC+IADD
+        DO JVEC = NROOT+1, NVEC+IVEC
+         CALL REWINE(LU6,LBLK)
+         IJ = (IVEC+NVEC)*(IVEC+NVEC-1)/2 + JVEC
+         APROJ(IJ) = INPRDD(VEC1,VEC2,LU3,LU6,0,LBLK)
+!        write(LUWRT,*) 'ij, aproj(ij):',ij,aproj(ij)
+        END DO
+      END DO
+*     /\ End do over new trial vectors
+*
+*. 2.3 Diagonalize projected matrix
+      NVEC = NVEC + IADD
+!     write(LUWRT,*) 'Dimension of projected matrix:',NVEC
+!     call wrtmatmn(aproj,1,NVEC*(NVEC+1)/2,1,NVEC*(NVEC+1)/2,luwrtout)
+      CALL COPVEC(APROJ,WORK(KAPROJ),NVEC*(NVEC+1)/2)
+      CALL EIGEN_LUCI(WORK(KAPROJ),AVEC,NVEC,0,1)
+*. Test : transform projected matrix
+C TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
+C     CALL TRAN_SYM_BLOC_MAT(APROJ,AVEC,1,NVEC,XJEP(1000),XJEP(1))
+C     WRITE(LUWRTOUT,*) ' Explicitly transformed matrix'
+C     CALL PRSYM(XJEP(1000),NVEC)
+
+      IF(IPICO.NE.0) THEN
+        E0VAR = WORK(KAPROJ)
+        C0VAR = AVEC(1)
+        C1VAR = AVEC(2)
+        C1NRM = SQRT(C0VAR**2+C1VAR**2)
+*. overwrite with pert solution
+        AVEC(1) = 1.0D0/SQRT(1.0D0+C1NRM**2)
+        AVEC(2) = -(C1NRM/SQRT(1.0D0+C1NRM**2))
+        E0PERT = AVEC(1)**2*APROJ(1)
+     &         + 2.0D0*AVEC(1)*AVEC(2)*APROJ(2)
+     &         + AVEC(2)**2*APROJ(3)
+        WORK(KAPROJ) = E0PERT
+        WRITE(LUWRTOUT,*) 
+     &  ' Var and Pert solution, energy and coefficients'
+        WRITE(LUWRTOUT,'(4X,3E15.7)') E0VAR,C0VAR,C1VAR
+        WRITE(LUWRTOUT,'(4X,3E15.7)') E0PERT,AVEC(1),AVEC(2)
+      END IF
+*
+      IF(IROOTHOMING.EQ.1) THEN
+*
+*. Reorder roots so the NROOT with the largest overlap with
+*  the original roots become the first
+*
+*. Norm of wavefunction in previous space
+       DO IVEC = 1, NVEC
+         XJEP(IVEC) = INPROD(AVEC(1+(IVEC-1)*NROOT),
+     &                AVEC(1+(IVEC-1)*NROOT),NROOT)
+       END DO
+       WRITE(LUWRTOUT,*)
+     & ' Norm of projections to previous vector space '
+       CALL WRTMT_LU(XJEP,1,NVEC,1,NVEC)
+*. My sorter arranges in increasing order, multiply with minus 1
+*  so the eigenvectors with largest overlap comes out first
+       ONEM = -1.0D0
+       CALL SCALVE(XJEP,ONEM,NVEC)
+       CALL SORLOW(XJEP,XJEP(1+NVEC),IXJEP,NVEC,NVEC,NSORT,IPRT)
+       IF(NSORT.LT.NVEC) THEN
+         WRITE(LUWRTOUT,*) ' Warning : Some elements lost in sorting '
+         WRITE(LUWRTOUT,*) ' NVEC,NSORT = ', NSORT,NVEC
+       END IF
+       IF(IPRT.GE.3) THEN
+         WRITE(LUWRTOUT,*) ' New roots choosen as vectors '
+         CALL IWRTMA(IXJEP,1,NROOT,1,NROOT)
+       END IF
+*. Reorder
+       DO INEW = 1, NVEC
+         IOLD = IXJEP(INEW)
+         CALL COPVEC(AVEC(1+(IOLD-1)*NVEC),XJEP(1+(INEW-1)*NVEC),NVEC)
+       END DO
+       CALL COPVEC(XJEP,AVEC,NROOT*NVEC)
+       DO INEW = 1, NVEC
+         IOLD = IXJEP(INEW)
+         XJEP(INEW*(INEW+1)/2) = WORK(IOLD*(IOLD+1)/2)
+       END DO
+       DO INEW = 1, NVEC
+         WORK(INEW*(INEW+1)/2) = XJEP(INEW*(INEW+1)/2)
+       END DO
+*
+       IF(IPRT.GE.3) THEN
+         WRITE(LUWRTOUT,*) ' Reordered WORK and AVEC arrays '
+         CALL PRSYM(WORK,NVEC)
+         CALL WRTMT_LU(AVEC,NVEC,NVEC,NVEC,NVEC)
+       END IF
+*
+      END IF
+*     ^ End of root homing procedure
+      DO IROOT = 1, NROOT
+        EIG(ITER,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
+      END DO
+*
+!     IPRT = 6
+
+      IF(IPRT .GE. 3 ) THEN
+        WRITE(LUWRTOUT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
+        WRITE(LUWRTOUT,'(5F18.13)')
+     &  ( EIG(ITER,IROOT)+EIGSHF,IROOT=1,NROOT)
+        WRITE(LUWRTOUT,'(A)') ' Norm of Residuals (Previous it) '
+        WRITE(LUWRTOUT,'(5F18.13)')
+     &  ( RNRM(ITER-1,IROOT),IROOT=1,NROOT)
+      END IF
+*
+      IF( IPRT  .GE. 5 ) THEN
+        WRITE(LUWRTOUT,*) ' Projected matrix'
+        CALL PRSYM(APROJ,NVEC)
+        WRITE(LUWRTOUT,*) ' eigen pairs '
+        WRITE(LUWRTOUT,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
+        CALL WRTMT_LU(AVEC,NVEC,NROOT,NVEC,NROOT)
+      END IF
+
+!     IPRT = 0
+*
+**  perhaps reset or assemble converged eigenvectors
+*
+  901 CONTINUE
+*
+*. Reset
+*
+*
+* case 1 : Only NROOT vectors can be stored
+*          save current eigenvector approximations
+* Case 2 : Atleast 2*NROOT eigenvectors can be saved
+*          Current eigenvactor approximations+
+*          vectors allowing generation of previous approxs.
+*
+*
+*
+*  check timing of part3 in loop iteration
+      CALL GETTIM(CPUSTEP3,WALLSTEP3)
+
+#ifdef debug_blabla
+      IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
+        CALL REWINE( LU5,LBLK)
+        DO 320 IROOT = 1, NROOT
+          CALL MVCSMD(LU1,AVEC((IROOT-1)*NVEC+1),
+     &    LU3,LU4,VEC1,VEC2,NVEC,1,LBLK)
+          XNORM = INPRDD(VEC1,VEC1,LU3,LU3,1,LBLK)
+          CALL REWINE(LU3,LBLK)
+          SCALE  = 1.0D0/SQRT(XNORM)
+          WORK(IROOT) = SCALE
+          CALL SCLVCD(LU3,LU5,SCALE,VEC1,0,LBLK)
+  320   CONTINUE
+*. Transfer C vectors to LU1
+        CALL REWINE( LU5,LBLK)
+        CALL REWINE( LU1,LBLK)
+        DO 411 IVEC = 1,NROOT
+          CALL COPVCD(LU5,LU1,VEC1,0,LBLK)
+  411   CONTINUE
+*. corresponding sigma vectors
+        CALL REWINE (LU5,LBLK)
+        CALL REWINE (LU2,LBLK)
+        DO 329 IROOT = 1, NROOT
+          CALL MVCSMD(LU2,AVEC((IROOT-1)*NVEC+1),
+     &    LU3,LU4,VEC1,VEC2,NVEC,1,LBLK)
+*
+          CALL REWINE(LU3,LBLK)
+          CALL SCLVCD(LU3,LU5,WORK(IROOT),VEC1,0,LBLK)
+  329   CONTINUE
+*
+* Transfer HC's to LU2
+        CALL REWINE( LU2,LBLK)
+        CALL REWINE( LU5,LBLK)
+        DO 400 IVEC = 1,NROOT
+          CALL COPVCD(LU5,LU2,VEC1,0,LBLK)
+  400   CONTINUE
+        NVEC = NROOT
+*
+        CALL DZERO(AVEC,NVEC**2)
+        DO 410 IROOT = 1,NROOT
+          AVEC((IROOT-1)*NROOT+IROOT) = 1.0D0
+  410   CONTINUE
+*
+        CALL SETVEC(APROJ,0.0D0,NVEC*(NVEC+1)/2)
+        DO 420 IROOT = 1, NROOT
+          APROJ(IROOT*(IROOT+1)/2 ) = EIG(ITER,IROOT)
+  420   CONTINUE
+*
+      END IF
+*
+#endif
+
+!     IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
+!     activating the IF... part above does NOT work as it is...
+!     TODO: transfer the davidson subroutine from kr-ci (dirac) which 
+!           has a working increasing subspace dimension routine.
+!           it's basically the code you find above in #ifdef ...
+*
+*. 3.1 : Current wave function approximations, collect on LU7
+!#ifdef blabla_debug
+!       IPRT = 1000
+        IF(IPRT.GE.1000) THEN
+        write(LUWRTOUT,*) ' I am going to reset '
+        write(LUWRTOUT,*) ' nroot, nvec ', nroot,nvec
+        END IF
+        IF(IPRT.GE.1000) THEN
+          WRITE(LUWRTOUT,*) ' Initial vectors on LU1'
+          CALL REWINE(LU1,-1)
+          DO IVEC = 1, NROOT
+             CALL WRTVCD(VEC1,LU1,0,LBLK)
+          END DO
+          WRITE(LUWRTOUT,*) ' Initial vectors on LU3'
+          CALL REWINE(LU3,-1)
+          DO IVEC = 1, NROOT
+             CALL WRTVCD(VEC1,LU3,0,LBLK)
+          END DO
+        END IF
+*
+        CALL REWINE( LU7,LBLK)
+        DO IROOT = 1, NROOT
+*. From LU1 to LU5
+          CALL REWINE(LU1,-1)
+          CALL MVCSMD(LU1,AVEC((IROOT-1)*NVEC+1),
+     &    LU5,LU6,VEC1,VEC2,NROOT,1,LBLK)
+          IF(IPRT.GE.1000)
+     &    write(LUWRTOUT,*) ' end of c reset, part 1'
+*. and add LU3 to LU5
+          CALL REWINE(LU3,-1)
+          ONE = 1.0D0
+          CALL MVCSMD2(LU3,AVEC((IROOT-1)*NVEC+NROOT+1),ONE,
+     &    LU5,LU6,VEC1,VEC2,NVEC-NROOT,1,LBLK)
+          IF(IPRT.GE.1000)
+     &    write(LUWRTOUT,*) ' end of c reset, part 2'
+C              MVCSMD2(LUIN,FAC,FACLUOUT,LUOUT,LUSCR,
+C    &         VEC1,VEC2,NVEC,IREW,LBLK)
+          XNORM = INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK)
+          CALL REWINE(LU5,LBLK)
+          SCALE  = 1.0D0/SQRT(XNORM)
+CSK          WRITE(LUWRTOUT,*) ' SCALE = ', SCALE
+          WORK(IROOT) = SCALE
+*. scale LU5 => LU7
+          CALL REWINE(LU5,-1)
+          CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
+          IF(IPRT.GE.1000)
+     &    write(LUWRTOUT,*) ' end of c reset, part 3'
+        END DO
+*. Transfer C vectors from LU7 to LU1
+        CALL REWINE( LU7,LBLK)
+        CALL REWINE( LU1,LBLK)
+        DO IVEC = 1,NROOT
+          CALL COPVCD(LU7,LU1,VEC1,0,LBLK)
+        END DO
+        IF(IPRT.GE.1000)
+     &  write(LUWRTOUT,*) ' end of c reset, part 4'
+        IF(IPRT.GE.1000) THEN
+          WRITE(LUWRTOUT,*) ' Reset C-vectors on LU1 '
+          CALL REWINE(LU1,-1)
+          DO IVEC = 1, NROOT
+             CALL WRTVCD(VEC1,LU1,0,LBLK)
+          END DO
+        END IF
+*. 3.2 : corresponding sigma vectors
+        CALL REWINE( LU7,LBLK)
+        DO IROOT = 1, NROOT
+*. From LU2 to LU5
+          CALL REWINE(LU2,-1)
+          CALL MVCSMD(LU2,AVEC((IROOT-1)*NVEC+1),
+     &    LU5,LU6,VEC1,VEC2,NROOT,1,LBLK)
+          IF(IPRT.GE.1000)
+     &    write(LUWRTOUT,*) ' end of s reset, part 1'
+*. and add LU4 to LU5
+          CALL REWINE(LU4,-1)
+          CALL MVCSMD2(LU4,AVEC((IROOT-1)*NVEC+NROOT+1),ONE,
+     &    LU5,LU6,VEC1,VEC2,NVEC-NROOT,1,LBLK)
+          IF(IPRT.GE.1000)
+     &    write(LUWRTOUT,*) ' end of s reset, part 2'
+          SCALE  = WORK(IROOT)
+*. scale LU5 => LU7
+          CALL REWINE(LU5,-1)
+          CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
+          IF(IPRT.GE.1000)
+     &    write(LUWRTOUT,*) ' end of s reset, part 3'
+        END DO
+*. Transfer sigma  vectors from LU7 to LU2
+        CALL REWINE( LU7,LBLK)
+        CALL REWINE( LU2,LBLK)
+        DO IVEC = 1,NROOT
+          CALL COPVCD(LU7,LU2,VEC1,0,LBLK)
+        END DO
+        IF(IPRT.GE.1000)
+     &  write(LUWRTOUT,*) ' end of s reset, part 4'
+        NNVEC = NROOT
+
+        IF(3*NROOT.LE.MAXVEC) THEN
+*
+*. Orthogonalize the
+*. last set of correction vectors to the current
+*. eigenvectors on LU1, and save on LU2
+*. Overlap with root approximations
+*. Start of last set of trial vectors
+          ISTART = NVEC-NROOT-IADD+1
+          CALL SKPVCD(LU3,ISTART-1,VEC1,1,LBLK)
+*
+          CALL REWINE(LU5,-1)
+          DO JVEC = 1, IADD
+*. Orthogonalize to vectors on LU1
+            CALL REWINE(LU7,-1)
+            CALL COPVCD(LU3,LU7,VEC1,0,LBLK)
+            IF(IPRT.GE.1000) THEN
+            write(LUWRTOUT,*) ' Initial vector on LU7'
+            CALL WRTVCD(VEC1,LU7,1,LBLK)
+            END IF
+            CALL REWINE(LU1,-1)
+            DO IROOT = 1, NROOT
+              CALL REWINE(LU7,-1)
+              WORK(IROOT+(JVEC-1)*2*NROOT) =
+     &        -INPRDD(VEC1,VEC2,LU7,LU1,0,LBLK)
+            END DO
+            IF(IPRT.GE.1000)
+     &      write(LUWRTOUT,*) ' c, part1 finito'
+*. And to trial vectors on LU5
+            CALL REWINE(LU5,-1)
+            DO KVEC = 1, JVEC-1
+              CALL REWINE(LU7,-1)
+              WORK(NROOT+KVEC+(JVEC-1)*2*NROOT) =
+     &        -INPRDD(VEC1,VEC2,LU7,LU5,0,LBLK)
+            END DO
+            WORK(NROOT+JVEC+(JVEC-1)*2*NROOT) = 1.0D0
+            IF(IPRT.GE.1000)
+     &      write(LUWRTOUT,*) ' c, part2 finito'
+*
+            ONE = 1.0D0
+            CALL MVCSMD2(LU1,WORK(1+(JVEC-1)*2*NROOT),ONE ,
+     &      LU7,LU6,VEC1,VEC2,NROOT,1,LBLK)
+*
+            ONE = 1.0D0
+            CALL MVCSMD2(LU5,WORK(NROOT+1+(JVEC-1)*2*NROOT),ONE,
+     &           LU7,LU6,VEC1,VEC2,JVEC-1,1,LBLK)
+            IF(IPRT.GE.1000) THEN
+              write(LUWRTOUT,*) ' c, part4 finito'
+              write(LUWRTOUT,*) ' Vector after sec ort'
+              CALL WRTVCD(VEC1,LU7,1,LBLK)
+            END IF
+*
+            FACTOR = INPRDD(VEC1,VEC1,LU7,LU7,1,LBLK)
+            SCALE = 1.0D0/SQRT(FACTOR)
+            CALL SCALVE(WORK((JVEC-1)*2*NROOT+1),SCALE,
+     &           NROOT+JVEC)
+            CALL REWINE(LU7,-1)
+            CALL SCLVCD(LU7,LU5,SCALE,VEC1,0,LBLK)
+C                SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
+           IF(IPRT.GE.1000)
+     &       write(LUWRTOUT,*) ' c, part6 finito'
+         END DO
+*        /\ End of loop over orthogonalized directions
+*. Transfer modified directions to LU3
+         CALL REWINE(LU3,-1)
+         CALL REWINE(LU5,-1)
+         DO JVEC =1, IADD
+           CALL COPVCD(LU5,LU3,VEC1,0,LBLK)
+         END DO
+         IF(IPRT.GE.1000) THEN
+           write(LUWRTOUT,*) ' c, part7 finito'
+           WRITE(LUWRTOUT,*) ' Additional trial vectors on LU3'
+           CALL REWINE(LU3,-1)
+           DO JVEC = 1, IADD
+            CALL WRTVCD(VEC1,LU3,0,LBLK)
+           END DO
+         END IF
+* Sigma vectors corresponding to orthogonalized directions
+         CALL SKPVCD(LU4,ISTART-1,VEC1,1,LBLK)
+         CALL REWINE(LU5,-1)
+         DO JVEC = 1, IADD
+            CALL REWINE(LU7,-1)
+            CALL COPVCD(LU4,LU7,VEC1,0,LBLK)
+*
+            FACT = WORK(NROOT+JVEC+(JVEC-1)*2*NROOT)
+            CALL MVCSMD2(LU2,WORK(1+(JVEC-1)*2*NROOT),FACT,
+     &      LU7,LU6,VEC1,VEC2,NROOT,1,LBLK)
+*
+            IF(IPRT.GE.1000)
+     &      write(LUWRTOUT,*) ' s, part 1 finito '
+            ONE = 1.0D0
+            CALL MVCSMD2(LU5,WORK(NROOT+1+(JVEC-1)*2*NROOT),ONE,
+     &           LU7,LU6,VEC1,VEC2,JVEC-1,1,LBLK)
+            IF(IPRT.GE.1000)
+     &      write(LUWRTOUT,*) ' s, part 2 finito '
+            CALL REWINE(LU7,-1)
+            CALL COPVCD(LU7,LU5,VEC1,0,LBLK)
+            IF(IPRT.GE.1000)
+     &      write(LUWRTOUT,*) ' s, part 3 finito '
+         END DO
+*        /\ End of loop over orthogonalized directions
+*. Copy back to LU4
+         CALL REWINE(LU4,-1)
+         CALL REWINE(LU5,-1)
+         DO JVEC = 1, IADD
+            CALL COPVCD(LU5,LU4,VEC1,0,LBLK)
+         END DO
+         IF(IPRT.GE.1000)
+     &   write(LUWRTOUT,*) ' s, part 4 finito '
+C         WRITE(LUWRTOUT,*) 'I was in 3.1 setting NNVEC=NROOT+IADD', 
+C     &luci_myproc,(NROOT + IADD)
+         NNVEC = NROOT + IADD
+       END IF
+       IF(IPRT.GE.1000) THEN
+         WRITE(LUWRTOUT,*) ' Additional sigma vectors on LU4'
+         CALL REWINE(LU4,-1)
+         DO JVEC = 1, IADD
+           CALL WRTVCD(VEC1,LU4,0,LBLK)
+         END DO
+       END IF
+*
+*      /\ End if more than NROOT vectors to be reset
+       NVEC = NNVEC
+*       write(LUWRTOUT,*)'NVEC(1)',NVEC NVEC = IADD (iadd can change!!!)+ NROOT
+
+!      END IF ! reset
+
+*. New subspace
+*. Calculate subspace Hamiltonian from actual vectors
+*. on disc
+       IF(IPRT.GE.1000) write(LUWRTOUT,*) ' Subspace hamiltonian'
+       CALL REWINE(LU1,-1)
+       CALL REWINE(LU3,-1)
+CSK       ididaproj = 0
+CSK       write(LUWRTOUT,*)'NVEC = ', NVEC
+       DO IVEC = 1, NVEC
+*
+         CALL REWINE(LU5,-1)
+         IF(IVEC.LE.NROOT) THEN
+           CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
+         ELSE
+           CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
+         END IF
+*
+         CALL REWINE(LU2,-1)
+         DO JVEC = 1, MIN(IVEC,NROOT)
+           CALL REWINE(LU5,-1)
+           IJ = IVEC*(IVEC-1)/2+JVEC
+           APROJ(IJ) = INPRDD(VEC1,VEC2,LU5,LU2,0,LBLK)
+         END DO
+         CALL REWINE(LU4,-1)
+         DO JVEC = NROOT+1,IVEC
+           CALL REWINE(LU5,-1)
+           IJ = IVEC*(IVEC-1)/2+JVEC
+           APROJ(IJ) = INPRDD(VEC1,VEC2,LU5,LU4,0,LBLK)
+         END DO
+CSK        ididaproj = ididaproj + 1
+       END DO
+       if (IPRT.ge.2) then
+         write(LUWRTOUT,*) ' Reset hamiltonian'
+         call prsym(aproj,nvec)
+       end if
+!      IPRT = 0
+
+!#endif
+CSK       write(LUWRTOUT,*)'actual dimension of aproj',MAXVEC*(MAXVEC+1)/2
+CSK       write(LUWRTOUT,*)'calculated elements of aproj',ididaproj
+*  check timing of part3 in loop iteration
+       CALL GETTIM(CPUSTEP4,WALLSTEP4)
+       WALLTSTEP = SECTID(WALLSTEP4-WALLSTEP3)
+       WRITE(LUWRTOUT,9600) WALLTSTEP
+*
+ 998   CONTINUE
+*  Timing of this iteration
+       CALL GETTIM(CPUITR2,WALLITR2)
+       WALLTID = SECTID(WALLITR2-WALLITR1)
+       WRITE(LUWRTOUT,9300) WALLTID
+*. End of resetting business
+ 999  CONTINUE
+      IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
+ 1001 CONTINUE
+* ( End of loop over iterations )
+C
+C
+      IF( .NOT. CONVER ) THEN
+*       CONVERGENCE WAS NOT OBTAINED
+        IF(IPRT .GE. 2 )
+     &  WRITE(LUWRTOUT,1170) MAXIT
+ 1170   FORMAT('   Convergence was not obtained in ',I3,' iterations')
+      ELSE
+*       CONVERGENCE WAS OBTAINED
+        ITER = ITER - 1
+        IF (IPRT .GE. 2 )
+     &  WRITE(LUWRTOUT,1180) ITER
+ 1180   FORMAT(1X,' Convergence was obtained in ',I3,' iterations')
+      END IF
+*
+      do iroot = 1, nroot
+        write(LUWRTOUT,'(/1x,a)')    '-------------------'
+        write(LUWRTOUT,'( 1x,a,i6)') 'root number =',IROOT
+        write(LUWRTOUT,'(1x,a/)')    '-------------------'
+        do i = 1, iter
+          write(LUWRTOUT,'( 1x,a9,i4,f20.10,4x,1p,e10.3)')
+     & 'iteration',i,eig(i,iroot)+eigshf,rnrm(i,iroot)
+        end do
+      end do
+
+      write(LUWRTOUT,'(/1x,a)') '**********************************'//
+     &           '******************************'
+      write(LUWRTOUT,*) '  iter   root         energy          '//
+     &           'residual     convergence'
+      write(LUWRTOUT,'(1x,a )') '**********************************'//
+     &           '******************************'
+      DO 1601 IROOT = 1, NROOT
+         FINEIG(IROOT)        = EIG(ITER,IROOT)+EIGSHF
+         root_residual(IROOT) = rnrm(iter,iroot)
+         if(root_converged(iroot) .eq. 0) then
+           convergence = ' converged'
+         else
+           convergence = 'NOT converged'
+         end if
+         WRITE(LUWRTOUT,'(i7,i7,f20.10,4x,1p,E10.3,4x,a)')
+     &         ITER,IROOT,FINEIG(IROOT),root_residual(IROOT),
+     &         convergence
+ 1601 CONTINUE
+      nfinal_vec = nvec
+*
+      if(iroothoming.eq.1)then
+        deallocate(ixjep)
+        deallocate( xjep)
+      end if
+
+      CALL FLSHFO(LUWRTOUT)
+*
+      RETURN
+ 9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A)
+ 9400 FORMAT(/' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
+ 9401 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
+ 9600 FORMAT(/' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
+ 9777 FORMAT(/' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
+ 9778 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
+      subroutine blubb_micdv4(VEC1,VEC2,C2,LU1,LU2,RNRM,EIG,nfinal_vec,
+     &                  FINEIG,root_converged,root_residual,
+     &                  MAXIT,NVAR,
+     &                  LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,MAXVEC,NINVEC,
+     &                  APROJ,AVEC,WORK,IPRT,
+     &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
+     &                  E_CONV,lupri)
+*
+* Davidson algorithm , requires two blocks in core
+* Multi root version
+*
+* Jeppe Olsen Winter of 1991
+*
+* Updated to allow general preconditioner, October 1993
+*
+* Version using H0 + Lambda V as Sigma routine
+*
+* Input :
+* =======
+*        LU1 : Initial set of vectors
+*        VEC1,VEC2 : Two vectors,each must be dimensioned to hold
+*                    largest blocks
+*        LU3,LU4   : Scatch files
+*        LUDIA     : File containing diagonal of matrix
+*        NROOT     : Number of eigenvectors to be obtained
+*        MAXVEC    : Largest allowed number of vectors
+*                    must atleast be 2 * NROOT
+*        NINVEC    : Number of initial vectors ( atleast NROOT )
+*        NPRDIM    : Dimension of subspace with
+*                    nondiagonal preconditioning
+*                    (NPRDIM = 0 indicates no such subspace )
+*   For NPRDIM .gt. 0:
+*          PEIGVL  : EIGENVALUES  OF MATRIX IN PRIMAR SPACE
+*          IPNTR   : IPNTR(I) IS ORIGINAL ADRESS OF SUBSPACE ELEMENT I
+*          NP1,NP2,NQ : Dimension of the three subspaces
+*
+* H0SCR : Scratch space for handling H0, at least 2*(NP1+NP2) ** 2 +
+*         4 (NP1+NP2+NQ)
+*           LBLK : Defines block structure of matrices
+* On input LU1 is supposed to hold initial guesses to eigenvectors
+*
+*
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+#include "parluci.h"
+       DIMENSION VEC1(*),VEC2(*), C2(*)
+       REAL * 8   INPROD
+       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
+       DIMENSION APROJ(*),AVEC(*),WORK(*)
+       DIMENSION H0(*),IPNTR(1)
+       DIMENSION H0SCR(*)
+*
+* Dimensioning required of local vectors
+*      APROJ  : MAXVEC*(MAXVEC+1)/2
+*      AVEC   : MAXVEC ** 2
+*      WORK   : MAXVEC*(MAXVEC+1)/2                               
+*      H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
+*
+       real(8), intent(out) :: FINEIG(nroot)
+       LOGICAL CONVER,RTCNV(NROOT)
+       real(8), intent(out) :: root_residual(nroot)
+       integer, intent(out) :: root_converged(nroot)
+       integer, intent(out) :: nfinal_vec
+       REAL*8 INPRDD
+       CHARACTER SECTID*12, CPUTID*12, WALLTID*12,FILELAB*8
+*
+       call qenter('MICDV4')
+*
+       WRITE(LUWRT,*) '             ::::::::::::::::::::::::   '
+       WRITE(LUWRT,*) '               Entering MICDV4 (rel)    '
+       WRITE(LUWRT,*) '             ::::::::::::::::::::::::   '
+*
+       IOLSTM = 1
+       IF(IPRT.GT.1.AND.IOLSTM.NE.0)
+     & WRITE(LUWRT,*) ' Inverse iteration modified Davidson '
+       IF(IPRT.GT.1.AND.IOLSTM.EQ.0)
+     & WRITE(LUWRT,*) ' Normal Davidson method '
+       IF( MAXVEC .LT. 2 * NROOT ) THEN
+         WRITE(LUWRT,*) ' Sorry MICDV4 wounded , MAXVEC .LT. 2*NROOT '
+         WRITE(LUWRT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
+         WRITE(LUWRT,*) ' Raise MXCIV_CI to be at least 2 * Nroot '
+         WRITE(LUWRT,*) ' Enforced stop on MICDV4 '
+         STOP 20
+       END IF
+*
+!      IPRT = 5000 ! debug
+       IPRT = 0010
+
+       KAPROJ = 1
+       KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
+       TEST = 1.0D-8
+       CONVER = .FALSE.
+*
+* ===================
+*.Initial iteration
+* ===================
+       ITER = 1
+       CALL REWINE(LU1,-1)
+       CALL REWINE(LU2,-1)
+       DO 10 IVEC = 1,NINVEC
+         CALL REWINE(LU3,-1)
+         CALL REWINE(LU4,-1)
+         CALL COPVCD(LU1,LU3,VEC1,0,LBLK)
+        CALL SIGDEN_CI(VEC1,VEC2,C2,LU3,LU4,cdummy,sdummy,1,-1,
+     &                 xxs2dum)
+*. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
+         CALL REWINE(LU4,-1)
+         CALL COPVCD(LU4,LU2,VEC1,0,LBLK)
+*. Projected matrix
+         CALL REWINE(LU2,-1)
+         DO 8 JVEC = 1, IVEC
+           CALL REWINE(LU3,-1)
+           IJ = IVEC*(IVEC-1)/2 + JVEC
+           APROJ(IJ) = INPRDD(VEC1,VEC2,LU2,LU3,0,LBLK)
+    8    CONTINUE
+   10  CONTINUE
+*
+       IF( IPRT .GE.3 ) THEN
+           WRITE(LUWRT,*) ' INITIAL PROJECTED MATRIX  '
+           CALL PRSYM(APROJ,NINVEC)
+       END IF
+*. Diagonalize initial projected matrix
+       CALL DCOPY(NINVEC*(NINVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
+       CALL EIGEN_luci(WORK(KAPROJ),AVEC,NINVEC,0,1)
+       DO 20 IROOT = 1, NROOT
+         EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
+   20  CONTINUE
+*
+
+       IF(IPRT .GE. 3 ) THEN
+         WRITE(LUWRT,'(A,I4)') ' Eigenvalues of initial iteration '
+         WRITE(LUWRT,'(5F18.13)')
+     &   ( EIG(1,IROOT)+EIGSHF,IROOT=1,NROOT)
+       END IF
+       IF( IPRT  .GE. 5 ) THEN
+         WRITE(LUWRT,*) ' Initial set of eigen values (no shift) '
+         CALL WRTMAT(EIG(1,1),1,NROOT,MAXIT,NROOT)
+       END IF
+       NVEC = NINVEC
+       IF (MAXIT .EQ. 1 ) GOTO  901
+*
+* ======================
+*. Loop over iterations
+* ======================
+*
+ 1000 CONTINUE
+        CALL GETTIM(CPUITR1,WALLITR1)
+        write(LUWRT,'(/A,I6/A)') ' Info from iteration',ITER,
+     &                             '___________________________'
+        ITER = ITER + 1
+*
+* ===============================
+*.1 New directions to be included
+* ===============================
+*
+* 1.1 : R = H*X - EIGAPR*X
+*
+       IADD = 0
+       CONVER = .TRUE.
+       DO 100 IROOT = 1, NROOT
+         EIGAPR = EIG(ITER-1,IROOT)
+*
+         CALL REWINE(LU1,-1)
+         CALL REWINE(LU2,-1)
+         EIGAPR = EIG(ITER-1,IROOT)
+         DO 60 IVEC = 1, NVEC
+           FACTOR = AVEC((IROOT-1)*NVEC+IVEC)
+           IF(IVEC.EQ.1) THEN
+             CALL REWINE( LU3 ,-1)
+*                 SCLVCD(LUIN,LUOUT,SCALE,SEGMNT,IREW,LBLK)
+             CALL SCLVCD(LU2,LU3,FACTOR,VEC1,0,LBLK)
+           ELSE
+             CALL REWINE(LU3,-1)
+             CALL REWINE(LU4,-1)
+C                 VECSMD(VEC1,VEC2,FAC1,FAC2, LU1,LU2,LU3,IREW,LBLK)
+             CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU4,LU2,LU3,0,LBLK)
+           END IF
+C
+           FACTOR = -EIGAPR*AVEC((IROOT-1)*NVEC+ IVEC)
+           CALL REWINE(LU3,-1)
+           CALL REWINE(LU4,-1)
+           CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU3,LU1,LU4,0,LBLK)
+   60    CONTINUE
+         IF ( IPRT  .GE. 10 ) THEN
+           WRITE(LUWRT,*) '  ( HX - EX ) '
+           CALL WRTVCD(VEC1,LU4,1,LBLK)
+         END IF
+*  Strange place to put convergence but ....
+C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
+         RNORM = SQRT( INPRDD(VEC1,VEC1,LU4,LU4,1,LBLK) )
+         RNRM(ITER-1,IROOT) = RNORM
+*
+         WRITE(LUWRT,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
+     &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
+         CALL FLSHFO(LUWRT)
+*
+         IF(RNORM.LT. e_conv)THEN
+            root_converged(IROOT) = 0
+         ELSE
+            root_converged(IROOT) = iroot
+            CONVER = .FALSE.
+         END IF
+         IF( ITER .GT. MAXIT) GOTO 100
+* =====================================================================
+*. 1.2 : Multiply with inverse Hessian approximation to get new
+*        direction
+* =====================================================================
+*. (H0-E) -1 *(HX-EX) on LU3
+         IF( root_converged(IROOT) /= 0) THEN
+           IF(IPRT.GE.3) THEN
+             WRITE(LUWRT,*) ' Correction vector added for root',IROOT
+           END IF
+           IADD = IADD + 1
+           CALL REWINE(LUDIA,-1)
+           CALL REWINE(LU3,-1)
+           CALL REWINE(LU4,-1)
+*. Assuming diagonal preconditioner
+           IPRECOND = 1
+           CALL H0M1TD(LU3,LUDIA,LU4,LBLK,NP1+NP2+NQ,IPNTR,
+     &                 H0,-EIGAPR,H0SCR,XH0IX,
+     &                 NP1,NP2,NQ,VEC1,VEC2,IPRT)
+C               H0M1TD(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
+C    &                  H0,SHIFT,WORK,XH0PSX,
+C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG,IPRECOND)
+           IF ( IPRT  .GE. 600) THEN
+             WRITE(LUWRT,*) '  (D-E)-1 *( HX - EX ) '
+             CALL WRTVCD(VEC1,LU3,1,LBLK)
+           END IF
+*
+           IF(IOLSTM .NE. 0 ) THEN
+* add Olsen correction if neccessary
+* Current eigen-vector on LU5
+             CALL REWINE(LU1,-1)
+             DO 66 IVEC = 1, NVEC
+               FACTOR = AVEC((IROOT-1)*NVEC+IVEC)
+               IF(IVEC.EQ.1) THEN
+                 IF(NVEC.EQ.1) THEN
+                   CALL REWINE( LU5 ,-1)
+                   CALL SCLVCD(LU1,LU5,FACTOR,VEC1,0,LBLK)
+                 ELSE
+                   CALL REWINE( LU4 ,-1)
+                   CALL SCLVCD(LU1,LU4,FACTOR,VEC1,0,LBLK)
+                 END IF
+               ELSE
+                 CALL REWINE(LU5,-1)
+                 CALL REWINE(LU4,-1)
+                 CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU4,LU1,LU5,0,LBLK)
+                 CALL COPVCD(LU5,LU4,VEC1,1,LBLK)
+               END IF
+   66        CONTINUE
+             IF ( IPRT  .GE. 10 ) THEN
+               WRITE(LUWRT,*) '  (current  X ) '
+               CALL WRTVCD(VEC1,LU5,1,LBLK)
+             END IF
+* (H0 - E )-1  * X on LU4
+             CALL REWINE(LU5,-1)
+             CALL REWINE(LU4,-1)
+             CALL REWINE(LUDIA,-1)
+*
+             CALL H0M1TD(LU4,LUDIA,LU5,LBLK,Np1+Np2+NQ,
+     &                   IPNTR,H0,-EIGAPR,H0SCR,XH0IX,
+     &                   NP1,NP2,NQ,VEC1,VEC2,IPRT)
+*
+* Gamma = X(T) * (H0 - E) ** -1 * X
+              GAMMA = INPRDD(VEC1,VEC2,LU5,LU4,1,LBLK)
+* is X an eigen vector for (H0 - 1 ) - 1
+              VNORM =
+     &        SQRT(VCSMDN(VEC1,VEC2,-GAMMA,1.0D0,LU5,LU4,1,LBLK))
+              IF(VNORM .GT. 1.0D-7 ) THEN
+                IOLSAC = 1
+              ELSE
+                IOLSAC = 0
+              END IF
+              IF(IOLSAC .EQ. 1 ) THEN
+                IF(IPRT.GE.5) WRITE(LUWRT,*) ' Olsen Correction active '
+                DELTA = INPRDD(VEC1,VEC2,LU5,LU3,1,LBLK)
+                FACTOR = -DELTA/GAMMA
+                IF(IPRT.GE.5) WRITE(LUWRT,*) ' DELTA,GAMMA,FACTOR'
+                IF(IPRT.GE.5) WRITE(LUWRT,*)   DELTA,GAMMA,FACTOR
+                CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU3,LU4,LU5,1,LBLK)
+                CALL COPVCD(LU5,LU3,VEC1,1,LBLK)
+*
+                IF(IPRT.GE.600) THEN
+                  WRITE(LUWRT,*) ' Modified trial vector '
+                  CALL WRTVCD(VEC1,LU3,1,LBLK)
+                END IF
+*
+              END IF
+            END IF
+*. 1.3 Orthogonalize to all previous vectors
+           CALL REWINE( LU1 ,LBLK)
+           DO 80 IVEC = 1,NVEC+IADD-1
+             CALL REWINE(LU3,LBLK)
+             WORK(IVEC) = INPRDD(VEC1,VEC2,LU1,LU3,0,LBLK)
+C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
+   80      CONTINUE
+*
+           CALL REWINE(LU1,LBLK)
+           DO 82 IVEC = 1,NVEC+IADD-1
+             CALL REWINE(LU3,LBLK)
+             CALL REWINE(LU4,LBLK)
+             CALL VECSMD(VEC1,VEC2,-WORK(IVEC),1.0D0,LU1,LU3,
+     &                   LU4,0,LBLK)
+             CALL COPVCD(LU4,LU3,VEC1,1,LBLK)
+   82      CONTINUE
+           IF ( IPRT  .GE. 600 ) THEN
+             WRITE(LUWRT,*) '   Orthogonalized (D-E)-1 *( HX - EX ) '
+             CALL WRTVCD(VEC1,LU3,1,LBLK)
+           END IF
+*. 1.4 Normalize vector
+           SCALE = INPRDD(VEC1,VEC1,LU3,LU3,1,LBLK)
+           FACTOR = 1.0D0/SQRT(SCALE)
+           CALL REWINE(LU3,LBLK)
+           CALL SCLVCD(LU3,LU1,FACTOR,VEC1,0,LBLK)
+           IF(IPRT.GE.600) THEN
+             CALL SCLVCD(LU3,LU4,FACTOR,VEC1,1,LBLK)
+             WRITE(LUWRT,*) '   normalized     (D-E)-1 *( HX - EX ) '
+             CALL WRTVCD(VEC1,LU4,1,LBLK)
+           END IF
+*
+         END IF
+  100 CONTINUE
+      IF( CONVER ) GOTO  901
+      IF( ITER.GT. MAXIT) THEN
+         ITER = MAXIT
+         GOTO 1001
+      END IF
+*
+**  2 : Optimal combination of new and old directions
+*
+*  2.1: Multiply new directions with matrix
+      CALL SKPVCD(LU1,NVEC,VEC1,1,LBLK)
+      CALL SKPVCD(LU2,NVEC,VEC1,1,LBLK)
+      DO 150 IVEC = 1, IADD
+        CALL REWINE(LU3,LBLK)
+        CALL COPVCD(LU1,LU3,VEC1,0,LBLK)
+
+        write(luwrt,*) 'new c trial vec ...'
+        CALL WRTVCD(VEC1,LU3,1,LBLK)
+
+        CALL SIGDEN_CI(VEC1,VEC2,C2,LU3,LU4,cdummy,sdummy,1,-1,
+     &                 xxs2dum)
+
+        CALL REWINE(LU4,LBLK)
+        CALL COPVCD(LU4,LU2,VEC1,0,LBLK)
+*. Augment projected matrix
+        CALL REWINE( LU1,LBLK)
+        DO 140 JVEC = 1, NVEC+IVEC
+          CALL REWINE(LU4,LBLK)
+          IJ = (IVEC+NVEC)*(IVEC+NVEC-1)/2 + JVEC
+          APROJ(IJ) = INPRDD(VEC1,VEC2,LU1,LU4,0,LBLK)
+          write(LUWRT,*) 'ij, aproj(ij):',ij,aproj(ij)
+  140   CONTINUE
+  150 CONTINUE
+*. Diagonalize projected matrix
+      NVEC = NVEC + IADD
+      write(LUWRT,*) 'Dimension of projected matrix:',NVEC
+      call wrtmatmn(aproj,1,NVEC*(NVEC+1)/2,1,NVEC*(NVEC+1)/2,luwrt)
+      CALL DCOPY(NVEC*(NVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
+      CALL EIGEN_luci(WORK(KAPROJ),AVEC,NVEC,0,1)
+      DO 160 IROOT = 1, NROOT
+        EIG(ITER,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
+ 160  CONTINUE
+*
+       IF(IPRT .GE. 3 ) THEN
+         WRITE(LUWRT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
+         WRITE(LUWRT,'(5F18.13)')
+     &   ( EIG(ITER,IROOT)+EIGSHF,IROOT=1,NROOT)
+         WRITE(LUWRT,'(A)') ' Norm of Residuals (Previous it) '
+         WRITE(LUWRT,'(5F18.13)')
+     &   ( RNRM(ITER-1,IROOT),IROOT=1,NROOT)
+       END IF
+*
+      IF( IPRT  .GE. 5 ) THEN
+        WRITE(LUWRT,*) ' Projected matrix and eigen pairs '
+        CALL PRSYM(APROJ,NVEC)
+        WRITE(LUWRT,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
+        CALL WRTMAT(AVEC,NVEC,NROOT,MAXVEC,NROOT)
+      END IF
+*
+**  perhaps reset or assemble converged eigenvectors
+*
+  901 CONTINUE
+*
+*. Reset      
+*
+      IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
+        CALL REWINE( LU5,LBLK)
+        DO 320 IROOT = 1, NROOT
+          CALL MVCSMD(LU1,AVEC((IROOT-1)*NVEC+1),
+     &    LU3,LU4,VEC1,VEC2,NVEC,1,LBLK)
+          XNORM = INPRDD(VEC1,VEC1,LU3,LU3,1,LBLK)
+          CALL REWINE(LU3,LBLK)
+          SCALE  = 1.0D0/SQRT(XNORM)
+          WORK(IROOT) = SCALE
+          CALL SCLVCD(LU3,LU5,SCALE,VEC1,0,LBLK)
+  320   CONTINUE
+*. Transfer C vectors to LU1
+        CALL REWINE( LU5,LBLK)
+        CALL REWINE( LU1,LBLK)
+        DO 411 IVEC = 1,NROOT
+          CALL COPVCD(LU5,LU1,VEC1,0,LBLK)
+  411   CONTINUE
+*. corresponding sigma vectors
+        CALL REWINE (LU5,LBLK)
+        CALL REWINE (LU2,LBLK)
+        DO 329 IROOT = 1, NROOT
+          CALL MVCSMD(LU2,AVEC((IROOT-1)*NVEC+1),
+     &    LU3,LU4,VEC1,VEC2,NVEC,1,LBLK)
+*
+          CALL REWINE(LU3,LBLK)
+          CALL SCLVCD(LU3,LU5,WORK(IROOT),VEC1,0,LBLK)
+  329   CONTINUE
+*
+* Transfer HCs to LU2
+        CALL REWINE( LU2,LBLK)
+        CALL REWINE( LU5,LBLK)
+        DO 400 IVEC = 1,NROOT
+          CALL COPVCD(LU5,LU2,VEC1,0,LBLK)
+  400   CONTINUE
+        NVEC = NROOT
+*
+        CALL DZERO(AVEC,NVEC**2)
+        DO 410 IROOT = 1,NROOT
+          AVEC((IROOT-1)*NROOT+IROOT) = 1.0D0
+  410   CONTINUE
+*
+        CALL SETVEC(APROJ,0.0D0,NVEC*(NVEC+1)/2)
+        DO 420 IROOT = 1, NROOT
+          APROJ(IROOT*(IROOT+1)/2 ) = EIG(ITER,IROOT)
+  420   CONTINUE
+*
+      END IF
+*
+*  Timing of this iteration
+      CALL GETTIM(CPUITR2,WALLITR2)
+      CPUTID = SECTID(CPUITR2-CPUITR1)
+      WALLTID = SECTID(WALLITR2-WALLITR1)
+      WRITE(LUWRT,9300) CPUTID,WALLTID
+      IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
+ 1001 CONTINUE
+ 
+* ( End of loop over iterations )
+*
+      IF( .NOT. CONVER ) THEN
+*        CONVERGENCE WAS NOT OBTAINED
+         IF(IPRT .GE. 2 )
+     &   WRITE(LUWRT,1170) MAXIT
+ 1170    FORMAT(/'  Convergence was not obtained in ',I3,' iterations')
+      ELSE
+*        CONVERGENCE WAS OBTAINED
+         ITER = ITER - 1
+         IF (IPRT .GE. 2 )
+     &   WRITE(LUWRT,1180) ITER
+ 1180    FORMAT(/,'  Convergence was obtained in ',I3,' iterations')
+        END IF
+*
+      IF ( IPRT .GT. 0 ) THEN
+        CALL REWINE(LU1,LBLK)
+        DO 1600 IROOT = 1, NROOT
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,'(A,I3)')
+     &  ' Information about convergence for root... ' ,IROOT
+          WRITE(LUWRT,*)
+     &    '============================================'
+          WRITE(LUWRT,*)
+          FINEIG(IROOT) = EIG(ITER,IROOT)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(6,1190) IROOT,FINEIG(IROOT)+EIGSHF
+          ELSE
+             WRITE(6,1191) IROOT,FINEIG(IROOT)+EIGSHF
+          END IF
+ 1190 FORMAT(' The final eigenvalue',I5,F22.10,' (converged)')
+ 1191 FORMAT(' The final eigenvalue',I5,F22.10,' (NOT converged)')
+          IF(IPRT.GE.400) THEN
+            WRITE(LUWRT,1200)
+ 1200       FORMAT(' The final approximation to eigenvector ')
+            CALL WRTVCD(VEC1,LU1,0,LBLK)
+          END IF
+          WRITE(LUWRT,1300)
+ 1300     FORMAT(/' Summary of iterations',
+     +           /' ---------------------')
+          WRITE(LUWRT,1310)
+ 1310     FORMAT
+     &    (/,'  Iteration point        Eigenvalue         Residual ')
+          DO 1330 I=1,ITER
+ 1330     WRITE(LUWRT,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
+ 1340     FORMAT(6X,I4,8X,F20.13,2X,E12.5)
+ 1600   CONTINUE
+      ELSE
+        CALL REWINE(LU1,LBLK)
+        write(LUWRT,*)
+        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
+        write(LUWRT,*)
+        DO IROOT = 1, NROOT
+          FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
+           root_residual(IROOT) = rnrm(iter,iroot)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(6,1190) IROOT,FINEIG(IROOT)
+          ELSE
+             WRITE(6,1191) IROOT,FINEIG(IROOT)
+          END IF
+        END DO
+        write(LUWRT,*)
+        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
+        write(LUWRT,*)
+      END IF
+      nfinal_vec = nvec
+*
+*
+      IF(IPRT .EQ. 1 ) THEN
+        DO 1607 IROOT = 1, NROOT
+          WRITE(LUWRT,'(A,2I3,E13.6,2E10.3)')
+     &    ' >>> CI-OPT Iter Root E g-norm g-red',
+     &                 ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
+     &                 RNRM(1,IROOT)/RNRM(ITER,IROOT)
+ 1607   CONTINUE
+      END IF
+C
+      call qexit('MICDV4')
+C
+ 1030 FORMAT(/,3X,7F15.8,/,(2X,7F15.8))
+ 1120 FORMAT(/,I6,7F15.8,/,(5X,7F15.8))
+ 9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
+      END
+
+      SUBROUTINE MICDV4_ENLMD(VEC1,VEC2,C2,LU1,LU2,RNRM,EIG,nfinal_vec,
+     &                  FINEIG,root_converged,root_residual,
+     &                  MAXIT,NVAR,
+     &                  LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,MAXVEC,NINVEC,
+     &                  APROJ,AVEC,WORK,IPRT,
+     &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
+     &                  E_CONV,lupri)
+*
+* Davidson algorithm , requires two blocks in core
+* Multi root version
+*
+* Jeppe Olsen Winter of 1991
+*
+* Updated to allow general preconditioner, October 1993
+*
+* Version using H0 + Lambda V as Sigma routine
+*
+* Input :
+* =======
+*        LU1 : Initial set of vectors
+*        VEC1,VEC2 : Two vectors,each must be dimensioned to hold
+*                    largest blocks
+*        LU3,LU4   : Scatch files
+*        LUDIA     : File containing diagonal of matrix
+*        NROOT     : Number of eigenvectors to be obtained
+*        MAXVEC    : Largest allowed number of vectors
+*                    must atleast be 2 * NROOT
+*        NINVEC    : Number of initial vectors ( atleast NROOT )
+*        NPRDIM    : Dimension of subspace with
+*                    nondiagonal preconditioning
+*                    (NPRDIM = 0 indicates no such subspace )
+*   For NPRDIM .gt. 0:
+*          PEIGVC  : EIGENVECTORS OF MATRIX IN PRIMAR SPACE
+*                    Holds preconditioner matrices
+*                    PHP,PHQ,QHQ in this order !!
+*          PEIGVL  : EIGENVALUES  OF MATRIX IN PRIMAR SPACE
+*          IPNTR   : IPNTR(I) IS ORIGINAL ADRESS OF SUBSPACE ELEMENT I
+*          NP1,NP2,NQ : Dimension of the three subspaces
+*
+* H0SCR : Scratch space for handling H0, at least 2*(NP1+NP2) ** 2 +
+*         4 (NP1+NP2+NQ)
+*           LBLK : Defines block structure of matrices
+* On input LU1 is supposed to hold initial guesses to eigenvectors
+*
+*
+       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+       DIMENSION VEC1(*),VEC2(*), C2(*)
+       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
+       DIMENSION APROJ(*),AVEC(*),WORK(*)
+       DIMENSION H0(*),IPNTR(1)
+       DIMENSION H0SCR(*)
+*
+* Dimensioning required of local vectors
+*      APROJ  : MAXVEC*(MAXVEC+1)/2
+*      AVEC   : MAXVEC ** 2
+*      WORK   : MAXVEC*(MAXVEC+1)/2                               
+*      H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
+*
+       real(8), intent(out) :: FINEIG(nroot)
+       real(8), intent(out) :: root_residual(nroot)
+       integer, intent(out) :: root_converged(nroot)
+       integer, intent(out) :: nfinal_vec
+
+       LOGICAL CONVER
+       REAL*8 INPRDD, INPROD
+*
+      iprt = 6
+!     in the Davidson we perform only sigma vector calculations
+      ISIGDEN = 1
+
+       IPICO = 0
+       IF(IPICO.NE.0) THEN
+C?       WRITE(lupri,*) ' Perturbative solver '
+         MAXVEC = MIN(MAXVEC,2)
+       ELSE IF(IPICO.EQ.0) THEN
+C?       WRITE(lupri,*) ' Variational  solver '
+       END IF
+*
+      WRITE(lupri,'(/10X,A)')
+     &' **************************************************'
+      WRITE(lupri,'(10X,A)')
+     &'     entering MICDV4 (sequential solver routine)   '
+      WRITE(lupri,'(10X,A )')
+     &' **************************************************'
+ 
+       IOLSTM = 1
+       IF(IPRT.GT.1.AND.IOLSTM.NE.0)
+     & WRITE(lupri,*) ' Inverse iteration modified Davidson '
+       IF(IPRT.GT.1.AND.IOLSTM.EQ.0)
+     & WRITE(lupri,*) ' Normal Davidson method '
+       IF( MAXVEC .LT. 2 * NROOT ) THEN
+         WRITE(lupri,*) ' Sorry MICDV4 wounded , MAXVEC .LT. 2*NROOT '
+         WRITE(lupri,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
+         WRITE(lupri,*) ' Raise MXCIV to be at least 2 * Nroot '
+         WRITE(lupri,*) ' Enforced stop on MICDV4 '
+         STOP 20
+       END IF
+*
+       KAPROJ = 1
+       KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
+       TEST   = 1.0D-8
+       CONVER = .FALSE.
+*
+* ===================
+*.Initial iteration
+* ===================
+       ITER = 1
+       CALL REWINO(LU1)
+       CALL REWINO(LU2)
+       DO 10 IVEC = 1,NINVEC
+         CALL REWINO(LU3)
+         CALL REWINO(LU4)
+         CALL COPVCD(LU1,LU3,VEC1,0,LBLK)
+
+         CALL SIGDEN_CI(VEC1,VEC2,C2,LU3,LU4,cdummy,sdummy,ISIGDEN,-1,
+     &                  xxs2dum)
+
+*. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
+         CALL REWINO(LU4)
+         CALL COPVCD(LU4,LU2,VEC1,0,LBLK)
+*. Projected matrix
+         CALL REWINO(LU2)
+         DO 8 JVEC = 1, IVEC
+           CALL REWINO(LU3)
+           IJ = IVEC*(IVEC-1)/2 + JVEC
+           APROJ(IJ) = INPRDD(VEC1,VEC2,LU2,LU3,0,LBLK)
+    8    CONTINUE
+   10  CONTINUE
+*
+       IF( IPRT .GE.3 ) THEN
+         WRITE(lupri,*) ' INITIAL PROJECTED MATRIX  '
+         CALL PRSYM(APROJ,NINVEC)
+       END IF
+*. Diagonalize initial projected matrix
+       CALL COPVEC(APROJ,WORK(KAPROJ),NINVEC*(NINVEC+1)/2)
+       CALL EIGEN_LUCI(WORK(KAPROJ),AVEC,NINVEC,0,1)
+       DO 20 IROOT = 1, NROOT
+         EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
+   20  CONTINUE
+*
+       IF(IPRT .GE. 3 ) THEN
+         WRITE(lupri,'(A,I4)') ' Eigenvalues of initial iteration '
+         WRITE(lupri,'(5F18.13)')
+     &   ( EIG(1,IROOT)+EIGSHF,IROOT=1,NROOT)
+       END IF
+       IF( IPRT  .GE. 5 ) THEN
+         WRITE(lupri,*) ' Initial set of eigen values (no shift) '
+         CALL WRTMAT(EIG(1,1),1,NROOT,MAXIT,NROOT)
+       END IF
+       NVEC = NINVEC
+
+       CALL REWINE(LU3,-1)
+       CALL TRAVCD(VEC1,VEC2,AVEC,NINVEC,NROOT,LU1,LU3,1,LBLK,LU4,LU5)
+*. And the sigma vectors
+       CALL REWINE(LU3,-1)
+       CALL TRAVCD(VEC1,VEC2,AVEC,NINVEC,NROOT,LU2,LU3,1,LBLK,LU4,LU5)
+
+*. And the corresponding Hamiltonian matrix, no problems
+*. with numerical stabilities, so just use eigenvalues
+       CALL dzero(APROJ,NROOT*(NROOT+1)/2)
+       DO IROOT = 1, NROOT
+        APROJ(IROOT*(IROOT+1)/2) = EIG(1,IROOT)
+       END DO
+
+       IF (MAXIT .EQ. 1 ) GOTO  901
+*
+* ======================
+*. Loop over iterations
+* ======================
+*
+ 1000 CONTINUE
+        IF(IPRT  .GE. 10 ) THEN
+         WRITE(lupri,*) ' Info from iteration .... ', ITER
+        END IF
+        ITER = ITER + 1
+*
+* ===============================
+*.1 New directions to be included
+* ===============================
+*
+* 1.1 : R = H*X - EIGAPR*X
+*
+       IADD = 0
+       CONVER = .TRUE.
+       DO 100 IROOT = 1, NROOT
+
+         EIGAPR = EIG(ITER-1,IROOT)
+*
+         CALL REWINO(LU1)
+         CALL REWINO(LU2)
+         DO 60 IVEC = 1, NVEC
+           FACTOR = AVEC((IROOT-1)*NVEC+IVEC)
+           IF(IVEC.EQ.1) THEN
+             CALL REWINO( LU3 )
+*                 SCLVCD(LUIN,LUOUT,SCALE,SEGMNT,IREW,LBLK)
+             CALL SCLVCD(LU2,LU3,FACTOR,VEC1,0,LBLK)
+           ELSE
+             CALL REWINO(LU3)
+             CALL REWINO(LU4)
+C                 VECSMD(VEC1,VEC2,FAC1,FAC2, LU1,LU2,LU3,IREW,LBLK)
+             CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU4,LU2,LU3,0,LBLK)
+           END IF
+C
+           FACTOR = -EIGAPR*AVEC((IROOT-1)*NVEC+ IVEC)
+           CALL REWINO(LU3)
+           CALL REWINO(LU4)
+           CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU3,LU1,LU4,0,LBLK)
+   60    CONTINUE
+         IF ( IPRT  .GE. 10 ) THEN
+           WRITE(lupri,*) '  ( HX - EX ) '
+           CALL WRTVCD(VEC1,LU4,1,LBLK)
+         END IF
+*  Strange place to put convergence but ....
+C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
+         RNORM = SQRT( INPRDD(VEC1,VEC1,LU4,LU4,1,LBLK) )
+         RNRM(ITER-1,IROOT) = RNORM
+         WRITE(lupri,'(A19,I8,1p,1E15.5,0p,3X,1F19.10)')
+     &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
+*
+         IF(RNORM.LT. e_conv)THEN
+            root_converged(IROOT) = 0
+         ELSE
+            root_converged(IROOT) = iroot
+            CONVER = .FALSE.
+         END IF
+
+         IF( ITER .GT. MAXIT) GOTO 100
+* =====================================================================
+*. 1.2 : Multiply with inverse Hessian approximation to get new directio
+* =====================================================================
+*. (H0-E) -1 *(HX-EX) on LU3
+         IF( root_converged(IROOT) .gt. 0 ) THEN
+           IF(IPRT.GE.3) THEN
+             WRITE(lupri,*) ' Correction vector added for root',IROOT
+           END IF
+           IADD = IADD + 1
+           CALL REWINO(LUDIA)
+           CALL REWINO(LU3)
+           CALL REWINO(LU4)
+*. Assuming diagonal preconditioner
+           IPRECOND = 1
+           CALL H0M1TD(LU3,LUDIA,LU4,LBLK,NP1+NP2+NQ,IPNTR,
+     &                 H0,-EIGAPR,H0SCR,XH0IX,
+     &                 NP1,NP2,NQ,VEC1,VEC2,IPRT)
+C               H0M1TD(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
+C    &                  H0,SHIFT,WORK,XH0PSX,
+C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG,IPRECOND)
+           IF ( IPRT  .GE. 600) THEN
+             WRITE(lupri,*) '  (D-E)-1 *( HX - EX ) '
+             CALL WRTVCD(VEC1,LU3,1,LBLK)
+           END IF
+*
+           IF(IOLSTM .NE. 0 ) THEN
+* add Olsen correction if neccessary
+* Current eigen-vector on LU5
+             CALL REWINO(LU1)
+             DO 66 IVEC = 1, NVEC
+               FACTOR = AVEC((IROOT-1)*NVEC+IVEC)
+               IF(IVEC.EQ.1) THEN
+                 IF(NVEC.EQ.1) THEN
+                   CALL REWINO( LU5 )
+                   CALL SCLVCD(LU1,LU5,FACTOR,VEC1,0,LBLK)
+                 ELSE
+                   CALL REWINO( LU4 )
+                   CALL SCLVCD(LU1,LU4,FACTOR,VEC1,0,LBLK)
+                 END IF
+               ELSE
+                 CALL REWINO(LU5)
+                 CALL REWINO(LU4)
+                 CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU4,LU1,LU5,0,LBLK)
+                 CALL COPVCD(LU5,LU4,VEC1,1,LBLK)
+               END IF
+   66        CONTINUE
+             IF ( IPRT  .GE. 10 ) THEN
+               WRITE(lupri,*) '  (current  X ) '
+               CALL WRTVCD(VEC1,LU5,1,LBLK)
+             END IF
+* (H0 - E )-1  * X on LU4
+             CALL REWINO(LU5)
+             CALL REWINO(LU4)
+             CALL REWINO(LUDIA)
+*
+             CALL H0M1TD(LU4,LUDIA,LU5,LBLK,Np1+Np2+NQ,
+     &                   IPNTR,H0,-EIGAPR,H0SCR,XH0IX,
+     &                   NP1,NP2,NQ,VEC1,VEC2,IPRT)
+*
+* Gamma = X(T) * (H0 - E) ** -1 * X
+              GAMMA = INPRDD(VEC1,VEC2,LU5,LU4,1,LBLK)
+* is X an eigen vector for (H0 - 1 ) - 1
+              VNORM =
+     &        SQRT(VCSMDN(VEC1,VEC2,-GAMMA,1.0D0,LU5,LU4,1,LBLK))
+              IF(VNORM .GT. 1.0D-7 ) THEN
+                IOLSAC = 1
+              ELSE
+                IOLSAC = 0
+              END IF
+              IF(IOLSAC .EQ. 1 ) THEN
+                IF(IPRT.GE.5) WRITE(lupri,*) ' Olsen Correction active '
+                DELTA = INPRDD(VEC1,VEC2,LU5,LU3,1,LBLK)
+                FACTOR = -DELTA/GAMMA
+                IF(IPRT.GE.5) WRITE(lupri,*) ' DELTA,GAMMA,FACTOR'
+                IF(IPRT.GE.5) WRITE(lupri,*)   DELTA,GAMMA,FACTOR
+                CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU3,LU4,LU5,1,LBLK)
+                CALL COPVCD(LU5,LU3,VEC1,1,LBLK)
+*
+                IF(IPRT.GE.600) THEN
+                  WRITE(lupri,*) ' Modified trial vector '
+                  CALL WRTVCD(VEC1,LU3,1,LBLK)
+                END IF
+*
+              END IF
+            END IF
+*. 1.3 Orthogonalize to all previous vectors
+           CALL REWINE( LU1 ,LBLK)
+           DO 80 IVEC = 1,NVEC+IADD-1
+             CALL REWINE(LU3,LBLK)
+             WORK(IVEC) = INPRDD(VEC1,VEC2,LU1,LU3,0,LBLK)
+C?       WRITE(lupri,*) ' MICDV4 : Overlap ', WORK(IVEC)
+   80      CONTINUE
+*
+           CALL REWINE(LU1,LBLK)
+           DO 82 IVEC = 1,NVEC+IADD-1
+             CALL REWINE(LU3,LBLK)
+             CALL REWINE(LU4,LBLK)
+             CALL VECSMD(VEC1,VEC2,-WORK(IVEC),1.0D0,LU1,LU3,
+     &                   LU4,0,LBLK)
+             CALL COPVCD(LU4,LU3,VEC1,1,LBLK)
+   82      CONTINUE
+           IF ( IPRT  .GE. 600 ) THEN
+             WRITE(lupri,*) '   Orthogonalized (D-E)-1 *( HX - EX ) '
+             CALL WRTVCD(VEC1,LU3,1,LBLK)
+           END IF
+*. 1.4 Normalize vector
+           SCALE = INPRDD(VEC1,VEC1,LU3,LU3,1,LBLK)
+           FACTOR = 1.0D0/SQRT(SCALE)
+           CALL REWINE(LU3,LBLK)
+           CALL SCLVCD(LU3,LU1,FACTOR,VEC1,0,LBLK)
+           IF(IPRT.GE.600) THEN
+             CALL SCLVCD(LU3,LU4,FACTOR,VEC1,1,LBLK)
+             WRITE(lupri,*) '   normalized     (D-E)-1 *( HX - EX ) '
+             CALL WRTVCD(VEC1,LU4,1,LBLK)
+           END IF
+*
+         END IF
+  100 CONTINUE
+      IF( CONVER ) GOTO  901
+      IF( ITER.GT. MAXIT) THEN
+         ITER = MAXIT
+         GOTO 1001
+      END IF
+*
+**  2 : Optimal combination of new and old directions
+*
+*  2.1: Multiply new directions with matrix
+      CALL SKPVCD(LU1,NVEC,VEC1,1,LBLK)
+      CALL SKPVCD(LU2,NVEC,VEC1,1,LBLK)
+      DO 150 IVEC = 1, IADD
+        CALL REWINE(LU3,LBLK)
+        CALL COPVCD(LU1,LU3,VEC1,0,LBLK)
+        CALL SIGDEN_CI(VEC1,VEC2,C2,LU3,LU4,cdummy,sdummy,ISIGDEN,-1,
+     &                 xxs2dum)
+        CALL REWINE(LU4,LBLK)
+        CALL COPVCD(LU4,LU2,VEC1,0,LBLK)
+*. Augment projected matrix
+        CALL REWINE( LU1,LBLK)
+        DO 140 JVEC = 1, NVEC+IVEC
+          CALL REWINE(LU4,LBLK)
+          IJ = (IVEC+NVEC)*(IVEC+NVEC-1)/2 + JVEC
+          APROJ(IJ) = INPRDD(VEC1,VEC2,LU1,LU4,0,LBLK)
+  140   CONTINUE
+  150 CONTINUE
+*. Diagonalize projected matrix
+      NVEC = NVEC + IADD
+      CALL COPVEC(APROJ,WORK(KAPROJ),NVEC*(NVEC+1)/2)
+      CALL EIGEN_luci(WORK(KAPROJ),AVEC,NVEC,0,1)
+      IF(IPICO.NE.0) THEN
+        E0VAR = WORK(KAPROJ)
+        C0VAR = AVEC(1)
+        C1VAR = AVEC(2)
+        C1NRM = SQRT(C0VAR**2+C1VAR**2)
+*. overwrite with pert solution
+        AVEC(1) = 1.0D0/SQRT(1.0D0+C1NRM**2)
+        AVEC(2) = -C1NRM/SQRT(1.0D0+C1NRM**2)
+        E0PERT = AVEC(1)**2*APROJ(1)
+     &         + 2.0D0*AVEC(1)*AVEC(2)*APROJ(2)
+     &         + AVEC(2)**2*APROJ(3)
+        WORK(KAPROJ) = E0PERT
+        WRITE(lupri,*) ' Var and Pert solution, energy and coefficients'
+        WRITE(lupri,'(4X,3E15.7)') E0VAR,C0VAR,C1VAR
+        WRITE(lupri,'(4X,3E15.7)') E0PERT,AVEC(1),AVEC(2)
+      END IF
+      DO 160 IROOT = 1, NROOT
+        EIG(ITER,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
+ 160  CONTINUE
+*
+       IF(IPRT .GE. 3 ) THEN
+         WRITE(lupri,'(A,I4)') ' Eigenvalues of iteration ..', ITER
+         WRITE(lupri,'(5F18.13)')
+     &   ( EIG(ITER,IROOT)+EIGSHF,IROOT=1,NROOT)
+         WRITE(lupri,'(A)') ' Norm of Residuals (Previous it) '
+         WRITE(lupri,'(5F18.13)')
+     &   ( RNRM(ITER-1,IROOT),IROOT=1,NROOT)
+       END IF
+*
+      IF( IPRT  .GE. 5 ) THEN
+        WRITE(lupri,*) ' Projected matrix and eigen pairs '
+        CALL PRSYM(APROJ,NVEC)
+        WRITE(lupri,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
+        CALL WRTMAT(AVEC,NVEC,NROOT,MAXVEC,NROOT)
+      END IF
+*
+**  perhaps reset or assemble converged eigenvectors
+*
+  901 CONTINUE
+*
+*. Reset      
+*
+      IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
+        CALL REWINE( LU5,LBLK)
+        DO 320 IROOT = 1, NROOT
+          CALL MVCSMD(LU1,AVEC((IROOT-1)*NVEC+1),
+     &    LU3,LU4,VEC1,VEC2,NVEC,1,LBLK)
+          XNORM = INPRDD(VEC1,VEC1,LU3,LU3,1,LBLK)
+          CALL REWINE(LU3,LBLK)
+          SCALE  = 1.0D0/SQRT(XNORM)
+          WORK(IROOT) = SCALE
+          CALL SCLVCD(LU3,LU5,SCALE,VEC1,0,LBLK)
+  320   CONTINUE
+*. Transfer C vectors to LU1
+        CALL REWINE( LU1,LBLK)
+        CALL REWINE( LU5,LBLK)
+        DO 411 IVEC = 1,NROOT
+          CALL COPVCD(LU5,LU1,VEC1,0,LBLK)
+  411   CONTINUE
+*. corresponding sigma vectors
+        CALL REWINE (LU5,LBLK)
+        CALL REWINE (LU2,LBLK)
+        DO 329 IROOT = 1, NROOT
+          CALL MVCSMD(LU2,AVEC((IROOT-1)*NVEC+1),
+     &    LU3,LU4,VEC1,VEC2,NVEC,1,LBLK)
+*
+          CALL REWINE(LU3,LBLK)
+          CALL SCLVCD(LU3,LU5,WORK(IROOT),VEC1,0,LBLK)
+  329   CONTINUE
+*
+* Transfer HC's to LU2
+        CALL REWINE( LU2,LBLK)
+        CALL REWINE( LU5,LBLK)
+        DO 400 IVEC = 1,NROOT
+          CALL COPVCD(LU5,LU2,VEC1,0,LBLK)
+  400   CONTINUE
+        NVEC = NROOT
+*
+        CALL SETVEC(AVEC,0.0D0,NVEC**2)
+        DO 410 IROOT = 1,NROOT
+          AVEC((IROOT-1)*NROOT+IROOT) = 1.0D0
+  410   CONTINUE
+*
+        CALL SETVEC(APROJ,0.0D0,NVEC*(NVEC+1)/2)
+        DO 420 IROOT = 1, NROOT
+          APROJ(IROOT*(IROOT+1)/2 ) = EIG(ITER,IROOT)
+  420   CONTINUE
+*
+      END IF
+      IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
+ 1001 CONTINUE
+ 
+* ( End of loop over iterations )
+*
+      IF( .NOT. CONVER ) THEN
+*        CONVERGENCE WAS NOT OBTAINED
+         IF(IPRT .GE. 2 )
+     &   WRITE(lupri,1170) MAXIT
+ 1170   FORMAT('   Convergence was not obtained in ',I3,' iterations')
+      ELSE
+*        CONVERGENCE WAS OBTAINED
+         ITER = ITER - 1
+         IF (IPRT .GE. 2 )
+     &   WRITE(lupri,1180) ITER
+ 1180   FORMAT(1X,' Convergence was obtained in ',I3,' iterations')
+        END IF
+*
+      IF ( IPRT .GT. 1 ) THEN
+        CALL REWINE(LU1,LBLK)
+        DO 1600 IROOT = 1, NROOT
+          WRITE(lupri,*)
+          WRITE(lupri,'(A,I3)')
+     &  ' Information about convergence for root... ' ,IROOT
+          WRITE(lupri,*)
+     &    '============================================'
+          WRITE(lupri,*)
+          FINEIG(IROOT) = EIG(ITER,IROOT)
+          root_residual(IROOT) = rnrm(iter,iroot)
+          WRITE(lupri,1190) FINEIG(IROOT)+EIGSHF
+ 1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
+          IF(IPRT.GE.400) THEN
+            WRITE(lupri,1200)
+ 1200       FORMAT(/'The final approximation to eigenvector')
+            CALL WRTVCD(VEC1,LU1,0,LBLK)
+          END IF
+          WRITE(lupri,1300)
+ 1300     FORMAT(/' Summary of iterations',
+     +           /' ---------------------')
+          WRITE(lupri,1310)
+ 1310     FORMAT
+     &    (/' Iteration point        Eigenvalue         Residual ')
+          DO 1330 I=1,ITER
+ 1330     WRITE(lupri,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
+ 1340     FORMAT(6X,I4,8X,F20.13,2X,E12.5)
+ 1600   CONTINUE
+      ELSE
+        DO 1601 IROOT = 1, NROOT
+           FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
+           root_residual(IROOT) = rnrm(iter,iroot)
+ 1601   CONTINUE
+      END IF
+      nfinal_vec = nvec
+*
+      IF(IPRT .le. 1 ) THEN
+        DO 1607 IROOT = 1, NROOT
+          WRITE(lupri,'(A,2I3,E13.6,2E10.3)')
+     &    ' >>> CI-OPT Iter Root E g-norm g-red',
+     &                 ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
+     &                 RNRM(1,IROOT)/RNRM(ITER,IROOT)
+ 1607   CONTINUE
+      END IF
+C
+      RETURN
+ 1030 FORMAT(/2X,7F15.8,/,(2X,7F15.8))
+ 1120 FORMAT(/2X,I3,7F15.8,/,(5X,7F15.8))
+      END
+
       SUBROUTINE CLASS_TRUNC(NCLS,ICLS_L,CLS_CT,CLS_ET,CLS_C,CLS_E,
      &                       E_CONV,ICLS_A,N_TRN_CLS,E_TRUNC,W_TRUNC,
      &                       IPRNT)
@@ -508,9 +2277,9 @@ C?    WRITE(6,*) ' E_CLS_MAX = ', E_CLS_MAX
 C?    WRITE(6,*)
 C?    WRITE(6,*) '  Class      Number     Dimension  '
 C?    WRITE(6,*) ' ================================= '
-C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Passive  ', N_PAS_CLS,L_PAS_CLS
-C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Truncated', N_TRN_CLS,L_TRN_CLS
-C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
+C?    WRITE(6,'(A,5X,I5,5X,I10)') 'Passive  ', N_PAS_CLS,L_PAS_CLS
+C?    WRITE(6,'(A,5X,I5,5X,I10)') 'Truncated', N_TRN_CLS,L_TRN_CLS
+C?    WRITE(6,'(A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
 *
 *. Eliminate classes with energy contributions less than E_TOT* FAC2
 *  (temporary elimination, these classes may be invoked later in
@@ -590,11 +2359,11 @@ C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
       WRITE(6,*)
       WRITE(6,*) '             Number     Dimension  '
       WRITE(6,*) ' ================================= '
-      WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Passive  ', N_PAS_CLS,L_PAS_CLS
-      WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Truncated', N_TRN_CLS,L_TRN_CLS
-      WRITE(6,'(1H ,A,5X,I5,5X,I10)') '(Temp)   ',
+      WRITE(6,'(A,5X,I5,5X,I10)') 'Passive  ', N_PAS_CLS,L_PAS_CLS
+      WRITE(6,'(A,5X,I5,5X,I10)') 'Truncated', N_TRN_CLS,L_TRN_CLS
+      WRITE(6,'(A,5X,I5,5X,I10)') '(Temp)   ',
      &N_TRN_CLS2,L_TRN_CLS2
-      WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
+      WRITE(6,'(A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
 *
       WRITE(6,*)
       WRITE(6,*) ' Information about classes '
@@ -609,7 +2378,7 @@ C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
        DO JCLS = 1, NCLS
          IF(ABS(CLS_ET(JCLS)).GT.0.0D0.OR.ABS(CLS_CT(JCLS)).GT.0.0D0)
      &   THEN
-           WRITE(6,'(1H ,2X,I4,1X,I10,3X,4(E13.6,1X),1X,I2)')
+           WRITE(6,'(2X,I4,1X,I10,3X,4(E12.6,1X),1X,I2)')
      &     JCLS,ICLS_L(JCLS),CLS_ET(JCLS),CLS_E(JCLS),
      &     CLS_CT(JCLS),CLS_C(JCLS),ICLS_A(JCLS)
          END IF
@@ -619,13 +2388,7 @@ C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-C        newden.f propint.f newrou.f  reo.f annstr.f\
-C        adast.f decode_line.f rsbb2bn.f adaada.f rsbb2an.f\
-C        advice_sigma.f traci.f  rsbb2bvn.f
+
       SUBROUTINE CLS_TO_BASE(CLS_E,EBASC,CLS_C,CBASC,NCLS,NSPC,
      &                       IBASSPC,IPRNT)
 *
@@ -661,7 +2424,7 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
         WRITE(6,'(A)') '  Class         Energy          wf '
         WRITE(6,'(A)') ' ==========================================='
         DO ISPC = 1, NSPC
-          WRITE(6,'(2X,I3,3X,E13.6,2X,E13.6)')
+          WRITE(6,'(2X,I3,3X,E12.6,2X,E12.6)')
      &          ISPC,EBASC(ISPC),CBASC(ISPC)
         END DO
       END IF
@@ -669,10 +2432,7 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE DIAG_BLKS(A,X,LGAS,NOBPSM,MXPOBS,NSMOB,NGAS,
      &                     SCR1,SCR2)
 *
@@ -779,10 +2539,7 @@ C         CALL EIGEN_LUCI(WORK(KMAT1-1+IOFFP),WORK(KMAT2-1+IOFFC),LORB,0,1)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE EKTPERT(F,S,NDIM,NORD,EN,C,
      &                   VEC1,VEC2,VEC3,AMAT1,AMAT2,AMAT3)
 *
@@ -1074,7 +2831,7 @@ C  MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
       WRITE(6,*) '   Order        Correction '
       WRITE(6,*) ' ==============================='
       DO IORD = 1, NORD
-        WRITE(6,'(1H ,3X,I3,E25.13)')IORD,EN(IORD)
+        WRITE(6,'(3X,I3,E25.13)')IORD,EN(IORD)
       END DO
 *
       ETOT = E0
@@ -1087,10 +2844,7 @@ C  MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE H0DIAG(PHP,PHQ,QHQ,NP1DM,NP2DM,NQDM,NROOT,
      &           EIGVAL,EIGVEC,SCR,NTESTG,ECORE)
 *
@@ -1383,10 +3137,7 @@ C    &            0,0,0,DUMMY,0.0D0,1,NPQDM,1,DUMMY)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE H0INTSPC(IH0SPC,NPTSPC,IOCPTSPC,NOCTPA,NOCTPB,
      &                    IOCA,IOCB,NGAS,MXPNGAS,INTH0SPC,NELFTP)
 *
@@ -1468,10 +3219,7 @@ C?            WRITE(6,*) ' IAMOKAY = ', IAMOKAY
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE H0LNSL(PHP,PHQ,QHQ,NP1DM,NP2DM,NQDM,
      &           X,RHS,S,SCR,NTESTG)
 *
@@ -1671,10 +3419,7 @@ C             DIAVC3_LUCI(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE H0M1TD(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
      &                  H0,SHIFT,WORK,XH0PSX,
      &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG)
@@ -1814,10 +3559,7 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE H0M1TV(DIAG,VECIN,VECUT,NVAR,NPQDM,IPNTR,
      &                  H0,SHIFT,WORK,XH0PSX,
      &                  NP1,NP2,NQ,NTESTG)
@@ -1949,438 +3691,7 @@ C?    write(6,*) ' XH0PSX x1 x2 x3 ', XH0PSX,X1,X2,X3
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE H0MAT(INTSPC,NROOT,ONEBOD,H0,SBEVC,SBEVL,ISBDET,
-     &                 ISBIA,ISBIB,ISBCNF,
-     &                 LUHDIA,LBLK,
-     &                 MXP1,MXP2,MXQ,
-     &                 MP1CSF,MP2CSF,MQCSF,NOCOB,
-     &                 NPRCIV,NOCSF,IREFSM,IPRT,IPROCC,
-     &                 VEC1,VEC2,H0SCR,IDC,PSSIGN,ECORE)
-* Obtain preconditioner space corresponding to internalt space INTSPC
-* Obtain Hamiltonian matrices correponding to this subspacw
-* Obtain the first Nroot eigensolutions.
-*
-* Construct Preconditioner blocks of Hamilton matrix
-*
-* ======
-*.Output
-* ======
-*
-* CSF : NP1CSF,NP2CSF,NQCSF : Number of CSF's in the 3 primary subspaces
-*
-* NPRCIV : Number of parameters in preconditioner space
-*
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      INTEGER*8 KIOCOC
-!               for addressing of WORK
-#include "mxpdim.inc"
-#include "strbas.inc"
-#include "cicisp.inc"
-#include "stinf.inc"
-#include "spinfo.inc"
-#include "csfbas.inc"
-#include "wrkspc.inc"
-      DIMENSION ONEBOD(*)
-*
-      NTEST = 0
-      NTEST = MAX(IPRT,NTEST)
-*
-      MXSBDT = MXP1+MXP2+MXQ
-      IF(NTEST.NE.0.AND.MXSBDT.NE.0) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ========================================== '
-        WRITE(6,*) '    Information about CI preconditioner '
-        WRITE(6,*) ' ========================================== '
-        WRITE(6,*)
-       END IF
-       WRITE(6,*) ' H0MAT : ecore ', ECORE
-* Info on actual internal subspace
-      IATP = IASTFI(INTSPC)
-      IBTP = IBSTFI(INTSPC)
-      MNR1 = MNR1IC(INTSPC)
-      MXR1 = MXR1IC(INTSPC)
-      MNR3 = MNR3IC(INTSPC)
-      MXR3 = MXR3IC(INTSPC)
-      NAEL = NAELCI(INTSPC)
-      NBEL = NBELCI(INTSPC)
-*
-      NOCTPA = NOCTYP(IATP)
-      NOCTPB = NOCTYP(IBTP)
-*. Allowed combination of alpha and beta strings
-      CALL MEMMAN(KIOCOC,NOCTPA*NOCTPB,'ADDL  ',2,'IOCOC ')
-      CALL IAIBCM_GAS(MNR1,MXR3,NOCTPA,NOCTPB,WORK(KEL1(IATP)),
-     &            WORK(KEL3(IATP)),WORK(KEL1(IBTP)),WORK(KEL3(IBTP)),
-     &            WORK(KIOCOC),NTEST)
-*
-      IF(IDC.EQ.1) THEN
-        ICOMBI = 0
-        PSIGN = 0.0D0
-      ELSE
-        PSIGN = PSSIGN
-        ICOMBI = 1
-      END IF
-*
-      IF( NOCSF .NE. 0) THEN
-*.Combinations expansion, PQ preconditioner
-*
-        IHAMSM = 1
-        IWAY = 1
-* strings are unsigned
-        ISTSGN = 0
-        CALL H0SD(LUHDIA,LBLK,VEC1,IWAY,NSBDET,NAEL,NBEL,
-     &            ISMOST(1,IREFSM),WORK(KIOCOC),
-     &            IHAMSM,H0,ONEBOD,NOCOB,0,
-     &            ECORE,ICOMBI,PSIGN,NPRCIV,SBEVC,
-     &            SBEVL,1,NCIVAR,ISBDET,ISBIA,ISBIB,NROOT,
-     &            MXP1,MXP2,MXQ,
-     &            MP1CSF,MP2CSF,MQCSF,
-     &            WORK(KOCSTR(IATP)),WORK(KOCSTR(IBTP)),
-     &            ISTSGN,IDUMMY,IDUMMY,
-     &            INTSPC,IPRT,IPROCC)
-      END IF
-*
-      IF(IPRT.NE.0 .AND. NPRCIV.LT.NSBDET) THEN
-        NSBDET = NPRCIV
-        WRITE(6,*)
-     &  '  Number of elements in primary space REDUCED to . ',NSBDET
-      END IF
-*
-      IF(NTEST.NE.0.AND.MXSBDT.NE.0) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ============================================== '
-        WRITE(6,*) '    End of information about CI preconditioner '
-        WRITE(6,*) ' ============================================== '
-        WRITE(6,*)
-       END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE H0SD(LUDIA,LBLK,CIDIA,IWAY,MXPRDT,NAEL,NBEL,
-     &                ISMOST,IOCOC,
-     &                IHSYM,HAMIL,ONEBOD,NORB,
-     &                NINOB,ECORE,ICOMBI,PSIGN,NPRDET,EIGVEC,
-     &                EIGVAL,IDODGN,NDET,IDET,IA,IB,NROOT,
-     &                MXP1DM,MXP2DM,MXQDM,NP1DM,NP2DM,NQDM,
-     &                IASTR,IBSTR,ISTSGN,IASGN,IBSGN,
-     &                INTSPC,IPRT,IPROCC)
-*
-* Construct an P1 P2 Q preconditioner matrix in the SD basis
-* and/or find and print the lowest IPROCC elements
-*
-*.. Subspace :
-* ============
-*
-*     IWAY = 1 : choose the lowest values of
-*                the CI diagonal. The number of combinations is
-*                chosen so that no degenerate levels are splitted.
-*                The number of combinations used, NPRDET, can
-*                therefore be lower than mxsbdt.
-*     IWAY = 2 : Choose the first NPRDET combinations,
-*                stupid, but convenient for testing
-*
-* IDET contains adresses of elements chosen
-*
-* IDODGN .GT. 0 : DIAGONALIZE CONSTRUCTED HAMILTON MATRIX.
-*                 EIGVL CONTAINS EIGENVALUES ON RETURN
-*                 EIGVC CONTAINS EIGENVECTORS(COLUMNS) ON RETURN
-*
-* Obtained from EXPHAM, January 1993
-*
-* Put into LUCIA form June 1993
-* Combinations enabled September 1993
-*
-*. Core energy : not added to matrix, added to resulting eigenvalues
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      INTEGER*8 KL1, KL2, KL3, KSCR, KLIAST, KLIBST, KFREE
-!               for addressing of WORK
-*. Input
-      DIMENSION ISMOST(*)
-      DIMENSION ONEBOD(*),CIDIA(*)
-      INTEGER IASTR(NAEL,*),IBSTR(NBEL,*)
-*. Output
-      DIMENSION HAMIL(*)
-      DIMENSION IDET(MXPRDT), EIGVAL(NROOT), EIGVEC(NROOT * MXPRDT )
-      DIMENSION IA(MXPRDT),IB(MXPRDT)
-*
-#include "mxpdim.inc"
-C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
-*
-      CALL QENTER('EXPHAM')
-      NTEST = 0
-      NTEST = MAX(NTEST,IPRT)
-      MXDM1 = MXP1DM + MXP2DM + MXQDM
-      MXDM = MAX(MXDM1,IPROCC)
-      IF (NTEST .GE. 5 ) THEN
-        WRITE(6,*) ' MXDM ', MXDM
-        write(6,*) ' MXP1DM MXP2DM MXQDM ', MXP1DM, MXP2DM,MXQDM
-        write(6,*) ' LUDIA and LBLK ', LUDIA,LBLK
-        write(6,*) ' INTSPC and IPRT ', INTSPC,IPRT
-        write(6,*) ' NROOT ', NROOT
-        write(6,*) ' IPROCC ', IPROCC
-      END IF
-*
-* ====================
-* 0 : Select subspace
-* ====================
-*
-      IF( IWAY .EQ. 1) THEN
-*.      Find number of combinations less or equal to MXDM
-*       that does not separate degenerate pairs .
-*. Used Scratch space : 6 * MXDM ( a bit extravagant )
-        CALL MEMMAN(KL1,MAX(NAEL,3*MXDM+1),'ADDL  ',1,'KL1   ')
-        CALL MEMMAN(KL2,MAX(NBEL,2*MXDM+1),'ADDL  ',2,'KL2   ')
-        CALL MEMMAN(KL3,2*MXDM+1,'ADDL  ',2,'KL3   ')
-        CALL FNDMND(LUDIA,LBLK,CIDIA,MXDM,NPRDET,WORK(KL1),
-     &              WORK(KL2),IDET,WORK(KL3),NTEST)
-      ELSE IF ( IWAY .EQ. 2 ) THEN
-CTF     Only for debugging purposes. Fixed argument list.
-        IZERO = 0
-        CALL ISETVC(IDET,IZERO,NPRDET)
-      END IF
-*. Check for degeneracies on the boundaries between P1, P2 and Q space
-*. P1 - P2
-      IF( MXP1DM .GT. 0 ) THEN
-        IF(MXP1DM.GE.NPRDET ) THEN
-          NP1DM = NPRDET
-        ELSE
-          IIDET = MXP1DM
- 101      CONTINUE
-          IF( ABS(WORK(KL3-1+IIDET+1)-WORK(KL3-1+IIDET))
-     &       .LE. 0.000001) THEN
-             IIDET = IIDET - 1
-             GOTO 101
-          END IF
-          NP1DM = IIDET
-        END IF
-      ELSE
-        NP1DM = 0
-      END IF
-      IF( NTEST .GE. 2 .AND. MXDM1 .NE. 0 )
-     & WRITE(6,*) ' Actual dimension of P1 Space ', NP1DM
-*. P2 - Q space
-      IF(MXP2DM.GT.0) THEN
-        IF(MXP1DM+MXP2DM.GE.NPRDET) THEN
-          NP2DM = NPRDET - NP1DM
-        ELSE
-          IIDET = MXP1DM + MXP2DM
- 102      CONTINUE
-          IF( ABS(WORK(KL3-1+IIDET+1)-WORK(KL3-1+IIDET))
-     &       .LE. 0.0000001) THEN
-             IIDET = IIDET - 1
-             GOTO 102
-          END IF
-          NP2DM = IIDET - NP1DM
-        END IF
-      ELSE
-        NP2DM = 0
-      END IF
-      IF( NTEST .GE. 2 .AND. MXDM1 .NE. 0 )
-     & WRITE(6,*) ' Actual dimension of P2 Space ', NP2DM
-*. Q space
-      IF(MXQDM.NE.0) THEN
-        NQDM = NPRDET - NP1DM - NP2DM
-      ELSE
-        NQDM = 0
-      END IF
-      IF( NTEST .GE. 2 .AND. MXDM1 .NE. 0 )
-     & WRITE(6,*) ' Actual dimension of Q Space ', NQDM
-*
-      NPDM = NP1DM + NP2DM
-      NPRDET = NP1DM + NP2DM + NQDM
-*. Copy over to MX numbers ( not nice but .. )
-      MXP1DM = NP1DM
-      MXP2DM = NP2DM
-      MXQDM = NQDM
-*
-      IF( NTEST .GE. 2 .AND. MXDM1 .NE. 0 )
-     & WRITE(6,*)
-     & ' Total number of combinations in subspace : ', NPRDET
-      IF(NTEST .GE. 10 ) THEN
-        WRITE(6,*) ' IDET IN EXPHAM '
-        CALL IWRTMA(IDET,1,NPRDET,1,NPRDET)
 
-      END IF
-*
-* =============================================================
-* Alpha and beta strings corresponding to selected combinations
-* =============================================================
-*
-*
-*. Convert determinant numbers to string numbers
-*
-*. P dets
-      CALL STRFDT_LUCI(INTSPC,ISMOST,IOCOC,NPDM,IDET,IA,IB,ICOMBI)
-*. Q dets
-      IF(NQDM.NE.0)
-     &CALL STRFDT_LUCI(INTSPC,ISMOST,IOCOC,NQDM,
-     &            IDET(1+NPDM),IA(1+NPDM),IB(1+NPDM),ICOMBI)
-*. and remaining to be printed
-      IF(NPDM+NQDM.LT.IPROCC) THEN
-        LREST = IPROCC - NPDM - NQDM
-        CALL STRFDT_LUCI(INTSPC,ISMOST,IOCOC,LREST,
-     &       IDET(1+NPDM+NQDM),IA(1+NPDM+NQDM),
-     &       IB(1+NPDM+NQDM),ICOMBI)
-       END IF
-*
-      IF(IPROCC.NE.0) THEN
-*. Print occupation of lowest IPROCC lowest SD 's
-        WRITE(6,*)
-        WRITE(6,'(A)')
-     &  ' ========================================================='
-        WRITE(6,'(A,I4,A)')
-     &  ' Occupation and energy of lowest ', IPROCC, ' combinations'
-        WRITE(6,'(A)')
-     &  ' ========================================================='
-        WRITE(6,*)
-        DO I = 1, IPROCC
-*
-          WRITE(6,'(A,I8,A,F18.10)')
-     &    '  Energy  of combination ',IDET(I),' is ',
-     &       WORK(KL3-1+I)+ECORE
-          WRITE(6,'(A)')
-     &    '  Corresponding alpha - and beta string '
-            WRITE(6,'(4X,10I4)')
-     &      (IASTR(IEL,IA(I)),IEL = 1, NAEL )
-            WRITE(6,'(4X,10I4)')
-     &      (IBSTR(IEL,IB(I)),IEL = 1, NBEL )
-C         ELSE
-C           WRITE(6,'(4X,10(1X,A6))')
-C    &      (IOBLAB(IASTR(IEL,IA)),IEL = 1, NAEL )
-C           WRITE(6,'(4X,10(1X,A6))')
-C    &      (IOBLAB(IBSTR(IEL,IB)),IEL = 1, NBEL )
-C         END IF
-        END DO
-      END IF
-      MXDM = MXDM1
-      IF(MXDM.EQ.0) GOTO 9999
-*
-* ==================================
-* Obtain Hamiltonian matrix elements
-* ==================================
-*
-*. Pointers
-      KLPHP = 1
-      KLPHQ = KLPHP + NPDM*(NPDM+1)/2
-      KLQHQ = KLPHQ + NP1DM * NQDM
-*. PHP Hamiltonian
-      CALL QENTER('DIHDJ')
-*
-* Scratch space for DIHDJ
-      LSCR = 4 * NORB
-      CALL MEMMAN(KSCR,LSCR,'ADDL  ',1,' H0SCR')
-      CALL MEMMAN(KLIAST,NAEL,'ADDL  ',1,'LIA   ')
-      CALL MEMMAN(KLIBST,NBEL,'ADDL  ',1,'LIB   ')
-*
-      ISTSGN = 0
-      ECOREP = 0.0D0
-      CALL DIHDJ_LUCI(IA,IB,NPDM,IA,IB,
-     &           NPDM,NAEL,NBEL,WORK(KSCR),LSCR,
-     &           NORB,ONEBOD,HAMIL(KLPHP),
-     &           1,NINOB,ECOREP,ICOMBI,PSIGN,IASTR,IBSTR,IASTR,
-     &           IBSTR,ISTSGN,IASGN,IBSGN,IASGN,IBSGN,WORK(KLIAST),
-     &           WORK(KLIBST),NDIF0,NDIF1,NDIF2,NTEST)
-*. PHQ Hamiltonian
-      IF(NQDM.NE.0)
-     &CALL DIHDJ_LUCI(IA,IB,NP1DM,IA(1+NPDM),IB(1+NPDM),NQDM,
-     &           NAEL,NBEL,WORK(KSCR),LSCR,
-     &           NORB,ONEBOD,HAMIL(KLPHQ),
-     &           0,NINOB,ECOREP,ICOMBI,PSIGN,IASTR,IBSTR,IASTR,
-     &           IBSTR,ISTSGN,IASGN,IBSGN,IASGN,IBSGN,
-     &           WORK(KLIAST),
-     &           WORK(KLIBST),NDIF0,NDIF1,NDIF2,NTEST)
-      CALL QEXIT('DIHDJ')
-*. QHQ Hamiltonian
-      IF(LUDIA.LE.0) THEN
-        DO 0607 IIDET = NPDM + 1, NPDM+NQDM
-          HAMIL(KLQHQ + IIDET - NPDM-1) =
-     &    CIDIA(IDET(IIDET))
- 0607   CONTINUE
-      ELSE IF (LUDIA.GT. 0 ) THEN
-C            GATVCD(LU   ,LBLK,NGAT,IGAT,XGAT,SEGMNT,IPRT)
-        IZERO = 0
-        CALL GATVCD(LUDIA,LBLK,NQDM,IDET(NPDM+1),
-     &              HAMIL(KLQHQ),CIDIA,IZERO)
-      END IF
-*
-      IF(NTEST .GE. 20 ) THEN
-        IF(NQDM .NE. 0 ) THEN
-          WRITE(6,*) ' PHP, PHQ and QHQ parts of H0 '
-        END IF
-        WRITE(6,*) ' PHP '
-        WRITE(6,*) ' === '
-        CALL PRSYM(HAMIL(KLPHP),NPDM)
-        IF(NQDM.NE.0) THEN
-          WRITE(6,*) ' PHQ '
-          WRITE(6,*) ' === '
-          CALL WRTMT_LU(HAMIL(KLPHQ),NP1DM,NQDM,NP1DM,NQDM)
-          WRITE(6,*) ' QHQ '
-          WRITE(6,*) ' === '
-          CALL WRTMT_LU(HAMIL(KLQHQ),1,NQDM,1,NQDM)
-        END IF
-      END IF
-*
-* =================================
-* Diagonalize to obtain lowest roots
-* =================================
-*
-      IF(IDODGN .GT. 0 ) THEN
-        CALL MEMMAN(KFREE,IDUMMY,'FREE  ',IDUMMY,'CDUMMY')
-        CALL H0DIAG(HAMIL(KLPHP),HAMIL(KLPHQ),HAMIL(KLQHQ),
-     &       NP1DM,NP2DM,NQDM,NROOT,EIGVAL,EIGVEC,WORK(KFREE),
-     &       NTEST,ECORE )
-        IF( NTEST .GE. 2 ) THEN
-          WRITE(6,*) ' Eigenvalues of subspace Hamiltonian '
-C         CALL WRTMT_LU(EIGVAL,1,NROOT,1,NROOT)
-          WRITE(6,'(5F18.10)') (EIGVAL(IROOT),IROOT=1,NROOT)
-        END IF
-        IF( NTEST .GE. 50 ) THEN
-          WRITE(6,*) ' Eigenvectors of subspace Hamiltonian '
-          CALL WRTMT_LU(EIGVEC,NPRDET,NROOT,NPRDET,NROOT)
-*
-          WRITE(6,*) ' Subspace determinants '
-          CALL IWRTMA(IDET,1,NPRDET,1,NPRDET)
-        END IF
-      END IF
-*
-* ===============================
-* Analyze the Root approximations
-* ===============================
-*
-C     IF( IPRT .GT. 0 ) THEN
-C     DO 1869 IROOT = 1, NROOT
-C       IOFF = (IROOT-1)*NPRDET + 1
-C       CALL SETVEC(CIDIA,0.0D0,NDET)
-C       CALL SCAVEC(CIDIA,EIGVEC(IOFF),IDET,NPRDET)
-C       WRITE(6,*)
-C       WRITE(6,'(A,I3)') '  Information about root ... ',IROOT
-C       WRITE(6,'(A)')    '  ******************************'
-C       WRITE(6,*)
-C       WRITE(6,'(A,E15.8)') '   Energy .... ',EIGVAL(IROOT)
-C       CUTOFF = 0.1D0
-CTOBE   CALL ANACI(CIDIA,ICSYM,CUTOFF,100)
-C1869 CONTINUE
-C     END IF
-*
- 9999 CONTINUE
-*
-      CALL QEXIT('EXPHAM')
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE HINTV(LURHS,LUX,SHIFT,SHIFT_DIA,VECIN,VECOUT,
      &                LBLK,LUPROJ,LUPROJ2)
 *
@@ -2397,7 +3708,7 @@ C     END IF
 * Jan. 98 : SHIFT_DIA added
 *
       IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLCLBT, KLCLEBT, KLCI1BT, KLCIBT, KLCIOIO, KLCBLTP
+      INTEGER*8 KLCLBTx, KLCLEBTx, KLCI1BTx, KLCIBTx, KLCIOIO, KLCBLTPx
 !               for addressing of WORK
       REAL*8 INPROD , INPRDD
       LOGICAL CONVER
@@ -2408,7 +3719,6 @@ C     END IF
 #include "wrkspc.inc"
 #include "clunit.inc"
 * SCRATCH files used : LUSC3,LUSC34,LUSC35,LUSC37
-*. These are not used in SIMPRT !
 #include "oper.inc"
 #include "crun.inc"
 #include "cicisp.inc"
@@ -2450,31 +3760,31 @@ C     END IF
       NOCTPA = NOCTYP(IATP)
       NOCTPB = NOCTYP(IBTP)
       NTTS = MXNTTS
-      CALL MEMMAN(KLCLBT ,NTTS  ,'ADDL  ',1,'CLBT  ')
-      CALL MEMMAN(KLCLEBT ,NTTS  ,'ADDL  ',1,'CLEBT ')
-      CALL MEMMAN(KLCI1BT,NTTS  ,'ADDL  ',1,'CI1BT ')
-      CALL MEMMAN(KLCIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
+      CALL MEMMAN(KLCLBTx ,  NTTS,'ADDL  ',1,'CLBT  ')
+      CALL MEMMAN(KLCLEBTx,  NTTS,'ADDL  ',1,'CLEBT ')
+      CALL MEMMAN(KLCI1BTx,  NTTS,'ADDL  ',1,'CI1BT ')
+      CALL MEMMAN(KLCIBTx ,8*NTTS,'ADDL  ',1,'CIBT  ')
 *
       CALL MEMMAN(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
       CALL IAIBCM(ISSPC,WORK(KLCIOIO))
 *
-      CALL MEMMAN(KLCBLTP,NSMST,'ADDL  ',2,'CBLTP ')
-      CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KLCBLTP),0)
+      CALL MEMMAN(KLCBLTPx,NSMST,'ADDL  ',2,'CBLTP ')
+      CALL ZBLTP(ISMOST(1,ISSM),NSMST,IDC,WORK(KLCBLTPx),0)
 *
 *. Batches  of C vector
       ITTSS_ORD = 2
-      CALL PART_CIV2(IDC,WORK(KLCBLTP),WORK(KNSTSO(IATP)),
+      CALL PART_CIV2(IDC,WORK(KLCBLTPx),WORK(KNSTSO(IATP)),
      &              WORK(KNSTSO(IBTP)),
      &              NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLCIOIO),
-     &              ISMOST(1,ISSM),NBATCH,WORK(KLCLBT),
-     &              WORK(KLCLEBT),WORK(KLCI1BT),WORK(KLCIBT),0,
+     &              ISMOST(1,ISSM),NBATCH,WORK(KLCLBTx),
+     &              WORK(KLCLEBTx),WORK(KLCI1BTx),WORK(KLCIBTx),0,
      &              ITTSS_ORD)
 *. Number of BLOCKS
-        NBLOCK = IFRMR(WORK(KLCI1BT),1,NBATCH)
-     &         + IFRMR(WORK(KLCLBT),1,NBATCH) - 1
+        NBLOCK = IFRMR(WORK(KLCI1BTx),1,NBATCH)
+     &         + IFRMR(WORK(KLCLBTx),1,NBATCH) - 1
 C?      WRITE(6,*) ' HINTV : Number of blocks ', NBLOCK
         CALL GASDIAT(VECIN,LUSC3,ECOREX,ICISTR,I12,
-     &               WORK(KLCBLTP),NBLOCK,WORK(KLCIBT),IDUMMY)
+     &               WORK(KLCBLTPx),NBLOCK,WORK(KLCIBTx),IDUMMY)
 C      CALL GASDIAT(VECIN,ISSM,ISSPC,LUSC3,ECOREX,ICISTR,I12)
 *. Clean up time
        IF(IH0INSPC(1).EQ.1.OR.IH0INSPC(1).EQ.3) THEN
@@ -2554,10 +3864,7 @@ C?      WRITE(6,*) ' HINTV : MXIT_LOC ',MXIT_LOC
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE HMATAPR(IASM,IATP,IBSM,IBTP,JASM,JATP,JBSM,JBTP,
      &                   IABSPC,JABSPC,IABOP,JABOP,IIF,JDOH2,
      &                   IDOH2,IMZERO,IDIAG)
@@ -2631,10 +3938,7 @@ C       IDOH2 = JDOH2
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE HTV(VECIN,VECOUT,LUIN,LUOUT)
 *
 * Full operator times vector
@@ -2645,17 +3949,17 @@ C       IDOH2 = JDOH2
 *
 * complete operator in action
       IPERTOP = 0
-      I12 = 2
+      I12     = 2
+      ISIGDEN = 1
 *
-      CALL MV7(VECIN,VECOUT,LUIN,LUOUT)
+      call quit('*** HTV is disabled in this lucita version. ***')
+      CALL SIGDEN_CI(VECIN,VECOUT,C2,LUIN,LUOUT,cdummy,sdummy,
+     &               ISIGDEN,-1,xxs2dum)
 *
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE INVERT_BY_DIAG(A,B,SCR,VEC,NDIM)
 *
 * Invert symmetric  - hopefully nonsingular - matrix A
@@ -2702,10 +4006,7 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE MATPERT(H0,V,NDIM,NORD,EN,C,VEC1,VEC2,VEC3,ECORE)
 *
 * Perturbation expansion of simple  eigenvalue problem
@@ -2800,7 +4101,7 @@ C?      CALL WRTMT_LU(C(1,IORD+1),1,NDIM,1,NDIM)
       WRITE(6,*) '   Order             Correction '
       WRITE(6,*) ' ===================================='
       DO IORD = 1, NORD
-        WRITE(6,'(1H ,3X,I3,E20.8)')IORD,EN(IORD)
+        WRITE(6,'(3X,I3,E20.8)')IORD,EN(IORD)
       END DO
 *
       ETOT = E0 + ECORE
@@ -2812,941 +4113,7 @@ C?      CALL WRTMT_LU(C(1,IORD+1),1,NDIM,1,NDIM)
 *
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE MICDV6(VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,NVAR,
-     &                  LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,MAXVEC,NINVEC,
-     &                  APROJ,AVEC,WORK,IPRTXX,
-     &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &                  E_CONV,IROOTHOMING,LUWRTOUT)
-*
-* Iterative eigen solver, requires two blocks in core
-*
-* Multiroot version
-*
-* From MICDV4, Jeppe Olsen, April 1997
-*              Modified : Oct 97 : root homing added
-*
-* Input :
-* =======
-*        LU1 : Initial set of vectors
-*        VEC1,VEC2 : Two vectors,each must be dimensioned to hold
-*                    largest blocks
-*        LU3,LU4   : Scratch files
-*        LUDIA     : File containing diagonal of matrix
-*        NROOT     : Number of eigenvectors to be obtained
-*        MAXVEC    : Largest allowed number of vectors
-*                    must atleast be 2 * NROOT
-*        NINVEC    : Number of initial vectors ( atleast NROOT )
-*        NPRDIM    : Dimension of subspace with
-*                    nondiagonal preconditioning
-*                    (NPRDIM = 0 indicates no such subspace )
-*   For NPRDIM .gt. 0:
-*          PEIGVC  : EIGENVECTORS OF MATRIX IN PRIMAR SPACE
-*                    Holds preconditioner matrices
-*                    PHP,PHQ,QHQ in this order !!
-*          PEIGVL  : EIGENVALUES  OF MATRIX IN PRIMAR SPACE
-*          IPNTR   : IPNTR(I) IS ORIGINAL ADRESS OF SUBSPACE ELEMENT I
-*          NP1,NP2,NQ : Dimension of the three subspaces
-*
-* H0SCR : Scratch space for handling H0, at least 2*(NP1+NP2) ** 2 +
-*         4 (NP1+NP2+NQ)
-*           LBLK : Defines block structure of matrices
-* On input LU1 is supposed to hold initial guesses to eigenvectors
-*
-*
-       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-#include "parluci.h"
-       DIMENSION VEC1(*),VEC2(*)
-       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
-       DIMENSION APROJ(*),AVEC(*),WORK(*)
-       DIMENSION H0(*),IPNTR(1)
-       DIMENSION H0SCR(*)
-*
-* Dimensioning required of local vectors
-*      APROJ  : MAXVEC*(MAXVEC+1)/2
-*      AVEC   : MAXVEC ** 2
-*      WORK   : MAXVEC*(MAXVEC+1)/2
-*      H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
-*
-*      IROOTHOMING : Do roothoming, i.e. select the
-*      eigenvectors in iteration n+1 as the approximations
-*      with largest overlap with the previous space
-*
-      DIMENSION FINEIG(nroot)
-      LOGICAL CONVER,LUCEND
-      REAL*8 INPRDD, INPROD
-      DOUBLE PRECISION tottime,endtime,starttime
-      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
-*     New characters used for timing in send of VEC from LU3
-      CHARACTER CPULUSTEP*12, WALLLUSTEP*12
-*     New characters used for timing in cpback of sigma vec and calc of
-*     aproj(ij)
-      CHARACTER CPUFSTEP*12, WALLFSTEP*12
-*     New characters used for timing in step3
-      CHARACTER CPUTSTEP*12, WALLTSTEP*12
-*     XJEP is used for ROOTHOMING
-      real(8), allocatable ::  xjep(:)
-      integer, allocatable :: ixjep(:)
-      character (len=13)   :: convergence
-      logical, allocatable :: rtcnv(:)
 
-      allocate(rtcnv(nroot))
-      rtcnv  = .false.
-      lucend = .FALSE.
-
-      MYNEW_ID   = 0
-      MYNEW_COMM = 0
-C
-      WRITE(LUWRTOUT,'(/10X,A)')
-     &' **************************************************'
-      WRITE(LUWRTOUT,'(10X,A)')
-     &'     entering MICDV6 (sequential solver routine)   '
-      WRITE(LUWRTOUT,'(10X,A )')
-     &' **************************************************'
-*
-       IPICO = 0
-       IF(IPICO.NE.0) THEN
-         MAXVEC = MIN(MAXVEC,2)
-       END IF
-*
-!      IPRT = 9999 ! IPRT = 0000  DEBUG
-       IPRT = 0000
-       lbl  = 0
-c      IPRT = IPRTXX
-#ifdef LUCI_DEBUG
-         WRITE(LUWRTOUT,*) ' Initial set of eigenvectors '
-         CALL REWINE(LU1,-1)
-         DO IROOT = 1, NROOT
-           WRITE(LUWRTOUT,1066) IROOT, LBLK, LBL
-           CALL WRTVCD(VEC1,LU1,0,LBLK)
-         END DO
-#endif
-*
-       IOLSTM = 1
-       IF(IPRT.GT.1.AND.IOLSTM.NE.0)
-     & WRITE(LUWRTOUT,*) ' Inverse iteration modified Davidson '
-       IF(IPRT.GT.1.AND.IOLSTM.EQ.0)
-     & WRITE(LUWRTOUT,*) ' Normal Davidson method '
-       IF( MAXVEC .LT. 2 * NROOT ) THEN
-         WRITE(LUWRTOUT,*)' Sorry MICDV6 wounded , MAXVEC .LT. 2*NROOT '
-         WRITE(LUWRTOUT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
-         WRITE(LUWRTOUT,*) ' Raise MXCIV to be at least 2 * Nroot '
-         WRITE(LUWRTOUT,*) ' Enforced stop on MICDV6 '
-         Call Abend1( 20 )
-       END IF
-*
-      if(iroothoming.eq.1)then
-        write(luwrtout,*) ' Root homing performed '
-        allocate(xjep( maxvec*3))
-        allocate(ixjep(maxvec*3))
-      end if
-*
-      KAPROJ = 1
-      KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-      TEST   = 1.0D-4
-      CONVER = .FALSE.
-*
-* ===================
-*.Initial iteration
-* ===================
-      ITER = 1
-      CALL REWINE(LU1,-1)
-      CALL REWINE(LU2,-1)
-*
-      DO IVEC = 1,NINVEC
-        CALL REWINE(LU5,-1)
-        CALL REWINE(LU6,-1)
-        CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
-*       Check timings for sigma vector generation
-        CALL GETTIM(CPUSIG1,WALLSIG1)
-
-        CALL MV7(VEC1,VEC2,LU5,LU6)
-
-        CALL GETTIM(CPUSIG2,WALLSIG2)
-        WALLTID = SECTID(WALLSIG2-WALLSIG1)
-        if(ivec .eq. 1)then
-          write(luwrtout,9777) WALLTID
-        else
-          write(luwrtout,9778) WALLTID
-        end if
-*. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
-        CALL REWINE(LU6,-1)
-        CALL COPVCD(LU6,LU2,VEC1,0,LBLK)
-*. Projected matrix
-        CALL REWINE(LU2,-1)
-          DO JVEC = 1, IVEC
-             CALL REWINE(LU5,-1)
-             IJ = IVEC*(IVEC-1)/2 + JVEC
-             APROJ(IJ) = INPRDD(VEC1,VEC2,LU2,LU5,0,LBLK)
-          END DO ! loop over IVEC
-       END DO ! loop over NINVEC
-*
-       IF( IPRT .GE.5 ) THEN
-         WRITE(LUWRTOUT,*) ' INITIAL PROJECTED MATRIX  '
-         CALL PRSYM(APROJ,NINVEC)
-       END IF
-*. Diagonalize initial projected matrix
-       CALL COPVEC(APROJ,WORK(KAPROJ),NINVEC*(NINVEC+1)/2)
-       CALL EIGEN_LUCI(WORK(KAPROJ),AVEC,NINVEC,0,1)
-       DO IROOT = 1, NROOT
-         EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
-       END DO
-*
-       IF(IPRT .GE. 3 ) THEN
-         WRITE(LUWRTOUT,*) 
-     &   ' Eigenvalues of initial iteration (with shift)'
-         WRITE(LUWRTOUT,'(5F18.13)')
-     &   ( EIG(1,IROOT)+EIGSHF,IROOT=1,NROOT)
-       END IF
-       IF( IPRT  .GE. 5 ) THEN
-        WRITE(luwrt,*) ' Eigenvalues of initial iteration (no shift)'
-        WRITE(luwrt,'(5F18.13)')
-     &  ( EIG(1,IROOT),IROOT=1,NROOT)
-       END IF
-*. Transform vectors on LU1 so they become the actual
-*. eigenvector approximations
-C     TRAVCD(VEC1,VEC2,NVECIN,NVECOUT,LUIN,LUOUT,
-C    &                  ICOPY,LBLK,LUSCR1,LUSCR2)
-       CALL REWINE(LU3,-1)
-       CALL TRAVCD(VEC1,VEC2,AVEC,NINVEC,NROOT,LU1,LU3,1,LBLK,LU4,LU5)
-*. And the sigma vectors
-       CALL REWINE(LU3,-1)
-       CALL TRAVCD(VEC1,VEC2,AVEC,NINVEC,NROOT,LU2,LU3,1,LBLK,LU4,LU5)
-*
-       IF(IPRT.GE.600) THEN
-         WRITE(LUWRTOUT,*) ' Initial set of eigenvectors '
-         CALL REWINE(LU1,-1)
-         DO IROOT = 1, NROOT
-           WRITE(LUWRTOUT,1066) IROOT, LBLK, LBL
- 1066 FORMAT(/'lets see IROOT =', 3I4/)
-           CALL WRTVCD(VEC1,LU1,0,LBLK)
-         END DO
-*
-         WRITE(LUWRTOUT,*) ' Initial set of sigma vectors '
-         CALL REWINE(LU2,-1)
-         DO IROOT = 1, NROOT
-           WRITE(LUWRTOUT,1067) IROOT
- 1067 FORMAT(/'lets see IROOT again=', I4/)
-           CALL WRTVCD(VEC1,LU2,0,LBLK)
-         END DO
-       END IF
-*. And the corresponding Hamiltonian matrix, no problems
-*. with numerical stabilities, so just use eigenvalues
-       CALL dzero(APROJ,NROOT*(NROOT+1)/2)
-       DO IROOT = 1, NROOT
-        APROJ(IROOT*(IROOT+1)/2) = EIG(1,IROOT)
-       END DO
-*
-       NVEC = NROOT
-CJAN20 IF (MAXIT .EQ. 1 ) GOTO  901
- 12    CONTINUE 
-       IF (MAXIT .EQ. 1 ) GOTO  1001
-*
-*
-* ======================
-*. Loop over iterations
-* ======================
-*
- 1000 CONTINUE
-        CALL GETTIM(CPUITR1,WALLITR1)
-        write(LUWRTOUT,*)
-        write(LUWRTOUT,'(A21,3X,I3)') ' Info from iteration ',ITER
-        write(LUWRTOUT,*) '_______________________'
-        ITER = ITER + 1
-*
-* ===============================
-*.1 New directions to be included
-* ===============================
-*
-* 1.1 : R = H*X - EIGAPR*X
-*
-       IADD = 0
-       CONVER = .TRUE.
-*
-       CALL REWINE(LU1,-1)
-       CALL REWINE(LU2,-1)
-*
-       DO 100 IROOT = 1, NROOT
-*. Save current eigenvector IROOT on LU7
-         CALL SKPVCD(LU1,IROOT-1,VEC1,1,LBLK)
-         CALL REWINE(LU7,-1)
-         CALL COPVCD(LU1,LU7,VEC1,0,LBLK)
-*. Calculate (HX - EX ) and store on LU5
-*. Current eigenvector is  on LU7, corresponding sigma vector
-*. on LU2
-         EIGAPR = EIG(ITER-1,IROOT)
-         ONE = 1.0D0
-*
-         CALL REWINE(LU7,-1)
-         CALL REWINE(LU5,-1)
-         FACTOR = - EIGAPR
-         CALL VECSMD(VEC1,VEC2,ONE,FACTOR,LU2,LU7,LU5,0,LBLK)
-*
-         IF ( IPRT  .GE. 10 ) THEN
-           WRITE(LUWRTOUT,*) '  ( HX - EX ) '
-           CALL WRTVCD(VEC1,LU5,1,LBLK)
-         END IF
-*  Strange place to put convergence but ....
-         RNORM = SQRT( INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK) )
-         RNRM(ITER-1,IROOT) = RNORM
-         WRITE(LUWRTOUT,'(A19,I8,1p,1E15.5,0p,3X,1F19.10)')
-     &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
-*
-         CALL FLSHFO(LUWRTOUT)
-*
-         IF(RNORM.LT. TEST .OR.
-     &      (ITER.GT.2.AND.
-     &      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.E_CONV)) THEN
-            RTCNV(IROOT) = .TRUE.
-         ELSE
-            RTCNV(IROOT) = .FALSE.
-            CONVER = .FALSE.
-         END IF
-         IF( ITER .GT. MAXIT) GOTO 100
-* =====================================================================
-*. 1.2 : Multiply with inverse Hessian approximation to get new directio
-* =====================================================================
-*. (H0-E) -1 *(HX-EX) on LU6
-CSK         print*,'NP1,NP2,NQ ',NP1,NP2,NQ
-         IF( .NOT. RTCNV(IROOT) ) THEN
-           IF(IPRT.GE.3) THEN
-             WRITE(LUWRTOUT,*) ' Correction vector added for root',IROOT
-           END IF
-           IADD = IADD + 1
-           CALL REWINE(LUDIA,-1)
-           CALL REWINE(LU5,-1)
-           CALL REWINE(LU6,-1)
-           CALL H0M1TD(LU6,LUDIA,LU5,LBLK,NP1+NP2+NQ,IPNTR,
-     &                 H0,-EIGAPR,H0SCR,XH0IX,
-     &                 NP1,NP2,NQ,VEC1,VEC2,IPRT)
-C     H0M1TD(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
-C    &                  H0,SHIFT,WORK,XH0PSX,
-C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG)
-           IF ( IPRT  .GE. 600) THEN
-             WRITE(LUWRTOUT,*) '  (D-E)-1 *( HX - EX ) '
-             CALL WRTVCD(VEC1,LU6,1,LBLK)
-           END IF
-CSK        print*,'IOLSTM ',IOLSTM
-*
-           IF(IOLSTM .NE. 0 ) THEN
-* add Olsen correction if neccessary
-* (H0 - E )-1  * X on LU5
-             CALL REWINE(LU5,-1)
-             CALL REWINE(LU7,-1)
-             CALL REWINE(LUDIA,-1)
-*
-             CALL H0M1TD(LU5,LUDIA,LU7,LBLK,Np1+Np2+NQ,
-     &                   IPNTR,H0,-EIGAPR,H0SCR,XH0IX,
-     &                   NP1,NP2,NQ,VEC1,VEC2,IPRT)
-*
-* Gamma = X(T) * (H0 - E) ** -1 * X
-             CALL REWINE(LU5,-1)
-             CALL REWINE(LU7,-1)
-             GAMMA = INPRDD(VEC1,VEC2,LU5,LU7,0,LBLK)
-CSK             WRITE(LUWRTOUT,*) ' Gamma = ', Gamma
-             IF(IPRT.GE.1000) WRITE(LUWRTOUT,*) ' Gamma = ', Gamma
-* is X an eigen vector for (H0 - 1 ) - 1
-             CALL REWINE(LU5,-1)
-             CALL REWINE(LU7,-1)
-              VNORM =
-     &        SQRT(VCSMDN(VEC1,VEC2,-GAMMA,1.0D0,LU7,LU5,0,LBLK))
-CSK              write(LUWRTOUT,*) ' VNORM = ', VNORM
-              IF(IPRT.GE.1000) write(LUWRTOUT,*) ' VNORM = ', VNORM
-              IF(VNORM .GT. 1.0D-7 ) THEN
-                IOLSAC = 1
-              ELSE
-                IOLSAC = 0
-              END IF
-              IF(IOLSAC .EQ. 1 ) THEN
-             IF(IPRT.GE.5) WRITE(LUWRTOUT,*) ' Olsen Correction active '
-CSK                WRITE(LUWRTOUT,*) ' Olsen Correction active '
-                DELTA = INPRDD(VEC1,VEC2,LU7,LU6,1,LBLK)
-                FACTOR = -(DELTA/GAMMA)
-                IF(IPRT.GE.5) WRITE(LUWRTOUT,*) ' DELTA,GAMMA,FACTOR'
-                IF(IPRT.GE.5) WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
-CSK                WRITE(LUWRTOUT,*) ' DELTA,GAMMA,FACTOR'
-CSK                WRITE(LUWRTOUT,*)   DELTA,GAMMA,FACTOR
-                CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU6,LU5,LU7,1,LBLK)
-                CALL COPVCD(LU7,LU6,VEC1,1,LBLK)
-*
-                IF(IPRT.GE.600) THEN
-                  WRITE(LUWRTOUT,*) ' Modified trial vector '
-                  CALL WRTVCD(VEC1,LU6,1,LBLK)
-                END IF
-*
-              END IF
-            END IF
-*. 1.3 Orthogonalize to all previous vectors
-*.. Vectors on LU1
-*
-           CALL REWINE( LU1 ,LBLK)
-           DO IVEC = 1, NROOT
-               CALL REWINE(LU6,-1)
-               WORK(IVEC) = -INPRDD(VEC1,VEC2,LU1,LU6,0,LBLK)
-           END DO
-           IF(IPRT.GE.1000) THEN
-             Write(LUWRTOUT,*) ' Overlap with vectors on LU1'
-             call WRTMT_LU(work,1,nroot,1,nroot)
-           END IF
-           ONE = 1.0D0
-           CALL REWINE(LU1,-1)
-           CALL MVCSMD(LU1,WORK,LU7,LU5,VEC1,VEC2,NROOT,1,LBLK)
-           CALL VECSMD(VEC1,VEC2,ONE,ONE,LU7,LU6,LU5,1,LBLK)
-           IF(IPRT.GE.1000) THEN
-             write(LUWRTOUT,*) ' orthogonalized to vectors on LU1'
-             CALL WRTVCD(VEC1,LU5,1,LBLK)
-           END IF
-*.. Vectors on LU3
-           IF(NVEC+IADD-1-NROOT.GT.0) THEN
-             CALL REWINE( LU3 ,LBLK)
-             DO IVEC = 1, NVEC+IADD-1-NROOT
-                 CALL REWINE(LU6,-1)
-                 WORK(IVEC) = -INPRDD(VEC1,VEC2,LU3,LU6,0,LBLK)
-             END DO
-             ONE = 1.0D0
-             CALL REWINE(LU3,-1)
-             CALL MVCSMD(LU3,WORK,LU7,LU6,VEC1,VEC2,NVEC+IADD-1-NROOT,
-     &            1,LBLK)
-             CALL VECSMD(VEC1,VEC2,ONE,ONE,LU7,LU5,LU6,1,LBLK)
-           ELSE
-             CALL REWINE(LU3,-1)
-             CALL COPVCD(LU5,LU6,VEC1,1,LBLK)
-           END IF
-*. 1.4 Normalize vector
-           SCALE = INPRDD(VEC1,VEC1,LU6,LU6,1,LBLK)
-           FACTOR = 1.0D0/SQRT(SCALE)
-           CALL REWINE(LU6,LBLK)
-           CALL SCLVCD(LU6,LU3,FACTOR,VEC1,0,LBLK)
-           IF(IPRT.GE.600) THEN
-             CALL SCLVCD(LU6,LU7,FACTOR,VEC1,1,LBLK)
-             WRITE(LUWRTOUT,*) '   normalized     (D-E)-1 *( HX - EX ) '
-             CALL WRTVCD(VEC1,LU7,1,LBLK)
-           END IF
-*
-         END IF
-  100 CONTINUE
-  101 CONTINUE
-*
-      IF( CONVER ) THEN
-         GOTO  1001
-      END IF
-      IF( ITER.GT. MAXIT) THEN
-         ITER = MAXIT
-         GOTO 1001
-      END IF
-*
-*
-* ====================================================
-*  2 : Optimal combination of new and old directions
-* ====================================================
-*
-*  2.1: Multiply new directions with matrix
-*
-      IF(IPRT.GE.1000) THEN
-       IF (luci_MYPROC.EQ.luci_MASTER) THEN
-        WRITE(LUWRTOUT,*) ' Vectors on LU3'
-        WRITE(LUWRTOUT,*) 'NVEC-NROOT+IADD =',NVEC-NROOT+IADD
-        CALL REWINE(LU3,-1)
-        DO IVEC = 1, NVEC-NROOT+IADD
-          CALL WRTVCD(VEC1,LU3,0,LBLK)
-        END DO
-       END IF
-       CALL REWINE(LU3,-1)
-      END IF
-*
-      CALL SKPVCD(LU3,NVEC-NROOT,VEC1,1,LBLK)
-      CALL SKPVCD(LU4,NVEC-NROOT,VEC1,1,LBLK)
-*
-*     
- 150  DO IVEC = 1, IADD
-        CALL REWINE(LU5,LBLK)
-        CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
-*Check timings for sigma vector generation
-        CALL GETTIM(CPUSIG1,WALLSIG1)
-        CALL MV7(VEC1,VEC2,LU5,LU6)
-        CALL GETTIM(CPUSIG2,WALLSIG2)
-        WALLTID = SECTID(WALLSIG2-WALLSIG1)
-        if(ivec .eq. 1)then
-          WRITE(LUWRTOUT,9400) WALLTID
-        else
-          WRITE(LUWRTOUT,9401) WALLTID
-        end if
-        CALL REWINE(LU6,LBLK)
-        CALL COPVCD(LU6,LU4,VEC1,0,LBLK)
-*2.2 Augment projected matrix
-        CALL REWINE( LU1,LBLK)
-        DO JVEC = 1, NROOT
-          CALL REWINE(LU6,LBLK)
-          IJ = (IVEC+NVEC)*(IVEC+NVEC-1)/2 + JVEC
-          APROJ(IJ) = INPRDD(VEC1,VEC2,LU1,LU6,0,LBLK)
-        END DO
-
-        CALL REWINE(LU3,LBLK)
-C       DO JVEC = NROOT+1, NVEC+IADD
-        DO JVEC = NROOT+1, NVEC+IVEC
-         CALL REWINE(LU6,LBLK)
-         IJ = (IVEC+NVEC)*(IVEC+NVEC-1)/2 + JVEC
-         APROJ(IJ) = INPRDD(VEC1,VEC2,LU3,LU6,0,LBLK)
-        END DO
-      END DO
-*     /\ End do over new trial vectors
-*
-*. 2.3 Diagonalize projected matrix
-      NVEC = NVEC + IADD
-      CALL COPVEC(APROJ,WORK(KAPROJ),NVEC*(NVEC+1)/2)
-      CALL EIGEN_LUCI(WORK(KAPROJ),AVEC,NVEC,0,1)
-*. Test : transform projected matrix
-C TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
-C     CALL TRAN_SYM_BLOC_MAT(APROJ,AVEC,1,NVEC,XJEP(1000),XJEP(1))
-C     WRITE(LUWRTOUT,*) ' Explicitly transformed matrix'
-C     CALL PRSYM(XJEP(1000),NVEC)
-
-      IF(IPICO.NE.0) THEN
-        E0VAR = WORK(KAPROJ)
-        C0VAR = AVEC(1)
-        C1VAR = AVEC(2)
-        C1NRM = SQRT(C0VAR**2+C1VAR**2)
-*. overwrite with pert solution
-        AVEC(1) = 1.0D0/SQRT(1.0D0+C1NRM**2)
-        AVEC(2) = -(C1NRM/SQRT(1.0D0+C1NRM**2))
-        E0PERT = AVEC(1)**2*APROJ(1)
-     &         + 2.0D0*AVEC(1)*AVEC(2)*APROJ(2)
-     &         + AVEC(2)**2*APROJ(3)
-        WORK(KAPROJ) = E0PERT
-        WRITE(LUWRTOUT,*) 
-     &  ' Var and Pert solution, energy and coefficients'
-        WRITE(LUWRTOUT,'(4X,3E15.7)') E0VAR,C0VAR,C1VAR
-        WRITE(LUWRTOUT,'(4X,3E15.7)') E0PERT,AVEC(1),AVEC(2)
-      END IF
-*
-      IF(IROOTHOMING.EQ.1) THEN
-*
-*. Reorder roots so the NROOT with the largest overlap with
-*  the original roots become the first
-*
-*. Norm of wavefunction in previous space
-       DO IVEC = 1, NVEC
-         XJEP(IVEC) = INPROD(AVEC(1+(IVEC-1)*NROOT),
-     &                AVEC(1+(IVEC-1)*NROOT),NROOT)
-       END DO
-       WRITE(LUWRTOUT,*)
-     & ' Norm of projections to previous vector space '
-       CALL WRTMT_LU(XJEP,1,NVEC,1,NVEC)
-*. My sorter arranges in increasing order, multiply with minus 1
-*  so the eigenvectors with largest overlap comes out first
-       ONEM = -1.0D0
-       CALL SCALVE(XJEP,ONEM,NVEC)
-       CALL SORLOW(XJEP,XJEP(1+NVEC),IXJEP,NVEC,NVEC,NSORT,IPRT)
-       IF(NSORT.LT.NVEC) THEN
-         WRITE(LUWRTOUT,*) ' Warning : Some elements lost in sorting '
-         WRITE(LUWRTOUT,*) ' NVEC,NSORT = ', NSORT,NVEC
-       END IF
-       IF(IPRT.GE.3) THEN
-         WRITE(LUWRTOUT,*) ' New roots choosen as vectors '
-         CALL IWRTMA(IXJEP,1,NROOT,1,NROOT)
-       END IF
-*. Reorder
-       DO INEW = 1, NVEC
-         IOLD = IXJEP(INEW)
-         CALL COPVEC(AVEC(1+(IOLD-1)*NVEC),XJEP(1+(INEW-1)*NVEC),NVEC)
-       END DO
-       CALL COPVEC(XJEP,AVEC,NROOT*NVEC)
-       DO INEW = 1, NVEC
-         IOLD = IXJEP(INEW)
-         XJEP(INEW*(INEW+1)/2) = WORK(IOLD*(IOLD+1)/2)
-       END DO
-       DO INEW = 1, NVEC
-         WORK(INEW*(INEW+1)/2) = XJEP(INEW*(INEW+1)/2)
-       END DO
-*
-       IF(IPRT.GE.3) THEN
-         WRITE(LUWRTOUT,*) ' Reordered WORK and AVEC arrays '
-         CALL PRSYM(WORK,NVEC)
-         CALL WRTMT_LU(AVEC,NVEC,NVEC,NVEC,NVEC)
-       END IF
-*
-      END IF
-*     ^ End of root homing procedure
-      DO IROOT = 1, NROOT
-        EIG(ITER,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
-      END DO
-*
-      IF(IPRT .GE. 3 ) THEN
-        WRITE(LUWRTOUT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
-        WRITE(LUWRTOUT,'(5F18.13)')
-     &  ( EIG(ITER,IROOT)+EIGSHF,IROOT=1,NROOT)
-        WRITE(LUWRTOUT,'(A)') ' Norm of Residuals (Previous it) '
-        WRITE(LUWRTOUT,'(5F18.13)')
-     &  ( RNRM(ITER-1,IROOT),IROOT=1,NROOT)
-      END IF
-*
-      IF( IPRT  .GE. 5 ) THEN
-        WRITE(LUWRTOUT,*) ' Projected matrix'
-        CALL PRSYM(APROJ,NVEC)
-        WRITE(LUWRTOUT,*) ' eigen pairs '
-        WRITE(LUWRTOUT,'(2X,E14.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
-        CALL WRTMT_LU(AVEC,NVEC,NROOT,NVEC,NROOT)
-      END IF
-*
-**  perhaps reset or assemble converged eigenvectors
-*
-  901 CONTINUE
-*
-*. Reset
-*
-*
-* case 1 : Only NROOT vectors can be stored
-*          save current eigenvector approximations
-* Case 2 : Atleast 2*NROOT eigenvectors can be saved
-*          Current eigenvactor approximations+
-*          vectors allowing generation of previous approxs.
-*
-*
-C     IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
-*
-*. 3.1 : Current wave function approximations, collect on LU7
-*
-*  check timing of part3 in loop iteration
-       CALL GETTIM(CPUSTEP3,WALLSTEP3)
-*
-        IF(IPRT.GE.1000) THEN
-        write(LUWRTOUT,*) ' I am going to reset '
-        write(LUWRTOUT,*) ' nroot, nvec ', nroot,nvec
-        END IF
-        IF(IPRT.GE.1000) THEN
-          WRITE(LUWRTOUT,*) ' Initial vectors on LU1'
-          CALL REWINE(LU1,-1)
-          DO IVEC = 1, NROOT
-             CALL WRTVCD(VEC1,LU1,0,LBLK)
-          END DO
-          WRITE(LUWRTOUT,*) ' Initial vectors on LU3'
-          CALL REWINE(LU3,-1)
-          DO IVEC = 1, NROOT
-             CALL WRTVCD(VEC1,LU3,0,LBLK)
-          END DO
-        END IF
-*
-        CALL REWINE( LU7,LBLK)
-        DO IROOT = 1, NROOT
-*. From LU1 to LU5
-          CALL REWINE(LU1,-1)
-          CALL MVCSMD(LU1,AVEC((IROOT-1)*NVEC+1),
-     &    LU5,LU6,VEC1,VEC2,NROOT,1,LBLK)
-          IF(IPRT.GE.1000)
-     &    write(LUWRTOUT,*) ' end of c reset, part 1'
-*. and add LU3 to LU5
-          CALL REWINE(LU3,-1)
-          ONE = 1.0D0
-          CALL MVCSMD2(LU3,AVEC((IROOT-1)*NVEC+NROOT+1),ONE,
-     &    LU5,LU6,VEC1,VEC2,NVEC-NROOT,1,LBLK)
-          IF(IPRT.GE.1000)
-     &    write(LUWRTOUT,*) ' end of c reset, part 2'
-C              MVCSMD2(LUIN,FAC,FACLUOUT,LUOUT,LUSCR,
-C    &         VEC1,VEC2,NVEC,IREW,LBLK)
-          XNORM = INPRDD(VEC1,VEC1,LU5,LU5,1,LBLK)
-          CALL REWINE(LU5,LBLK)
-          SCALE  = 1.0D0/SQRT(XNORM)
-CSK          WRITE(LUWRTOUT,*) ' SCALE = ', SCALE
-          WORK(IROOT) = SCALE
-*. scale LU5 => LU7
-          CALL REWINE(LU5,-1)
-          CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
-          IF(IPRT.GE.1000)
-     &    write(LUWRTOUT,*) ' end of c reset, part 3'
-        END DO
-*. Transfer C vectors from LU7 to LU1
-        CALL REWINE( LU7,LBLK)
-        CALL REWINE( LU1,LBLK)
-        DO IVEC = 1,NROOT
-          CALL COPVCD(LU7,LU1,VEC1,0,LBLK)
-        END DO
-        IF(IPRT.GE.1000)
-     &  write(LUWRTOUT,*) ' end of c reset, part 4'
-        IF(IPRT.GE.1000) THEN
-          WRITE(LUWRTOUT,*) ' Reset C-vectors on LU1 '
-          CALL REWINE(LU1,-1)
-          DO IVEC = 1, NROOT
-             CALL WRTVCD(VEC1,LU1,0,LBLK)
-          END DO
-        END IF
-*. 3.2 : corresponding sigma vectors
-        CALL REWINE( LU7,LBLK)
-        DO IROOT = 1, NROOT
-*. From LU2 to LU5
-          CALL REWINE(LU2,-1)
-          CALL MVCSMD(LU2,AVEC((IROOT-1)*NVEC+1),
-     &    LU5,LU6,VEC1,VEC2,NROOT,1,LBLK)
-          IF(IPRT.GE.1000)
-     &    write(LUWRTOUT,*) ' end of s reset, part 1'
-*. and add LU4 to LU5
-          CALL REWINE(LU4,-1)
-          CALL MVCSMD2(LU4,AVEC((IROOT-1)*NVEC+NROOT+1),ONE,
-     &    LU5,LU6,VEC1,VEC2,NVEC-NROOT,1,LBLK)
-          IF(IPRT.GE.1000)
-     &    write(LUWRTOUT,*) ' end of s reset, part 2'
-          SCALE  = WORK(IROOT)
-*. scale LU5 => LU7
-          CALL REWINE(LU5,-1)
-          CALL SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
-          IF(IPRT.GE.1000)
-     &    write(LUWRTOUT,*) ' end of s reset, part 3'
-        END DO
-*. Transfer sigma  vectors from LU7 to LU2
-        CALL REWINE( LU7,LBLK)
-        CALL REWINE( LU2,LBLK)
-        DO IVEC = 1,NROOT
-          CALL COPVCD(LU7,LU2,VEC1,0,LBLK)
-        END DO
-        IF(IPRT.GE.1000)
-     &  write(LUWRTOUT,*) ' end of s reset, part 4'
-        NNVEC = NROOT
-*. Overlap between first vectors on LU1 and LU2
-        E11 = INPRDD(VEC1,VEC2,LU1,LU2,1,LBLK)
-CSK        WRITE(6,*) ' <Lu1!Lu2> = ', E11
-        IF(3*NROOT.LE.MAXVEC) THEN
-*
-*. Orthogonalize the
-*. last set of correction vectors to the current
-*. eigenvectors on LU1, and save on LU2
-*. Overlap with root approximations
-*. Start of last set of trial vectors
-          ISTART = NVEC-NROOT-IADD+1
-          CALL SKPVCD(LU3,ISTART-1,VEC1,1,LBLK)
-*
-          CALL REWINE(LU5,-1)
-          DO JVEC = 1, IADD
-*. Orthogonalize to vectors on LU1
-            CALL REWINE(LU7,-1)
-            CALL COPVCD(LU3,LU7,VEC1,0,LBLK)
-            IF(IPRT.GE.1000) THEN
-            write(LUWRTOUT,*) ' Initial vector on LU7'
-            CALL WRTVCD(VEC1,LU7,1,LBLK)
-            END IF
-            CALL REWINE(LU1,-1)
-            DO IROOT = 1, NROOT
-              CALL REWINE(LU7,-1)
-              WORK(IROOT+(JVEC-1)*2*NROOT) =
-     &        -INPRDD(VEC1,VEC2,LU7,LU1,0,LBLK)
-            END DO
-            IF(IPRT.GE.1000)
-     &      write(LUWRTOUT,*) ' c, part1 finito'
-*. And to trial vectors on LU5
-            CALL REWINE(LU5,-1)
-            DO KVEC = 1, JVEC-1
-              CALL REWINE(LU7,-1)
-              WORK(NROOT+KVEC+(JVEC-1)*2*NROOT) =
-     &        -INPRDD(VEC1,VEC2,LU7,LU5,0,LBLK)
-            END DO
-            WORK(NROOT+JVEC+(JVEC-1)*2*NROOT) = 1.0D0
-            IF(IPRT.GE.1000)
-     &      write(LUWRTOUT,*) ' c, part2 finito'
-*
-            ONE = 1.0D0
-            CALL MVCSMD2(LU1,WORK(1+(JVEC-1)*2*NROOT),ONE ,
-     &      LU7,LU6,VEC1,VEC2,NROOT,1,LBLK)
-*
-            ONE = 1.0D0
-            CALL MVCSMD2(LU5,WORK(NROOT+1+(JVEC-1)*2*NROOT),ONE,
-     &           LU7,LU6,VEC1,VEC2,JVEC-1,1,LBLK)
-            IF(IPRT.GE.1000) THEN
-              write(LUWRTOUT,*) ' c, part4 finito'
-              write(LUWRTOUT,*) ' Vector after sec ort'
-              CALL WRTVCD(VEC1,LU7,1,LBLK)
-            END IF
-*
-            FACTOR = INPRDD(VEC1,VEC1,LU7,LU7,1,LBLK)
-            SCALE = 1.0D0/SQRT(FACTOR)
-            CALL SCALVE(WORK((JVEC-1)*2*NROOT+1),SCALE,
-     &           NROOT+JVEC)
-            CALL REWINE(LU7,-1)
-            CALL SCLVCD(LU7,LU5,SCALE,VEC1,0,LBLK)
-C                SCLVCD(LU5,LU7,SCALE,VEC1,0,LBLK)
-           IF(IPRT.GE.1000)
-     &       write(LUWRTOUT,*) ' c, part6 finito'
-         END DO
-*        /\ End of loop over orthogonalized directions
-*. Transfer modified directions to LU3
-         CALL REWINE(LU3,-1)
-         CALL REWINE(LU5,-1)
-         DO JVEC =1, IADD
-           CALL COPVCD(LU5,LU3,VEC1,0,LBLK)
-         END DO
-         IF(IPRT.GE.1000) THEN
-           write(LUWRTOUT,*) ' c, part7 finito'
-           WRITE(LUWRTOUT,*) ' Additional trial vectors on LU3'
-           CALL REWINE(LU3,-1)
-           DO JVEC = 1, IADD
-            CALL WRTVCD(VEC1,LU3,0,LBLK)
-           END DO
-         END IF
-* Sigma vectors corresponding to orthogonalized directions
-         CALL SKPVCD(LU4,ISTART-1,VEC1,1,LBLK)
-         CALL REWINE(LU5,-1)
-         DO JVEC = 1, IADD
-            CALL REWINE(LU7,-1)
-            CALL COPVCD(LU4,LU7,VEC1,0,LBLK)
-*
-            FACT = WORK(NROOT+JVEC+(JVEC-1)*2*NROOT)
-            CALL MVCSMD2(LU2,WORK(1+(JVEC-1)*2*NROOT),FACT,
-     &      LU7,LU6,VEC1,VEC2,NROOT,1,LBLK)
-*
-            IF(IPRT.GE.1000)
-     &      write(LUWRTOUT,*) ' s, part 1 finito '
-            ONE = 1.0D0
-            CALL MVCSMD2(LU5,WORK(NROOT+1+(JVEC-1)*2*NROOT),ONE,
-     &           LU7,LU6,VEC1,VEC2,JVEC-1,1,LBLK)
-            IF(IPRT.GE.1000)
-     &      write(LUWRTOUT,*) ' s, part 2 finito '
-            CALL REWINE(LU7,-1)
-            CALL COPVCD(LU7,LU5,VEC1,0,LBLK)
-            IF(IPRT.GE.1000)
-     &      write(LUWRTOUT,*) ' s, part 3 finito '
-         END DO
-*        /\ End of loop over orthogonalized directions
-*. Copy back to LU4
-         CALL REWINE(LU4,-1)
-         CALL REWINE(LU5,-1)
-         DO JVEC = 1, IADD
-            CALL COPVCD(LU5,LU4,VEC1,0,LBLK)
-         END DO
-         IF(IPRT.GE.1000)
-     &   write(LUWRTOUT,*) ' s, part 4 finito '
-C         WRITE(LUWRTOUT,*) 'I was in 3.1 setting NNVEC=NROOT+IADD', 
-C     &luci_myproc,(NROOT + IADD)
-         NNVEC = NROOT + IADD
-       END IF
-       IF(IPRT.GE.1000) THEN
-         WRITE(LUWRTOUT,*) ' Additional sigma vectors on LU4'
-         CALL REWINE(LU4,-1)
-         DO JVEC = 1, IADD
-           CALL WRTVCD(VEC1,LU4,0,LBLK)
-         END DO
-       END IF
-*
-*      /\ End if more than NROOT vectors to be reset
-       NVEC = NNVEC
-*       write(LUWRTOUT,*)'NVEC(1)',NVEC NVEC = IADD (iadd can change!!!)+ NROOT
-C      END IF
-*.     ^ End if reset
-*. New subspace
-*. Calculate subspace Hamiltonian from actual vectors
-*. on disc
-       IF(IPRT.GE.1000) write(LUWRTOUT,*) ' Subspace hamiltonian'
-       CALL REWINE(LU1,-1)
-       CALL REWINE(LU3,-1)
-CSK       ididaproj = 0
-CSK       write(LUWRTOUT,*)'NVEC = ', NVEC
-       DO IVEC = 1, NVEC
-*
-         CALL REWINE(LU5,-1)
-         IF(IVEC.LE.NROOT) THEN
-           CALL COPVCD(LU1,LU5,VEC1,0,LBLK)
-         ELSE
-           CALL COPVCD(LU3,LU5,VEC1,0,LBLK)
-         END IF
-*
-         CALL REWINE(LU2,-1)
-         DO JVEC = 1, MIN(IVEC,NROOT)
-           CALL REWINE(LU5,-1)
-           IJ = IVEC*(IVEC-1)/2+JVEC
-           APROJ(IJ) = INPRDD(VEC1,VEC2,LU5,LU2,0,LBLK)
-         END DO
-         CALL REWINE(LU4,-1)
-         DO JVEC = NROOT+1,IVEC
-           CALL REWINE(LU5,-1)
-           IJ = IVEC*(IVEC-1)/2+JVEC
-           APROJ(IJ) = INPRDD(VEC1,VEC2,LU5,LU4,0,LBLK)
-         END DO
-CSK        ididaproj = ididaproj + 1
-       END DO
-       if (IPRT.ge.2) then
-         write(LUWRTOUT,*) ' Reset hamiltonian'
-         call prsym(aproj,nvec)
-       end if
-CSK       write(LUWRTOUT,*)'actual dimension of aproj',MAXVEC*(MAXVEC+1)/2
-CSK       write(LUWRTOUT,*)'calculated elements of aproj',ididaproj
-*  check timing of part3 in loop iteration
-       CALL GETTIM(CPUSTEP4,WALLSTEP4)
-       WALLTSTEP = SECTID(WALLSTEP4-WALLSTEP3)
-       WRITE(LUWRTOUT,9600) WALLTSTEP
-*
- 998   CONTINUE
-*  Timing of this iteration
-       CALL GETTIM(CPUITR2,WALLITR2)
-       WALLTID = SECTID(WALLITR2-WALLITR1)
-       WRITE(LUWRTOUT,9300) WALLTID
-*. End of resetting business
- 999  CONTINUE
-      IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
- 1001 CONTINUE
-* ( End of loop over iterations )
-C
-C
-      IF( .NOT. CONVER ) THEN
-*       CONVERGENCE WAS NOT OBTAINED
-        IF(IPRT .GE. 2 )
-     &  WRITE(LUWRTOUT,1170) MAXIT
- 1170   FORMAT('   Convergence was not obtained in ',I3,' iterations')
-      ELSE
-*       CONVERGENCE WAS OBTAINED
-        ITER = ITER - 1
-        IF (IPRT .GE. 2 )
-     &  WRITE(LUWRTOUT,1180) ITER
- 1180   FORMAT(1X,' Convergence was obtained in ',I3,' iterations')
-      END IF
-*
-      do iroot = 1, nroot
-        write(LUWRTOUT,'(/1x,a)')    '-------------------'
-        write(LUWRTOUT,'( 1x,a,i6)') 'root number =',IROOT
-        write(LUWRTOUT,'(1x,a/)')    '-------------------'
-        do i = 1, iter
-          write(LUWRTOUT,'( 1x,a9,i4,f20.10,4x,1p,e10.3)')
-     & 'iteration',i,eig(i,iroot)+eigshf,rnrm(i,iroot)
-        end do
-      end do
-
-      write(LUWRTOUT,'(/1x,a)') '**********************************'//
-     &           '******************************'
-      write(LUWRTOUT,*) '  iter   root         energy          '//
-     &           'residual     convergence'
-      write(LUWRTOUT,'(1x,a )') '**********************************'//
-     &           '******************************'
-      DO 1601 IROOT = 1, NROOT
-         FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
-         if(rtcnv(iroot)) then
-           convergence = ' converged'
-         else
-           convergence = 'NOT converged'
-         end if
-         WRITE(LUWRTOUT,'(i7,i7,f20.10,4x,1p,E10.3,4x,a)')
-     &         ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
-     &         convergence
- 1601 CONTINUE
-*
-      if(iroothoming.eq.1)then
-        deallocate(ixjep)
-        deallocate( xjep)
-      end if
-      deallocate(rtcnv)
-
-      CALL FLSHFO(LUWRTOUT)
-*
-      RETURN
- 9300 FORMAT(' WALL TIME FOR CURRENT ITERATION            : ',A)
- 9400 FORMAT(/' WALL TIME FOR SIGMA VECTOR CALL            : ',A)
- 9401 FORMAT(' WALL TIME FOR SIGMA VECTOR CALL            : ',A)
- 9600 FORMAT(/' WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
- 9777 FORMAT(/' WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
- 9778 FORMAT(' WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE MICGCG(MV8,LU1,LU2,LU3,LU4,LU5,LUDIA,VEC1,VEC2,
      &                  MAXIT,CONVER,TEST,W,ERROR,NVAR,
      &                  LUPROJ,LUPROJ2,IPRT)
@@ -3956,19 +4323,19 @@ C?           WRITE(6,*) ' Updated overlap of trial vector ', OVLAP2
 *
       IF(CONVER) THEN
        WRITE(6,1010) NITER  ,ERROR(NITER+1)
- 1010  FORMAT(1H0,'  convergence was obtained in...',I3,' iterations',/,
-     +        1H ,'  norm of residual..............',E15.8)
+ 1010  FORMAT(/'  convergence was obtained in...',I3,' iterations',
+     +        /'  norm of residual..............',1P,E15.8)
       ELSE
        WRITE(6,1020) MAXIT ,ERROR(MAXIT+1)
- 1020  FORMAT(1H0,' convergence was not obtained in',I3,'iterations',/,
-     +        1H ,' norm of residual...............',E15.8)
+ 1020  FORMAT(/' convergence was not obtained in',I3,'iterations',
+     +        /' norm of residual...............',1P,E15.8)
       END IF
 *
       END IF
 *
       IF(NTEST.GE. 50 ) THEN
        WRITE(6,1025)
- 1025  FORMAT(1H0,' solution to set of linear equations')
+ 1025  FORMAT(/' solution to set of linear equations')
        CALL WRTVCD(VEC1,LU1,1,LBLK)
 C?     write(6,*) ' Matrix times solutiom through another cal to MV 8'
 C?     CALL MV8(VEC1,VEC2,0,0)
@@ -3977,11 +4344,11 @@ C?     call WRTMT_LU(vec2,1,nvar,1,nvar)
 C
       IF(NTEST.GT.0) THEN
       WRITE(6,1040)
- 1040 FORMAT(1H0,10X,'iteration point     norm of residual')
+ 1040 FORMAT(/10X,'iteration point     norm of residual')
       DO 350 I=1,NITER+1
        II=I-1
        WRITE(6,1050)II,ERROR(I)
- 1050  FORMAT(1H ,12X,I5,13X,E15.8)
+ 1050  FORMAT(12X,I5,13X,E15.8)
   350 CONTINUE
       END IF
 *
@@ -3989,10 +4356,7 @@ C
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE MINDV4(MV7,
      &                  VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,NVAR,
      &                  LU3,LUDIA,NROOT,MAXVEC,NINVEC,
@@ -4081,7 +4445,8 @@ C
          MAXVEC = 2*NROOT
        END IF
 *
-       KAPROJ = 1
+       ISIGDEN = 1
+       KAPROJ  = 1
        KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
        TEST = 1.0D-7
        CONVER = .FALSE.
@@ -4093,7 +4458,9 @@ C
        CALL REWINE( LU2 ,-1)
        DO 10 IVEC = 1,NINVEC
          CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
-         CALL MV7(VEC1,VEC2,0,0)
+         CALL quit('*** MINDV4 is disabled in this lucita version. ***')
+         CALL SIGDEN_CI(VEC1,VEC2,C2,0,0,cdummy,sdummy,ISIGDEN,-1,
+     &                  xxs2dum)
          CALL TODSC_LUCI(VEC2,NVAR,-1  ,LU2)
 *        PROJECTED MATRIX
          CALL REWINE( LU1,-1)
@@ -4287,7 +4654,9 @@ C
 *
       DO 150 IVEC = 1, IADD
         CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
-        CALL MV7(VEC1,VEC2,0,0)
+        call quit('*** MINDV4 is disabled in this lucita version. ***')
+        CALL SIGDEN_CI(VEC1,VEC2,C2,0,0,cdummy,sdummy,ISIGDEN,-1,
+     &                  xxs2dum)
         CALL TODSC_LUCI(VEC2,NVAR,-1  ,LU2)
 *   AUGMENT PROJECTED MATRIX
         CALL REWINE( LU1,-1)
@@ -4329,7 +4698,7 @@ C
       IF( IPRT  .GE. 5 ) THEN
         WRITE(6,*) ' PROJECTED MATRIX AND EIGEN PAIRS '
         CALL PRSYM(APROJ,NVEC)
-        WRITE(6,'(2X,E14.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
+        WRITE(6,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
         CALL WRTMT_LU(AVEC,NVEC,NROOT,MAXVEC,NROOT)
       END IF
 *
@@ -4477,9 +4846,6 @@ C     IF( ITER .LT. MAXIT .AND. .NOT. CONVER) GOTO 1000
 *. Place first eigenvector in vec1
       CALL REWINE(LU1,-1)
       CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
-
-
-
 * ( End of loop over iterations )
 *
 *
@@ -4488,13 +4854,13 @@ C     IF( ITER .LT. MAXIT .AND. .NOT. CONVER) GOTO 1000
 *        CONVERGENCE WAS NOT OBTAINED
          IF(IPRT .GE. 2 )
      &   WRITE(6,1170) MAXIT
- 1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
+ 1170    FORMAT(/'  Convergence was not obtained in ',I3,' iterations')
       ELSE
 *        CONVERGENCE WAS OBTAINED
          ITER = ITER - 1
          IF (IPRT .GE. 2 )
      &   WRITE(6,1180) ITER
- 1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
+ 1180    FORMAT(/' Convergence was obtained in ',I3,' iterations')
         END IF
 *. Final eigenvalues
         DO 1601 IROOT = 1, NROOT
@@ -4513,27 +4879,27 @@ C     IF( ITER .LT. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
           IF(IPRT.GE.400) THEN
             WRITE(6,1200)
- 1200       FORMAT(1H0,'The final approximation to eigenvector')
+ 1200       FORMAT(/'The final approximation to eigenvector')
             CALL REWINE( LU1,-1)
             CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
             CALL WRTMT_LU(VEC1,1,NVAR,1,NVAR)
           END IF
           WRITE(6,1300)
- 1300     FORMAT(1H0,' Summary of iterations ',/,1H
-     +          ,' ----------------------')
+ 1300     FORMAT(/' Summary of iterations',
+     +           /' ---------------------')
           WRITE(6,1310)
  1310     FORMAT
-     &    (1H0,' Iteration point        Eigenvalue         Residual ')
+     &    (/' Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
  1330     WRITE(6,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(6X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       END IF
 *
       IF(IPRT .EQ. 1 ) THEN
         DO 1607 IROOT = 1, NROOT
           WRITE(6,'(A,2I3,F14.7,2E10.3)')
-     &    ' --- CI-OPT Iter Root E g-norm g-red',
+     &    ' >>> CI-OPT Iter Root E g-norm g-red',
      &                 ITER,IROOT,FINEIG(IROOT),
      &                 RNRM(ITER,IROOT),
      &                 RNRM(1,IROOT)/RNRM(ITER,IROOT)
@@ -4542,14 +4908,11 @@ C     IF( ITER .LT. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1234 CONTINUE
 C
       RETURN
- 1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(/2X,7F15.8,/,(2X,7F15.8))
+ 1120 FORMAT(/2X,I3,7F15.8,/,(5X,7F15.8))
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE MINGCG(MV8,LU1,LU2,LU3,LUDIA,VEC1,VEC2,
      &                  MAXIT,CONVER,TEST,W,ERROR,NVAR,
      &                  LUPROJ,IPRT)
@@ -4705,18 +5068,18 @@ C
       IF(NTEST .GT. 0 ) THEN
       IF(CONVER) THEN
        WRITE(6,1010) NITER  ,ERROR(NITER+1)
- 1010  FORMAT(1H0,'  convergence was obtained in...',I3,' iterations',/,
-     +        1H ,'  norm of residual..............',F15.8)
+ 1010  FORMAT(/'  convergence was obtained in...',I3,' iterations',
+     +        /'  norm of residual..............',F13.8)
       ELSE
        WRITE(6,1020) MAXIT ,ERROR(MAXIT +1 )
- 1020  FORMAT(1H0,' convergence was not obtained in',I3,'iterations',/,
-     +        1H ,' norm of residual...............',F15.8)
+ 1020  FORMAT(/' convergence was not obtained in',I3,'iterations',
+     +        /' norm of residual...............',F13.8)
       END IF
       END IF
 C
       IF(NTEST.GT. 50 ) THEN
        WRITE(6,1025)
- 1025  FORMAT(1H0,' solution to set of linear equations')
+ 1025  FORMAT(/' solution to set of linear equations')
        CALL REWINE(LU1,-1)
        CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
        CALL WRTMT_LU(VEC1,1,NVAR,1,NVAR)
@@ -4727,21 +5090,18 @@ C?     call WRTMT_LU(vec2,1,nvar,1,nvar)
 C
       IF(NTEST.GT.0) THEN
       WRITE(6,1040)
- 1040 FORMAT(1H0,10X,'iteration point     norm of residual')
+ 1040 FORMAT(/10X,'iteration point     norm of residual')
       DO 350 I=1,NITER+1
        II=I-1
        WRITE(6,1050)II,ERROR(I)
- 1050  FORMAT(1H ,12X,I5,13X,E15.8)
+ 1050  FORMAT(12X,I5,13X,E15.8)
   350 CONTINUE
       END IF
 C
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE MIXHONE(H1,H2,NREPTP,IREPTP,NOBTP,NSMOB)
 *
 * Replace selected type blocks of H1 with the corresponding blocks
@@ -4827,10 +5187,7 @@ C       APRBLM2(A,LROW,LCOL,NBLK,ISYM)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
+
       SUBROUTINE ONEEL_MAT_DISC(H,IHSM,NSM,NRPSM,NCPSM,LUH,IFT)
 *
 * Transfer one-electron matrix H between memory and disc file in
@@ -4873,886 +5230,6 @@ C              NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,IPACK)
           WRITE(LUH,'(E22.15)') H(IJ)
         END DO
       END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*
-      SUBROUTINE PERTCTL(ISM,ISPC,EREF)
-*
-* Master routine for perturbation calculations
-* (Largest allowed order : 1000)
-*
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      INTEGER*8 KLSMAT, KLVMAT, KLH0MAT, KLEN, KLSCR, KVEC1, KVEC2, 
-     &          KLCIOIO
-!               for addressing of WORK
-      EXTERNAL MV7
-#include "mxpdim.inc"
-#include "cicisp.inc"
-#include "wrkspc.inc"
-#include "orbinp.inc"
-#include "clunit.inc"
-#include "csm.inc"
-#include "cstate.inc"
-#include "crun.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "strbas.inc"
-#include "glbbas.inc"
-#include "cprnt.inc"
-#include "cgas.inc"
-#include "lucinp.inc"
-#include "gasstr.inc"
-
-*. And defining perturbation operator
-#include "oper.inc"
-*
-#include "csfbas.inc"
-*. Common block for communicating with sigma
-      COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
-      COMMON/SPINFO/MULTSP,MS2P,
-     &              MINOP,MAXOP,NTYP,NDPCNT(MXPCTP),NCPCNT(MXPCTP),
-     &              NCNATS(MXPCTP,MXPCSM),NDTASM(MXPCSM),NCSASM(MXPCSM),
-     &              NCNASM(MXPCSM)
-      COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
-      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-      DIMENSION EN(1000)
-*
-      CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'PERTCT')
-
-
-*
-      WRITE(6,*) '**************************************'
-      WRITE(6,*) '*                                    *'
-      WRITE(6,*) '*   Perturbation calculation         *'
-      WRITE(6,*) '*                                    *'
-      WRITE(6,*) '**************************************'
-*
-      WRITE(6,*)
-      WRITE(6,*) '  Largest order of correction vector ',NPERT
-      WRITE(6,*)
-C     IF(IPART.EQ.1) THEN
-C       WRITE(6,*) ' Moller-Plesset Partitioning'
-C     ELSE IF(IPART.EQ.2) THEN
-C       WRITE(6,*) ' Epstein-Nesbet Partitioning'
-C     ELSE IF (IPART.EQ.3) THEN
-C       WRITE(6,*) ' One-body Hamiltonian read in '
-C     END IF
-      IF(IE0AVEX.EQ.1) THEN
-          WRITE(6,*)
-     &  ' expectation value of H0 used as zero order energy '
-      ELSE IF( IE0AVEX.EQ.2) THEN
-          WRITE(6,*)
-     &  ' Exact energy of reference used as zero order energy'
-      ELSE IF( IE0AVEX.EQ.3) THEN
-          WRITE(6,*)
-     &  ' Read in energy is used as zero order energy'
-      END IF
-      WRITE(6,*) ' Root choosen as zero order state ', IRFROOT
-*
-*
-*. 0 : Initialization
-*
-      IF(NOCSF.EQ.0) THEN
-        WRITE(6,*) ' Please turn off csf''s '
-        CALL QUIT('NO CSF''s in PERTCTL !! ')
-      END IF
-*
-      NTEST = 10
-      IPRNT = NTEST
-      NTEST = MAX(NTEST,IPRNT)
-      NDET = XISPSM(ISM,ISPC)
-      NEL = NELCI(ISPC)
-      WRITE(6,*) ' ISM ISPC ', ISM,ISPC
-      WRITE(6,*) ' Number of determinants in internal space ',NDET
-*.Transfer to CANDS
-      ICSM = ISM
-      ISSM = ISM
-      ICSPC = ISPC
-      ISSPC = ISPC
-      WRITE(6,*) ' PERTCTL : ICSPC ISSSPC : ', ICSPC,ISSPC
-      NVAR = NDET
-      IF(IPRNT.GE.5)
-     &WRITE(6,*) '  NVAR in REFCI ', NVAR
-*. Arrays for S, V, H0 over correction vectors
-      LENNY = (NPERT+1)*(NPERT+3)/2
-      WRITE(6,*) ' LENNY ', LENNY
-      CALL MEMMAN(KLSMAT ,LENNY,'ADDL  ',2,'LSMAT ')
-      CALL MEMMAN(KLVMAT ,LENNY,'ADDL  ',2,'VSMAT ')
-      CALL MEMMAN(KLH0MAT,LENNY,'ADDL  ',2,'H0SMAT')
-*. Energy correction and scratch vector
-      CALL MEMMAN(KLEN ,2*NPERT+2,'ADDL  ',2,'EN    ' )
-      CALL MEMMAN(KLSCR,NPERT+1,'ADDL  ',2,'SCR   ' )
-
-
-      CALL MEMMAN(KVEC1,LBLOCK,'ADDL  ',2,'VEC1  ')
-*. Vec2 will also be used as scratch in explicit hamiltonian generation
-*. for CSF's
-      IF(NOCSF.NE.0) THEN
-        LBLOC2 = LBLOCK
-      ELSE
-        CALL LCNHCN(LSCR)
-        LBLOC2 = MAX(LBLOCK,LSCR)
-      END IF
-      CALL MEMMAN(KVEC2,LBLOC2,'ADDL  ',2,'VEC2  ')
-*. Sblock is used in general nowadays so, allocate an extra block
-      I_USE_SBLOCK=1
-      IF(I_USE_SBLOCK.EQ.1) THEN
-*. Largest block of strings in zero order space
-      MXSTBL0 = MXNSTR
-*. type of alpha and beta strings
-      IATP = 1
-      IBTP = 2
-*. alpha and beta strings with an electron removed
-      IATPM1 = 3
-      IBTPM1 = 4
-*. alpha and beta strings with two electrons removed
-      IATPM2 = 5
-      IBTPM2 = 6
-*
-      NAEL = NELEC(IATP)
-      NBEL = NELEC(IBTP)
-*. Largest number of strings of given symmetry and type
-      MAXA = 0
-      IF(NAEL.GE.1) THEN
-        MAXA1 = IMNMX(WORK(KNSTSO(IATPM1)),NSMST*NOCTYP(IATPM1),2)
-        MAXA = MAX(MAXA,MAXA1)
-      END IF
-      IF(NAEL.GE.2) THEN
-        MAXA1 = IMNMX(WORK(KNSTSO(IATPM2)),NSMST*NOCTYP(IATPM2),2)
-        MAXA = MAX(MAXA,MAXA1)
-      END IF
-      MAXB = 0
-      IF(NBEL.GE.1) THEN
-        MAXB1 = IMNMX(WORK(KNSTSO(IBTPM1)),NSMST*NOCTYP(IBTPM1),2)
-        MAXB = MAX(MAXB,MAXB1)
-      END IF
-      IF(NBEL.GE.2) THEN
-        MAXB1 = IMNMX(WORK(KNSTSO(IBTPM2)),NSMST*NOCTYP(IBTPM2),2)
-        MAXB = MAX(MAXB,MAXB1)
-      END IF
-      MXSTBL = MAX(MAXA,MAXB)
-      IF(IPRCIX.GE.2 ) WRITE(6,*)
-     &' Largest block of strings with given symmetry and type',MXSTBL
-*. Largest number of resolution strings and spectator strings
-*  that can be treated simultaneously
-      MAXI = MIN( MXINKA,MXSTBL)
-      MAXK = MIN( MXINKA,MXSTBL)
-*.scratch space for projected matrices and a CI block
-*
-*. Scratch space for CJKAIB resolution matrices
-*. Size of C(Ka,Jb,j),C(Ka,KB,ij)  resolution matrices
-        IOCTPA = IBSPGPFTP(IATP)
-        IOCTPB = IBSPGPFTP(IBTP)
-*
-        NOCTPA = NOCTYP(IATP)
-        NOCTPB = NOCTYP(IBTP)
-*
-        CALL MEMMAN(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
-        CALL IAIBCM(ISPC,WORK(KLCIOIO))
-        CALL MXRESC(WORK(KLCIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &              NSMST,NSTFSMSPGP,MXPNSMST,
-     &              NSMOB,MXPNGAS,NGAS,NOBPTS,IPRCIX,MAXK,
-     &              NELFSPGP,
-     &              MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK)
-        IF(IPRCIX.GE.2) THEN
-          WRITE(6,*) 'PERTCT : MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
-     &                         MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
-           WRITE(6,*) 'PERTCT : MXADKBLK ', MXADKBLK
-        END IF
-        LSCR2 = MAX(MXCJ,MXCIJA,MXCIJB,MXCIJAB)
-        IF(IPRCIX.GE.2)
-     &  WRITE(6,*) ' Space for resolution matrices ',LSCR2
-        LSCR12 = MAX(LBLOCK,2*LSCR2)
-        CALL MEMMAN(KVEC3,LSCR12,'ADDL  ',2,'KC2   ')
-      END IF
-*
-*. 1 : Construct zero order operator : FI + FA
-*
-*. Copy root defining zero order operator to first vectors
-      CALL REWINE(LUHC,-1)
-      CALL REWINE(LUC,-1)
-      WRITE(6,*) ' Root used to define Zero order op ', IH0ROOT
-      DO JROOT = 1, IH0ROOT
-        CALL REWINE(LUSC36,-1)
-        CALL COPVCD(LUC,LUSC36,WORK(KVEC1),0,-1)
-      END DO
-      CALL COPVCD(LUSC36,LUHC,WORK(KVEC1),1,-1)
-*. Construct corresponding one-body density matrix
-COLD  CALL DENSI1(WORK(KRHO1),WORK(KVEC1),WORK(KVEC2),LUHC,LUSC36,1)
-C     KRHO2 = 1
-      CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),WORK(KVEC1),WORK(KVEC2),
-     &     LUHC,LUSC36,EXPS2)
-*
-*. Initialize with proper zero order root
-*
-      WRITE(6,*) ' After DENSI2, LUC LUSC36',LUC,LUSC36
-      CALL REWINE(LUC,-1)
-      DO JROOT = 1, IRFROOT
-        CALL REWINE(LUSC36,-1)
-        CALL COPVCD(LUC,LUSC36,WORK(KVEC1),0,-1)
-      END DO
-      CALL COPVCD(LUSC36,LUC,WORK(KVEC1),1,-1)
-*
-      LU18 = 18
-*. Will MP operator be invoked
-      IUSEMP = 0
-      DO ISPC = 1, NPTSPC
-        IF(IH0INSPC(ISPC).EQ.1.OR.IH0INSPC(ISPC).EQ.3
-     &     .OR.IH0INSPC(ISPC).EQ.5) IUSEMP = 1
-      END DO
-*
-      IF(IUSEMP.EQ.1) THEN
-        WRITE(6,*) ' Moller-Plesset operator will be used '
-      ELSE
-        WRITE(6,*) ' Moller-Plesset operator will not be used '
-      END IF
-*. Will operator be read in ( not clean : Use IPART = 3 in PERTU
-* keyword
-      IF(IUSEMP.EQ.1) THEN
-        CALL COPVEC(WORK(KINT1O),WORK(KFI),NINT1)
-        CALL FIFAM(WORK(KFI))
-        CALL COPVEC(WORK(KFI),WORK(KFIO),NINT1)
-        ECORE_H = 0.0D0
-        IF(IUSE_PH.EQ.1) THEN
-         CALL FI(WORK(KFI),ECORE_H,0)
-        END IF
-*. Should a part of original one electron operator be
-*  copied ( For mix exact Hamiltonian/Fock arroaches )
-        IF(NH0EXSPC.NE.0) THEN
-C             MIXHONE(H1,H2,NSMOB,NREPTP,IREPTP,NSMOB,NOBTP)
-         CALL MIXHONE(WORK(KFI),WORK(KINT1),NH0EXSPC,IH0EXSPC,NGAS,
-     &                NSMOB)
-        END IF
-      ELSE
-        CALL COPVEC(WORK(KINT1),WORK(KFI),NINT1)
-        CALL COPVEC(WORK(KINT1O),WORK(KFIO),NINT1)
-      END IF
-      IF (IPART.EQ.3) THEN
-*. Read in from file 18
-        REWIND (LU18)
-        CALL FRMDSC_LUCI(WORK(KFI),NINT1,-1,LU18,IMZERO,IAMPACK)
-        CALL COPVEC(WORK(KFI),WORK(KFIO),NINT1)
-        ECORE_H = 0
-        IF(IUSE_PH.EQ.1) THEN
-         CALL FI(WORK(KFI),ECORE_H,0)
-        END IF
-        WRITE(6,*) ' H0 read in from LU18 '
-        CALL APRBLM2(WORK(KFI),NTOOBS,NTOOBS,NSMOB,ISM)
-*. Continue as mormal MP a piece of dirty code can never harm
-        IPART = 1
-        MPORENP = 1
-      END IF
-*. Save H0 for future generations
-      REWIND  LU18
-      CALL TODSC_LUCI(WORK(KFI),NINT1,-1,LU18)
-      REWIND LU18
-
-*. No explicit construction of diagonal
-      IDIDIA = 1
-      IF(IDIDIA.EQ.0) THEN
-*
-*. 2 : Diagonal with FI + FA
-*
-*. swap H and FI + FA
-        IF(IPART.EQ.1) THEN
-          CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1)
-          CALL SWAPVE(WORK(KFIO),WORK(KINT1O),NINT1)
-        END IF
-        IF(ICISTR.GE.2) CALL REWINE(LUDIA,-1)
-*. Transfer to COPER
-        IPERTOP = 1
-        IF(IPART.EQ.1) THEN
-          I12 = 1
-        ELSE
-          I12 = 2
-        END IF
-        ECOREP = ECORE_H
-* FIXME !!!
-        call quit('Wrong invocation of GASDIAT (8 arguments needed)')
-C       CALL GASDIAT(WORK(KVEC1),LUDIA,ECOREP,ICISTR,I12)
-* FIXME !!!
-        IF(NOCSF.EQ.1.AND.ICISTR.EQ.1) THEN
-          CALL REWINE(LUDIA,-1)
-          CALL TODSC_LUCI(WORK(KVEC1),NVAR,-1,LUDIA)
-C       ELSE IF(ICISTR.EQ.1.AND.NOCSF.EQ.0) THEN
-C         CALL CSDIAG(WORK(KVEC2),WORK(KVEC1),NCNATS(1,ISM),NTYP,
-C    &                WORK(KICTS(1)),NDPCNT,NCPCNT,0,
-C    &                0,IDUM,IPRNT)
-C         CALL REWINE(LUDIA,-1)
-C         CALL TODSC_LUCI(WORK(KVEC2),NVAR,-1,LUDIA)
-*. For transfer to H0CSF
-C         CALL COPVEC(WORK(KVEC2),WORK(KVEC1),NVAR)
-        END IF
-*. swap H and FI + FA to get things in right place !
-        IF(IPART.EQ.1)  THEN
-          CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1)
-          CALL SWAPVE(WORK(KFIO),WORK(KINT1O),NINT1)
-        END IF
-      END IF
-*
-* Transfer control to perturbation iterater
-*
-*. IS there a pert of Hamiltonian that is no diagonal
-*. (requires solution of linear equations )
-      IH0DIA = 1
-      DO ISPC = 1, NPTSPC
-        IF(IH0INSPC(ISPC).EQ.3.OR.IH0INSPC(ISPC).EQ.4.OR.
-     &     IH0INSPC(ISPC).EQ.5) IH0DIA=0
-      END DO
-*
-      IF(IH0DIA.EQ.0) THEN
-        WRITE(6,*) ' Nondiagonal Approximate Hamiltonian '
-      ELSE
-        WRITE(6,*) ' Diagonal approximate Hamiltonian '
-      END IF
-
-*
-* Nondiagonal form of perturbations : Currently indicated by
-* operator type 3 and 4
-      IF(ICISTR.EQ.1) THEN
-        LBLK = NVAR
-      ELSE
-        LBLK = - 1
-      END IF
-*
-*. Transfer to COPER
-*.  Perturbation matrix
-       IPERTOP = 1
-       IF(IPART.EQ.1) THEN
-        I12 = 1
-       ELSE
-        I12 = 2
-       END IF
-*
-      IF(IE0AVEX.EQ.3) THEN
-        EREF = E0READ-ECORE
-        WRITE(6,*) ' Zero order energy read in - ECORE ',EREF
-      END IF
-      CALL SIMPRT(LUC,LUSC36,LUHC,WORK(KLEN),WORK(KLSCR),
-     &            NPERT,WORK(KVEC1),WORK(KVEC2),
-     &            LUSC1,LUSC2,LBLK,IH0DIA,LUDIA,WORK(KLSMAT),
-     &            WORK(KLVMAT),WORK(KLH0MAT),ECORE,ECORE_H,
-     &            ECORE_HEX,EREF,IE0AVEX,LUSC39)
-*. Analyze space spanned by zero order state and correction vectors
-      CALL PERT_SUBSPACE(NPERT,WORK(KLH0MAT),
-     &     WORK(KLVMAT),WORK(KLSMAT),ECORE)
-*
-      CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'PERTCT')
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE SIMPRT(LURF,LUN,LUVN,
-     &           EN,SCR,MAXORD,VEC1,VEC2,LU1,LU2,
-     &           LBLK,IH0DIA,LUH0,S,V,H0,ECORE,ECORE_H,ECORE_HEX,
-     &           EREF,IE0AVEX,LUHI0)
-*
-* Solve the perturbation equations
-*
-* E(n) = <0!V!0(n-1)>
-*
-* !0(n)> = (H-E)-1( E(n)!0> -V!0(n-1)>
-*                  + sum(l=1,n-1) E(l)!0(n-l)> )
-*
-* Simplified version for total symmetric perturbation
-*
-* Alternative expressions for the energy corrections
-* are invoked using the 2n+1 rule
-*
-* E(n+1) =  <0!v!n>
-*
-*        = <k!v!n-k> - sum(j=0,k-1)sum(m=k-j,n-j)<j+1!n-m-j>E(m)
-*
-* A note on the perturbation :
-*
-* The perturbation is in general of the form
-*
-* H0 = QH(apr)Q + E0P, P = |0><0>, Q = 1-P
-*
-* Where Q is some approcimation to the hamiltonian.
-*
-* In order to calculate ((H0-alpha)** -1 |x>, where <x|0>=0 , one must
-* distinguish between two cases
-*
-* =====================================
-* 1 |0> is an eigenfunction for H(apr)
-* =====================================
-*
-* In this case (H0-alpha)** -1 |x> = (H(apr)-alpha)** -1 |x>
-*
-* =========================================
-* 2 |0> is  not an eigenfunction for H(apr)
-* =========================================
-*
-*               (H0-alpha)** -1 |x> = (H(apr)-alpha)** -1 |x>
-*             - (H(apr)-alpha)** -1 |0> <x|(H(apr)-alpha)** -1|0>
-*                                       -------------------------
-*                                       <X|(H(apr)-alpha)** -1|0>
-*
-*
-* Input
-* =====
-* LURF : file containing reference vector
-* LUN : file number for file to contain perturbation vectors
-* LUN : file number for file to contain perturbation vectors
-* MAXORD : Order through which the equations should be solved
-* VEC1,VEC2 : Scratch vectors ,omplete or blocks of vectorS
-* LU1, LU2, : scratch files
-* S V : vectors of size MAXORD*(MAXORD-1)/2
-* Ecore : Core energy
-* Eref  : Exact energy of reference state
-* IE0AVEX : choice of zero order energy : 1 => E0 = <0|H0|0>
-*                                         2 => E0 = EREF ( as supplied )
-*
-*
-* Output
-* ======
-* LUN : contains the MAXORD correction vectors
-* LUVN : contains the perturbation times the last correction vector
-* EN : Contains the energy corrections through order 2*MAXORD+1
-*
-* Internal links
-* ===============
-*
-* Solutions of linear eqs : HINTV
-* Hamiltonian times vector: MV7
-* H0 times vector         : H0TVM
-*
-*. Please do not go beyond perturbation level 100
-* Jeppe Olsen ,  Summer of 94
-*                Winter 96 : Nondiagonal H(apr), general H(apr),
-*                option for diagonal on disc eliminated
-*                (only direct calculation allowed now)
-*
-*                Winter of 99 : (H0-1)** -1 |0> on LUHI0 added
-      IMPLICIT REAL*8(A-H,O-Z)
-      REAL * 8 INPRDD
-      DIMENSION VEC1(*),VEC2(*)
-      DIMENSION EN(*)
-      DIMENSION S(*),V(*),H0(*)
-*. For communicating with H0TVM
-      COMMON/CENOT/E0
-      COMMON/CSHIFT/SHIFT,IPROJ
-*. For communicating with MV7
-#include "oper.inc"
-*. A bit of  scratch
-      DIMENSION SCR(*)
-*.
-      DIMENSION XTEST(10000)
-*
-      NTEST = 5
-*. Use direct diagonal routines
-      IDIDIA = 1
-
-      ONE = 1.0D0
-      ONEM = -1.0D0
-      ZERO = 0.0D0
-      CALL SETVEC(V,ZERO,(MAXORD+1)*(MAXORD+1+1)/2)
-*
-      IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' Welcome to SIMPRT '
-        WRITE(6,*) ' LBLK = ', LBLK
-        WRITE(6,*) ' ECORE_H = ', ECORE_H
-        WRITE(6,*) ' ECORE_HEX = ', ECORE_HEX
-      END IF
-*
-      IF(NTEST.GE.600) THEN
-        WRITE(6,*) ' initial reference '
-        CALL WRTVCD(VEC1,LURF,1,LBLK)
-      END IF
-*
-* ===============================================================
-* 1 :                   Initialization
-* ===============================================================
-*
-*
-        IF(IE0AVEX.GE.2) THEN
-          E0RF = EREF
-        ELSE
-*  ===============
-*. E0RF = <0!H(apr)!0>
-*  ===============
-*
-          IF(IH0DIA.NE.0) THEN
-*. Diagonal H0, simple
-            CALL REWINE(LU1,-1)
-            CALL REWINE(LURF,-1)
-            CALL DIA0TRM_GAS(1,LURF,LU1,VEC1,VEC2,0.0D0)
-            IF(NTEST.GE.1000) THEN
-              WRITE(6,*) ' LU1 according to DIATRM '
-              CALL WRTVCD(VEC1,LU1,1,LBLK)
-            END IF
-          ELSE
-*. multiply with H(apr)
-            E0 = 0.0D0
-            IPROJ = 0
-            SHIFT = ECORE_H
-            IPERTOP = 1
-CJAN25      CALL MV7(VEC1,VEC2,LURF,LU1)
-            CALL H0TVM(VEC1,VEC2,LURF,LU1)
-            IF(NTEST.GE.1000) THEN
-              WRITE(6,*) ' H(apr) times vector '
-              CALL WRTVCD(VEC1,LU1,1,LBLK)
-            END IF
-          END IF
-          E0RF = INPRDD(VEC1,VEC2,LURF,LU1,1,LBLK)
-        END IF
-*
-        WRITE(6,*) ' E0RF = ', E0RF
-        ENERGY = E0RF
-*. Check of |0> is an eigenfunction for H(apr) ( not H0 ! )
-* Calculate H(apr)|0> - <0!H(apr)!0> |0>
-        IPERTOP = 1
-        CALL MV7(VEC1,VEC2,LURF,LU1)
-        IF(NTEST.GE.1000) THEN
-          WRITE(6,*) ' H(apr) times vector, part II '
-          CALL WRTVCD(VEC1,LU1,1,LBLK)
-        END IF
-        HAPR00 = INPRDD(VEC1,VEC2,LURF,LU1,1,LBLK)
-        CALL VECSMD(VEC1,VEC2,ONE,-HAPR00,LU1,LURF,LUVN,1,LBLK)
-        XNORM = INPRDD(VEC1,VEC2,LUVN,LUVN,1,LBLK)
-*
-        IF(ABS(XNORM/HAPR00) .LE. 1.0D-12) THEN
-         IHAPREIG = 1
-        ELSE
-         IHAPREIG = 0
-        END IF
-*
-        IF(IHAPREIG.EQ.0) THEN
-*         HAPRM100 =  <0!(H(apr)-E0)**-1 |0>
-          CALL DIA0TRM_GAS(2,LURF,LU1,VEC1,VEC2,-E0RF)
-          HAPRM100  = INPRDD(VEC1,VEC2,LURF,LU1,1,LBLK)
-          WRITE(6,*) ' HAPRM100', HAPRM100
-*. Obtain (H0-E0) ** (-1) |0> ( diagonal approx )
-          CALL DIA0TRM_GAS(2,LURF,LUHI0,VEC1,VEC2,-E0RF)
-C         SHIFT = -(E0RF-ECORE_H)
-C         SHIFT_DIA = -E0RF
-C         E0 = E0RF
-C         IAPR = 1
-C         IPERTOP = 1
-C         IPROJ = 0
-C         WRITE(6,*) ' SHIFT before call to HINTV ', SHIFT
-C         CALL COPVCD(LURF,LU2,VEC1,1,LBLK)
-C         CALL HINTV(LU2,LUHI0,SHIFT,SHIFT_DIA,VEC1,VEC2,LBLK,0,0 )
-        ENDIF
-
-
-      WRITE(6,*) '  HAPR00,  XNORM, IHAPREIG, HAPRM100 : ',
-     &              HAPR00,  XNORM, IHAPREIG, HAPRM100
-
-*
-*
-*. V times initial vector  on  LUVN
-* ==================================
-*
-*. H0+V !0(0)> on LU1 (ECORE_HEX missing)
-        IAPR = 0
-        IPERTOP = 0
-        CALL REWINE(LURF,-1)
-        CALL REWINE(LU1,-1)
-        CALL HTV(VEC1,VEC2,LURF,LU1)
-*
-        IF(NTEST.GE.1000) THEN
-          WRITE(6,*) ' Output from HTV '
-          CALL WRTVCD(VEC1,LU1,1,LBLK)
-        END IF
-*
-* V|0> = (H - H0) !0(0)> = (H' + ECORE_HEX - E0) !0(0)> on LUVN
-        E0RFM =  - (E0RF-ECORE_HEX)
-        CALL VECSMD(VEC1,VEC2,ONE,E0RFM,LU1,LURF,LUVN,1,LBLK)
-*
-*.S(11),V(11),EN(1)
-*=================
-        S(1) = INPRDD(VEC1,VEC2,LURF,LURF,1,LBLK)
-        V(1) = INPRDD(VEC1,VEC2,LUVN,LURF,1,LBLK)
-        H0(1) = E0RF
-        EN(1) = V(1)
-        IF(NTEST.GE.1) WRITE(6,*)
-     &  ' Energy correction , n and E(n) ', 1,EN(1)
-*
-*
-* =======================================================================
-*.2               Loop over orders of correction vectors
-* =======================================================================
-*
-      DO 1000 IORD = 1, MAXORD
-*
-* On entrance :  correction vectors 1 - IORD-1 on LUN
-*                V!0(IORD-1)>                  on LUVN
-*
-*
-* !0(n)>
-* ======
-*
-*  E(n)!0(0)> -V!0(n-1)> on LU1
-        CALL VECSMD(VEC1,VEC2,EN(IORD),ONEM,LURF,LUVN,LU1,1,LBLK)
-*.  sum( l = 1,  IORD -1) (E( n- l) !0(l)> on LU2
-        IF(IORD.GT.1) THEN
-          DO II = 1, IORD -1
-            SCR(II) = EN(IORD-II)
-          END DO
-          CALL MVCSMD(LUN,SCR,LU2,LUVN,VEC1,VEC2,IORD-1,1,LBLK)
-*. add on LUVN
-          CALL VECSMD(VEC1,VEC2,ONE,ONE,LU2,LU1,LUVN,1,LBLK)
-        ELSE
-          CALL COPVCD(LU1,LUVN,VEC1,1,LBLK)
-          CALL REWINE(LUN,-1)
-        END IF
-*. project !0> component out, SAVE on LU2
-        OVLAP = INPRDD(VEC1,VEC2,LURF,LUVN,1,LBLK)
-        IF(NTEST.GE.2)  write(6,*) ' ovlap1  ', OVLAP
-        CALL  VECSMD(VEC1,VEC2,ONE,-OVLAP,LUVN,LURF,LU2,1,LBLK)
-        IF(NTEST.GE.1000) THEN
-          WRITE(6,*) ' RHS of lin.eq ,order ', IORD
-          CALL WRTVCD(VEC1,LU2,1,LBLK)
-        END IF
-*. Multiply with (H0-E0)-1, save result on LUN
-        IF(IH0DIA.NE.0) THEN
-*. Multiply with inverted Diagonal
-          CALL REWINE(LU2,-1)
-          CALL REWINE(LU1,-1)
-          CALL DIA0TRM_GAS(2,LU2,LU1,VEC1,VEC2,-E0RF)
-          IF(NTEST.GE.1000) THEN
-            WRITE(6,*) ' new correction vector of order ', IORD
-            CALL WRTVCD(VEC1,LU1,1,LBLK)
-          END IF
-          IF(IHAPREIG.EQ.0) THEN
-*. Orthogonalize with (H(apr)-E0)**-1|0>
-            OVLAP = INPRDD(VEC1,VEC2,LURF,LU1,1,LBLK)
-            IF(NTEST.GE.2)  write(6,*) ' ovlap2  ', OVLAP
-*. Set (H(apr)-E0) ** 1 |0>
-            CALL REWINE(LURF,-1)
-            CALL REWINE(LUVN,-1)
-            CALL DIA0TRM_GAS(2,LURF,LUVN,VEC1,VEC2,-E0RF)
-            FACTOR = - OVLAP/HAPRM100
-            CALL  VECSMD(VEC1,VEC2,ONE,FACTOR,LU1,LUVN,LU2,1,LBLK)
-*. Save on LU1
-            CALL COPVCD(LU2,LU1,VEC1,1,LBLK)
-          END IF
-        ELSE
-*. Solve set of linear equations
-          SHIFT = -(E0RF-ECORE_H)
-          SHIFT_DIA = -E0RF
-          E0 = E0RF
-          IAPR = 1
-          IPERTOP = 1
-          IPROJ = 1
-          WRITE(6,*) ' SHIFT before call to HINTV ', SHIFT
-          CALL HINTV(LU2,LU1,SHIFT,SHIFT_DIA,VEC1,VEC2,LBLK,LURF,LUHI0)
-          IF(NTEST.GE.1000) THEN
-            WRITE(6,*) ' new correction vector '
-            CALL WRTVCD(VEC1,LU1,1,LBLK)
-          END IF
-        END If
-        X0N = INPRDD(VEC1,VEC2,LURF,LU1,1,LBLK)
-        WRITE(6,*) ' Overlap <0!N> ', X0N
-*Save on LUN
-        CALL REWINE(LU1,-1)
-        CALL COPVCD(LU1,LUN,VEC1,0,LBLK)
-*. V!0(n)> on LUVN = (H - H0 )!0(n)> = (H'(holeform) - (H0 -ECORE_HEX))!0(n)>
-* ================
-*
-*. H0+V !0(n)> on LU2 ( except ECORE_HEX ) |0(n)>
-        CALL REWINE(LU1,-1)
-        CALL REWINE(LU2,-1)
-        CALL HTV(VEC1,VEC2,LU1,LU2)
-*
-        IF(NTEST.GE.1000) THEN
-          WRITE(6,*) ' H times correction vector '
-          CALL WRTVCD(VEC1,LU2,1,LBLK)
-        END IF
-*. Test : E(N+1) = <0! V !n> = <0! H !n>
-        ENN = INPRDD(VEC1,VEC2,LURF,LU2,1,LBLK)
-        IF(NTEST.GE.1) WRITE(6,*) ' TEST : ENN = ', ENN
-*
-*
-* H0 |0(n)> = Q H apr |0(n)> on LUVN ( and include -ECORE_HEX missi
-*
-        E0 = E0RF
-        SHIFT = ECORE_H-ECORE_HEX
-        IF(NTEST.GE.1000) THEN
-          WRITE(6,*) ' Input to H0TVM '
-          CALL WRTVCD(VEC1,LU1,1,LBLK)
-        END IF
-        IPERTOP = 1
-        IPROJ = 1
-        CALL H0TVM(VEC1,VEC2,LU1,LUVN)
-        IF(NTEST.GE.1000) THEN
-          WRITE(6,*) ' H0 times correction vector '
-          CALL WRTVCD(VEC1,LUVN,1,LBLK)
-        END IF
-*. Project |0> out
-        OVLAP = INPRDD(VEC1,VEC2,LURF,LUVN,1,LBLK)
-        IF(NTEST.GE.2)  write(6,*) ' ovlap3  ', OVLAP
-        OVLAPM = -OVLAP
-        CALL  VECSMD(VEC1,VEC2,ONE,OVLAPM,LUVN,LURF,LU1,1,LBLK)
-        CALL COPVCD(LU1,LUVN,VEC1,1,LBLK)
-        OVLAP = INPRDD(VEC1,VEC2,LU1,LURF,1,LBLK)
-*
-* (H - H0) !0(n)> on LUVN
-C       CALL VECSMD(VEC1,VEC2,ONE,ONEM,LU2,LUVN,LU1,1,LBLK)
-        CALL VECSMD(VEC1,VEC2,ONE,ONEM,LU2,LU1,LUVN,1,LBLK)
-        IF(NTEST.GE.1000) THEN
-          WRITE(6,*) ' V ! 0(n)> '
-          CALL WRTVCD(VEC1,LUVN,1,LBLK)
-        END IF
-*. E(n+1) = <0(n)!V!0>
-* ====================
-        EN(IORD+1) = INPRDD(VEC1,VEC2,LUVN,LURF,1,LBLK)
-        ENERGY = ENERGY + EN(IORD)
-        IF(NTEST.GE.1) WRITE(6,*)
-     &  ' Energy correction , n and E(n) ', IORD+1,EN(IORD+1)
-*
-*. Augment matrices H0, S and V
-* ============================
-*
-*
-*  H0(ij) = <0(i-1)!H0!0(j-1)>
-*
-      CALL REWINE(LUN,-1)
-      DO JORD = 0, IORD
-        IJ = (IORD+1)*(IORD+1-1)/2 + JORD+1
-        IF(JORD.NE.0) THEN
-          CALL REWINE(LU1,-1)
-          H0(IJ) = INPRDD(VEC1,VEC2,LUN ,LU1,0,LBLK)
-        ELSE
-          H0(IJ) = INPRDD(VEC1,VEC2,LURF,LU1,1,LBLK)
-        END IF
-      END DO
-*
-*  s(ij) = <0(i-1)!0(j-1)>
-*
-*. Place correction vector !0(n)> on LU1
-      CALL SKPVCD(LUN,IORD-1,VEC1,1,LBLK)
-      CALL REWINE(LU1,-1)
-      CALL COPVCD(LUN,LU1,VEC1,0,LBLK)
-*
-      CALL REWINE(LUN,-1)
-      DO JORD = 0, IORD
-        IJ = (IORD+1)*(IORD+1-1)/2 + JORD+1
-        IF(JORD.NE.0) THEN
-          CALL REWINE(LU1,-1)
-          S(IJ) = INPRDD(VEC1,VEC2,LU1,LUN,0,LBLK)
-        ELSE
-          S(IJ) = 0.0D0
-        END IF
-      END DO
-*
-*  v(ij) = <0(i-1)!v!0(j-1)>
-*
-      CALL REWINE(LUN,-1)
-      DO JORD = 0, IORD
-        IJ = (IORD+1)*(IORD+1-1)/2 + JORD+1
-        IF(JORD.NE.0) THEN
-          CALL REWINE(LUVN,-1)
-          V(IJ) = INPRDD(VEC1,VEC2,LUN,LUVN,0,LBLK)
-        ELSE
-          V(IJ) = INPRDD(VEC1,VEC2,LURF,LUVN,1,LBLK)
-        END IF
-      END DO
-C!    IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' Updated S matrix '
-        CALL PRSYM(S,IORD+1)
-        WRITE(6,*) ' Updated V matrix '
-        CALL PRSYM(V,IORD+1)
-        WRITE(6,*) ' Updated H0 matrix '
-        CALL PRSYM(H0,IORD+1)
-C!    END IF
-*
-*. Obtain additional energy expressions by 2n+1 rule.
-* ===================================================
-*
-        DO N = IORD+1,2*IORD+1
-*. E(N) = <K!V!N-K-1> - Sum(j=0,k-1)sum(m=k-j,n-1-j)<j+1!n-1-m-j>E(m)
-*. Use K = IORD
-           X = V((IORD+1)*(IORD+1-1)/2+N-IORD-1+1)
-           DO J = 0,IORD-1
-             DO M = IORD-J,N-1-J
-               II = MAX(J+1,N-1-M-J)
-               JJ = MIN(J+1,N-1-M-J)
-               IJ = (II+1)*(II+1-1)/2 + JJ + 1
-               X = X - S(IJ)*EN(M)
-             END DO
-           END DO
-           EN(N) = X
-        END DO
-*
-        IF(NTEST.GE.2 ) THEN
-          WRITE(6,*)
-          WRITE(6,*)
-          WRITE(6,*) ' =========================================== '
-          WRITE(6,*) ' Energy corrections obtained in iteration ', IORD
-          WRITE(6,*) ' =========================================== '
-          WRITE(6,*)
-          WRITE(6,*)
-     &    '   Order       Energy correction      Total Energy '
-          WRITE(6,*)
-     &   ' ========================================================='
-          ENERGY = E0RF+ECORE-ECORE_HEX
-          DO JORD = 1, 2*IORD+1
-            ENERGY = ENERGY + EN(JORD)
-            WRITE(6,'(4X,I2,8X,1E18.10,6X,1E18.10)')
-     &      JORD,EN(JORD),ENERGY
-          END DO
-        END IF
-*. I can't wait to see the output, so XFLUSH
-        LUOUT = 6
-C       CALL  XFLUSH(LUOUT)
-*
- 1000 CONTINUE
-*
-      WRITE(6,*)
-      WRITE(6,*) ' Zero order energy : ', E0RF+ECORE-ECORE_HEX
-      WRITE(6,*)
-      WRITE(6,*) ' =========================================== '
-      WRITE(6,*) ' Energy corrections obtained as <0!V!0(n-1)> '
-      WRITE(6,*) ' =========================================== '
-      WRITE(6,*)
-      WRITE(6,*)
-     &'   Order         Energy correction          Total Energy '
-      WRITE(6,*)
-     &' ========================================================='
-      ENERGY = E0RF+ECORE-ECORE_HEX
-      DO IORD = 1, MAXORD
-        ENERGY = ENERGY + EN(IORD)
-        WRITE(6,'(4X,I2,8X,1E20.12,6X,1E22.14)')
-     &  IORD,EN(IORD),ENERGY
-      END DO
-      WRITE(6,*)
-      WRITE(6,*)
-      WRITE(6,*) ' =========================================== '
-      WRITE(6,*) ' Energy corrections obtained from 2n+1 rule  '
-      WRITE(6,*) ' =========================================== '
-      WRITE(6,*)
-*
-      WRITE(6,*)
-     &  '   Order         Energy correction        Total Energy '
-      WRITE(6,*)
-     & ' ========================================================='
-      DO JORD =MAXORD+1, 2*MAXORD+1
-        ENERGY = ENERGY + EN(JORD)
-        WRITE(6,'(4X,I2,8X,1E20.12,6X,1E22.14)')
-     &  JORD,EN(JORD),ENERGY
-      END DO
-*
-      IF(NTEST.GE.1) THEN
-        WRITE(6,*) ' Final S matrix '
-        CALL PRSYM(S,MAXORD+1)
-        WRITE(6,*) ' Final V matrix '
-        CALL PRSYM(V,MAXORD+1)
-        WRITE(6,*) ' Final H0 matrix '
-        CALL PRSYM(H0,MAXORD+1)
-      END IF
-
 *
       RETURN
       END

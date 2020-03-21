@@ -16,7 +16,6 @@
 !
 !
 C
-#ifdef OLD_REV_LOG
 !===========================================================================
 ! look for HJMAERKE; (1) symort of UMAT should be done
 !
@@ -62,7 +61,6 @@ C
 !930625-hjaaj
 !  inserted some more print before two stop statements.
 !===========================================================================
-#endif
 C  /* Deck averag */
       SUBROUTINE AVERAG (VECS,NVDIM,NVSIM)
 C

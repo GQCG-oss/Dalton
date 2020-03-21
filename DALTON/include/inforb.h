@@ -16,8 +16,8 @@
      &       N2ISHX,NNASHX,N2ASHX,NNASHY,NNOCCX,N2OCCX,                 &
      &       NNORBT,NNORBX,N2ORBT,N2ORBX,NNBAST,N2BAST,NNBASX,N2BASX,   &
      &       NNRHFT,NNRHFX,N2RHFT,N2RHFX,NNVIRT,NNVIRX,N2VIRT,N2VIRX,   &
-     &       NAS1,NAS2,NAS3,NNOCCT,N2OCCT,                              &
-     &       NAS1T,NAS2T,NAS3T
+     &       NNOCCT,N2OCCT,                                             &
+     &       NAS1,NAS2,NAS3, NAS1T,NAS2T,NAS3T
       COMMON /INFORB/ MULD2H(8,8), NRHF(8),NROHF(8),NVIR(8), NFRO(8),   &
      &       NISH(8),NASH(8),NSSH(8),NOCC(8),NORB(8),NBAS(8),           &
      &       NNORB(8),NNBAS(8), N2ORB(8),N2BAS(8),                      &
@@ -28,8 +28,8 @@
      &       N2ISHX,NNASHX,N2ASHX,NNASHY,NNOCCX,N2OCCX,                 &
      &       NNORBT,NNORBX,N2ORBT,N2ORBX,NNBAST,N2BAST,NNBASX,N2BASX,   &
      &       NNRHFT,NNRHFX,N2RHFT,N2RHFX,NNVIRT,NNVIRX,N2VIRT,N2VIRX,   &
-     &       NAS1(8),NAS2(8),NAS3(8),NNOCCT,N2OCCT,                     &
-     &       NAS1T,NAS2T,NAS3T
+     &       NNOCCT,N2OCCT,                                             &
+     &       NAS1(8),NAS2(8),NAS3(8), NAS1T,NAS2T,NAS3T
 !     MXSSYM = maximum number of "super symmetries"
       INTEGER MXSSYM
       PARAMETER ( MXSSYM = 100 )
@@ -51,8 +51,8 @@ extern struct common_inforb {
 	n2ishx,nnashx,n2ashx,nnashy,nnoccx,n2occx,
 	nnorbt,nnorbx,n2orbt,n2orbx,nnbast,n2bast,nnbasx,n2basx,
 	nnrhft,nnrhfx,n2rhft,n2rhfx,nnvirt,nnvirx,n2virt,n2virx,
-	nas1[8],nas2[8],nas3[8],nnocct,n2occt,
-	nas1t,nas2t,nas3t;
+	nnocct,n2occt,
+	nas1[8],nas2[8],nas3[8], nas1t,nas2t,nas3t;
 } inforb_;
 extern struct common_infoss {
     /* NOTICE that the index range is inverted for ninfss */

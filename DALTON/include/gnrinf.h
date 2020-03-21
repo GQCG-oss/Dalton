@@ -1,3 +1,4 @@
+! File : gnrinf.h
 !
 !     -*- mode: fortran; fortran-continuation-string: "&" -*-
 !     File: gnrinf.h -- general information for DALTON
@@ -16,16 +17,22 @@
      &        WRINDX, WLKREJ, WALKIN, RNRESP, USRIPR, SEGBAS,           &
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,           &
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
-     &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,                   &
+     &        CHI1ST, DKHINT,                                           &
      &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,   USE_LSLIB,        &
      &        SIR_INPPRC, NEWGEO, DOFDE
       REAL*8  GRADML, PANAS,  CHIVAL, THR_REDFAC
+
+! srDFT variables
+
+      LOGICAL ERFEXP(0:2), DOSRIN, SRINTS, COMLAM
+      REAL*8  VLAMBDA
+
       INTEGER KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS
       INTEGER GNRINFlast
 !
       COMMON /GNRINF/                                                   &
-              ! real*8ZZ
-     &        GRADML, PANAS,  CHIVAL, THR_REDFAC,                       &
+              ! real*8
+     &        GRADML, PANAS,  CHIVAL, VLAMBDA, THR_REDFAC,              &
               ! integer
      &        KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS,                   &
               ! logical
@@ -34,17 +41,15 @@
      &        WRINDX, WLKREJ, WALKIN, RNRESP, USRIPR, SEGBAS,           &
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,           &
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
-     &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,                   &
+     &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT, COMLAM,           &
      &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,   USE_LSLIB,        &
      &        SIR_INPPRC, NEWGEO, DOFDE
       COMMON /GNRINF/ GNRINFlast
       ! Very important: Always keep GNRINFlast as the last variable in the common block.
       ! See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
 
-      INTEGER LBASDIR
+      INTEGER    LBASDIR
       PARAMETER (LBASDIR = 600)
-      CHARACTER*(LBASDIR) BASDIR
-      CHARACTER*12        WFTYPE
+      CHARACTER  BASDIR*(LBASDIR), WFTYPE*(12)
       COMMON /GNRCHR/ BASDIR, WFTYPE
-
-! -- end of gnrinf.h
+! -- end of DALTON/include/gnrinf.h ---

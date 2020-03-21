@@ -1343,13 +1343,10 @@ C
       END IF
       GOTO 920
  910  CONTINUE
-      IF (IPRABS.GE.0) THEN
-         WRITE(LUPRI,'(/,1X,A,I4,A)')
-     &        '*** ABSCTL: THE REQUESTED',NFREQ_ABS,
-     &        ' SOLUTION VECTORS NOT CONVERGED'
-         WRITE(LUPRI,'(/,1X,A)')
-     &        '--- MAXIMUM NUMBER OF ITERATIONS REACHED ---'
-      END IF
+         WRITE(LUPRI,'(/A,I4,A/A)')
+     &        ' *** ABSCTL WARNING: THE REQUESTED',NFREQ_ABS,
+     &        ' SOLUTION VECTORS NOT CONVERGED',
+     &        ' --- MAXIMUM NUMBER OF ITERATIONS REACHED ---'
       GOTO 920
 C
 C     Construct and write response vectors to file
@@ -1892,6 +1889,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "absorp.h"
+#include "abslrs.h"
 #include "wrkrsp.h"
 #include "infvar.h"
 #include "maxaqn.h"
@@ -1903,7 +1901,6 @@ C
 #include "inforb.h"
 #include "qrinf.h"
 #include "infdim.h"
-#include "abslrs.h"
 C
       PARAMETER ( D0=0.0D0 )
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)

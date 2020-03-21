@@ -3,15 +3,189 @@
 !
 !dalton_copyright_end
 
-#ifdef VAR_MPI
-!**********************************************************************
-!
 !============================================================*
 !  Common LUCITA and LUCIAREL routines for parallel purposes *
 !                                                            *
 !   collected by Stefan Knecht, Jan 18 - ???, 2007           *
 !============================================================*
 !
+***********************************************************************
+
+      SUBROUTINE PART_CIV_PAR1(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
+     &                         NSMST,MXLNG,IOCOC,ISMOST,
+     &                         NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
+     &                         ICOMP,ITTSS_ORD,IBLOCKD,NDIM)
+C
+C     Partition a CI vector into batches of blocks. The length of a
+C     batch must be atmost MXLNG.
+C     S-vector routine.
+C
+C     IF ICOMP. eq. 1: the complete CI vector is constructed in just one
+C     batch.
+C
+C     OUTPUT
+C     ======
+C
+C     NBATCH      : Number of batches
+C     LBATCH(*)   : Number of blocks in a given batch
+C     LEBATCH(*)  : Number of elements in a given batch ( packed ) !
+C     I1BATCH(*)  : Number of first block in a given batch
+C     IBATCH(8,*) : TTS blocks in Start of a given TTS block with respect to
+C                   start
+C     of batch --
+C     IBATCH(1,*) : Alpha type
+C     IBATCH(2,*) : Beta  type
+C     IBATCH(3,*) : Sym of alpha
+C     IBATCH(4,*) : Sym of beta
+C     IBATCH(5,*) : Offset of block with respect to start of block in
+C                   expanded form
+C     IBATCH(6,*) : Offset of block with respect to start of block in
+C                   packed form
+C     IBATCH(7,*) : Length of block, expandend form
+C     IBATCH(8,*) : Length of block, packed form
+C    
+C     original version : Jeppe Olsen     - August 1995
+C     parallel adaption: S. Knecht       - March  2007 
+C
+C     Last revision:     S. Knecht       - March  2007
+C
+************************************************************************
+      IMPLICIT REAL*8(A-H,O-Z)
+
+#include "parluci.h"
+C     Input
+      INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
+      INTEGER IOCOC(NOCTPA,NOCTPB)
+      INTEGER IBLTP(*)
+      INTEGER ISMOST(*)
+      DIMENSION IBLOCKD(NDIM)
+C     Output
+      INTEGER LBATCH(*)
+      INTEGER LEBATCH(*)
+      INTEGER I1BATCH(*)
+      INTEGER IBATCH(8,*)
+*
+#ifdef LUCI_DEBUG
+      WRITE(luwrt,*)
+      WRITE(luwrt,*) ' ==================='
+      WRITE(luwrt,*) '    PART_CIV_PAR1   '
+      WRITE(luwrt,*) ' ==================='
+      WRITE(luwrt,*) ' IDC = ', IDC
+      WRITE(luwrt,*)
+      WRITE(luwrt,*) ' IOCOC Array '
+      CALL IWRTMAmn(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB,luwrt)
+      if (NTEST.ge.500) then
+        WRITE(luwrt,*) ' NSSOA array ( input ) '
+        CALL IWRTMAmn(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA,luwrt)
+        WRITE(luwrt,*) ' NSSOB array ( input ) '
+        CALL IWRTMAmn(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB,luwrt)
+        write(luwrt,*) ' IBLTP array: '
+        call iwrtmamn(IBLTP,1,NSMST,1,NSMST,luwrt)
+      end if
+      WRITE(luwrt,*) ' Iblockd Array '
+      CALL IWRTMAmn(iblockd,1,ndim,1,ndim,luwrt)
+#endif
+*
+*. block zero
+*
+      IB     = 1
+      IA     = 1
+      ISM    = 1
+      IFRST  = 1
+      NBATCH = 0
+      IBLOCK = 0
+      IFINI  = 0
+*. Loop over batches of blocks
+ 2000 CONTINUE
+      NBATCH          = NBATCH + 1
+      LBATCH(NBATCH)  = 0
+      I1BATCH(NBATCH) = IBLOCK  + 1
+      LENGTH          = 0
+      LENGTHP         = 0
+      NBLOCK          = 0
+      IFRST           = 1
+*. Loop over blocks in batch
+ 1000 CONTINUE
+      IF(IFRST.EQ.0) THEN
+        call nxt_tts(ITTSS_ORD,IA,IB,ISM,IFINI,NOCTPA,NOCTPB,NSMST)
+      END IF
+      IFRST = 0
+      IF (IFINI.EQ.1) GOTO 2002
+*. Should this block be included
+      IF(IBLTP(ISM).EQ.0) GOTO 1000
+      IF(IBLTP(ISM).EQ.2.AND.IA.LT.IB) GOTO 1000
+      IF(IOCOC(IA,IB).EQ.0) GOTO 1000
+*. can this block be included
+      IBSM = ISMOST(ISM)
+      NSTA = NSSOA(ISM,IA)
+      NSTB = NSSOB(IBSM,IB)
+      LBLOCK= NSTA*NSTB
+C     set unpacked length for unused block to zero
+      IF( IBLOCKD(IBLOCK+1) .ne. LUCI_MYPROC ) LBLOCK = 0
+      IF(IBLTP(ISM).EQ.1.OR.(IBLTP(ISM).EQ.2.AND.IA.NE.IB)) THEN
+        LBLOCKP = NSTA*NSTB
+      ELSE IF (IBLTP(ISM) .EQ. 2.AND.IA.EQ.IB) THEN
+        LBLOCKP = NSTA*(NSTA+1)/2
+      END IF
+C     set packed length for unused block to zero
+      IF( IBLOCKD(IBLOCK+1) .ne. LUCI_MYPROC ) LBLOCKP = 0
+C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
+      IF(LENGTH+LBLOCK.LE.MXLNG.OR.ICOMP.EQ.1) THEN
+        NBLOCK = NBLOCK + 1
+        IBLOCK = IBLOCK + 1
+        LBATCH(NBATCH) = LBATCH(NBATCH)+1
+        IBATCH(1,IBLOCK) = IA
+C       only blocks corresponding to distribution
+        IF( IBLOCKD(IBLOCK) .ne. LUCI_MYPROC ) IBATCH(1,IBLOCK) = 0
+        IBATCH(2,IBLOCK) = IB
+        IBATCH(3,IBLOCK) = ISM
+        IBATCH(4,IBLOCK) = IBSM
+        IBATCH(5,IBLOCK) = LENGTH+1
+        IBATCH(6,IBLOCK) = LENGTHP+1
+        IBATCH(7,IBLOCK) = LBLOCK
+        IBATCH(8,IBLOCK) = LBLOCKP
+        LENGTH = LENGTH + LBLOCK
+        LENGTHP= LENGTHP+ LBLOCKP
+        LEBATCH(NBATCH) = LENGTHP
+        GOTO 1000
+      ELSE IF(ICOMP.EQ.0.AND.
+     &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
+        WRITE(luwrt,*) 
+     &  ' Not enough scratch space to include a single Block'
+        WRITE(luwrt,*) ' Since I cannot procede I will stop '
+        WRITE(luwrt,*) ' Insufficient buffer detected in PART_CIV_PAR1'
+        write(luwrt,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
+        WRITE(luwrt,*) ' Alter GAS space of raise Buffer from ', MXLNG
+        call quit( ' Insufficient buffer space in PART_CIV_PAR1. ' )
+      ELSE
+*. This batch is finished, goto next batch
+        GOTO 2000
+      END IF
+ 2002 CONTINUE
+*
+#ifdef LUCI_DEBUG
+      WRITE(luwrt,*) 'Output from PART_CIV_PAR1'
+      WRITE(luwrt,*) '========================='
+      WRITE(luwrt,*)
+      WRITE(luwrt,*) ' Number of batches ', NBATCH
+      DO JBATCH = 1, NBATCH
+        WRITE(luwrt,*)
+        WRITE(luwrt,*) ' Info on batch ', JBATCH
+        WRITE(luwrt,*) ' *********************** '
+        WRITE(luwrt,*)
+        WRITE(luwrt,*) ' Number of blocks included ', LBATCH(JBATCH)
+        WRITE(luwrt,*) ' TTSS and offsets and lenghts of each block '
+        DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
+          WRITE(luwrt,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
+        END DO
+      END DO
+#endif
+*
+      END
+***********************************************************************
+
+#ifdef VAR_MPI
+
       subroutine copy_vector_mpi_2_sequential_io(luin,luout,vec1,
      &                                           my_ioff_luin,
      &                                           luinlist,
@@ -39,6 +213,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       real(8), intent(inout) :: vec1(*) 
       integer, intent(in)    :: nblock, nvec, i_run_cplx
@@ -419,6 +594,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 !------------------------------------------------------------------------------
       real(8), intent(inout) :: vec1(*)
@@ -664,13 +840,12 @@ C
 !                 count active blocks
                   NUM_BLK = NUM_BLK + 1
 !
+                  LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 0
                   IF( IMZERO .eq. 0 ) THEN
 !
                     CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,
      &                                  ILEN,MPI_REAL8,my_STATUS,IERR)
                     LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 1
-                  ELSE
-                    LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = 0
                   END IF 
 !                 keep track of correct offset
                   IOFFSET_SCRATCH = ILEN
@@ -703,6 +878,183 @@ C
       END
 ***********************************************************************
 
+      subroutine copy_vector_mpi_2_mcmem(luin,vec1,
+     &                                   ivec,
+     &                                   my_ioff_luin,
+     &                                   luinlist,
+     &                                   par_dist_block_list,
+     &                                   block_list,
+     &                                   communicator_group,
+     &                                   nblock)
+C
+C     Written by  S. Knecht         - June 11 2007
+C
+C**********************************************************************
+C
+C     copy a given vector from MPI file LUIN to MC memory blockwise
+C
+C     active blocks on the MPI-files are flagged by a nonzero list entry
+C
+C     Last revision:     S. Knecht       - Jan 2012
+C
+************************************************************************
+      implicit none
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+      integer(MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
+#include "parluci.h"
+      real(8), intent(inout) :: vec1(*) 
+      integer, intent(in)    :: ivec
+      integer, intent(in)    :: nblock
+      integer, intent(in)    :: par_dist_block_list(nblock)
+      integer, intent(in)    :: block_list(*)
+      integer, intent(in)    :: communicator_group
+      integer, intent(in)    :: luin
+      integer, intent(in)    :: luinlist(*)
+      INTEGER(KIND=MPI_OFFSET_KIND), intent(in) :: MY_IOFF_LUIN
+!-------------------------------------------------------------------------------
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER NUM_BLK
+      integer IOFFSET_INT_IN
+      integer sender_id
+      integer xoffset
+      integer lbl
+      integer ii
+      integer isendtom
+!-------------------------------------------------------------------------------
+C
+C     initialize scratch offsets
+      NUM_BLK           = 0
+      IOFFSET_SCRATCH   = 0
+      IOFFSET_IN_LUIN   = 0
+      IOFFSET_INT_IN    = 0
+      xoffset           = 1
+C
+C     initialize co-worker tag 
+      sender_id = 0
+C
+C     ============
+C      real vector
+C     ============
+
+      IOFFSET_SCRATCH = 0
+      NUM_BLK         = 0
+C
+C     set new offset
+C
+C     position in file is at the end of vector ivec - 1
+C
+C     note: real vector: --> MY_VEC2_IOFF and MY_ACT_BLK2
+C
+      IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
+     &                 ( ivec - 1 )   * MY_VEC2_IOFF
+      IOFFSET_INT_IN   = 1 + NUM_BLK  +
+     &                 ( ivec - 1 )   * MY_ACT_BLK2
+C
+      DO II = 1, NBLOCK ! loop over vector blocks
+
+        IOFFSET_SCRATCH = 0
+        NUM_BLK         = 0
+        LBL             = block_list(II)
+
+        IF(LUCI_MYPROC .ne. LUCI_MASTER)THEN ! co-workers first ...
+
+          IF(par_dist_block_list(II) .ne. LUCI_MYPROC) GOTO 500
+
+        ELSE ! LUCI_MASTER
+
+!         receive block from co-worker sender_id
+          sender_id = par_dist_block_list(II)
+
+          if(abs(sender_id) .gt. 0)then
+
+!           block has zero length
+            if(sender_id .eq. -2) goto 500
+
+          else
+ 
+!           LUCI_MASTER block
+!           -----------------
+            IF(LUINLIST(IOFFSET_INT_IN) .gt. 0)THEN
+C
+C             read block in
+              CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1(xoffset),
+     &                              LBL,MPI_REAL8,my_STATUS,IERR)
+#ifdef LUCI_DEBUG
+              print *,'master - read-in: my vector piece'
+              call wrtmatmn(vec1(xoffset),1,lbl,1,lbl,luwrt)
+#endif
+            END IF
+C
+            IOFFSET_SCRATCH = LBL
+            NUM_BLK         = 1
+C
+            GOTO 500
+          END IF ! abs(sender_id) > 0?
+
+        END IF ! co-worker / master switch
+ 
+!       co-worker block
+!       ---------------
+ 
+        if(luci_myproc .ne. luci_master)then
+C
+          ISENDTOM = 0
+          ISENDTOM = LUINLIST(IOFFSET_INT_IN)
+C
+          CALL MPI_SEND(ISENDTOM,1,my_MPI_INTEGER,LUCI_MASTER,90,
+     &                  communicator_group,IERR)
+C
+          IF(ISENDTOM .gt. 0)THEN
+C
+            CALL MPI_FILE_READ_AT(LUIN,IOFFSET_IN_LUIN,vec1(xoffset),
+     &                            LBL,MPI_REAL8,my_STATUS,IERR)
+            CALL MPI_SEND(vec1(xoffset),LBL,MPI_REAL8,LUCI_MASTER,91,
+     &                    communicator_group,IERR)
+#ifdef LUCI_DEBUG
+            print *,'co-worker - read-in: my vector piece'
+            call wrtmatmn(vec1(xoffset),1,lbl,1,lbl,luwrt)
+#endif
+C
+          END IF
+          IOFFSET_SCRATCH = LBL
+          NUM_BLK         = 1
+
+        else ! LUCI_MASTER
+ 
+          ISENDTOM = 0
+          CALL MPI_RECV(ISENDTOM,1,my_MPI_INTEGER,sender_id,90,
+     &                  communicator_group,my_STATUS,IERR)
+C
+          IF(ISENDTOM .gt. 0)THEN
+C
+            CALL MPI_RECV(vec1(xoffset),LBL,MPI_REAL8,sender_id,91,
+     &                    communicator_group,my_STATUS,IERR)
+#ifdef LUCI_DEBUG
+            print *,'master- recieve: my vector piece'
+            call wrtmatmn(vec1(xoffset),1,lbl,1,lbl,luwrt)
+#endif
+          END IF
+          IOFFSET_SCRATCH = 0
+          NUM_BLK         = 0
+
+        end if ! co-worker / master switch
+
+ 500    CONTINUE
+        
+!       keep track of correct offset
+        xoffset         = xoffset + LBL
+        IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
+        IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
+
+      end do ! loop over vector blocks
+C
+      END
+!**********************************************************************
+
       SUBROUTINE COPVCD_PAR_BDRIV5_REL(LUIN,LUOUT,SEGMNT,IBLOCKD,
      &                                 ISCALFAC,ISCALFAC_GROUP,
      &                                 IBLOCKL,NBLOCK,JCOMM,
@@ -711,7 +1063,7 @@ C
 C     Read blocks of the vector from disc file LUIN to array segment
 C     and broadcast to nodes that need the block, save on diskfile luout 
 C     if necessary. 
-C     communication via communicator jcomm.
+C     Communication via communicator jcomm.
 C
 C     OUTPUT: update of LUOUT with new TTSS-c-blocks, 
 C             modified ISCALFAC_GROUP.
@@ -729,6 +1081,8 @@ C**********************************************************************
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) jcomm_mpi
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SEGMNT(*), IBLOCKD(NBLOCK), IBLOCKL(NBLOCK)
       DIMENSION ISCALFAC(*), ISCALFAC_GROUP(*)
@@ -822,10 +1176,11 @@ C         broadcast the nonvanishing block
           is_new_rootproc     = 0
           is_new_rootproc_tmp = 0
           IF(LUCI_MYPROC .eq. ROOTPROC) is_new_rootproc_tmp = icomm_id
+          jcomm_mpi = jcomm
           CALL MPI_ALLREDUCE(is_new_rootproc_tmp,is_new_rootproc,1,
-     &                       my_MPI_INTEGER,mpi_max,JCOMM,IERR)
+     &                       my_MPI_INTEGER,mpi_max,JCOMM_mpi,IERR)
           CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,is_new_rootproc,
-     &                   JCOMM,IERR)
+     &                   JCOMM_mpi,IERR)
 !         end of new code without mpi_comm_split
 
           bcast_time = bcast_time + MPI_WTIME() - xcast_time
@@ -926,7 +1281,7 @@ C         decide whether it is necessary to take part in communication
           NNCOLOR = 8
           IF(ISCALFAC_GROUP(IOFF_BLOCK+IBLK) .ne. 0) NNCOLOR = 7
 
-!         CALL MPI_COMM_SPLIT(JCOMM,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
+!         CALL MPI_COMM_SPLIT(JCOMM_mpi,NNCOLOR,NNKEY,IBLOCKCOMM,IERR)
 
 !         IF( NNCOLOR .eq. 8 ) GOTO 300
 
@@ -938,10 +1293,11 @@ C         broadcast the nonvanishing block
           is_new_rootproc     = 0
           is_new_rootproc_tmp = 0
           IF(LUCI_MYPROC .eq. ROOTPROC) is_new_rootproc_tmp = icomm_id
+          jcomm_mpi = JCOMM
           CALL MPI_ALLREDUCE(is_new_rootproc_tmp,is_new_rootproc,1,
-     &                       my_MPI_INTEGER,mpi_max,JCOMM,IERR)
+     &                       my_MPI_INTEGER,mpi_max,JCOMM_mpi,IERR)
           CALL MPI_BCAST(SEGMNT,LBL,MPI_REAL8,is_new_rootproc,
-     &                   JCOMM,IERR)
+     &                   JCOMM_mpi,IERR)
 !         end of new code without mpi_comm_split
           bcast_time = bcast_time + MPI_WTIME() - xcast_time
 
@@ -1028,6 +1384,7 @@ C**********************************************************************
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 *
 * =====
@@ -1183,6 +1540,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
@@ -1300,6 +1658,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*) 
       DIMENSION IVCOFF_IN(*), IVCOFF_OUT(*)
@@ -1378,6 +1737,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
       DIMENSION IBLOCKL(*)
@@ -1442,6 +1802,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 C     INPUT
       INTEGER ICOUNTABLK, NTEST,MWEIGHT
@@ -1842,6 +2203,7 @@ CSK   END IF
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 C     -----
 C     INPUT
@@ -2101,6 +2463,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 *     ==========
 *       INPUT
@@ -2204,6 +2567,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*),LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
       DIMENSION LUINLIST(*), LUOUTLIST(*), IBLOCKL(*)
@@ -2399,6 +2763,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -2491,6 +2856,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -2651,6 +3017,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
       DIMENSION IBLOCKL(*)
@@ -2715,6 +3082,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -2773,6 +3141,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -2836,6 +3205,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -2899,6 +3269,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
@@ -2955,6 +3326,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), XMAT(NVEC,NVEC2)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3009,6 +3381,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), FAC(NVEC)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3143,6 +3516,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION SUBSPH(*), SCRRED(*), SCRRED2(*)
@@ -3339,6 +3713,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -3605,6 +3980,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION FACIN1(*), FACIN3(1)
@@ -3782,6 +4158,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION SCRRED(*)
@@ -3930,181 +4307,7 @@ C
 C     ^ loop over batches
 C
       END
-***********************************************************************
-
-      SUBROUTINE PART_CIV_PAR1(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
-     &                         NSMST,MXLNG,IOCOC,ISMOST,
-     &                         NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
-     &                         ICOMP,ITTSS_ORD,IBLOCKD,NDIM)
-C
-C     Partition a CI vector into batches of blocks. The length of a
-C     batch must be atmost MXLNG.
-C     S-vector routine.
-C
-C     IF ICOMP. eq. 1: the complete CI vector is constructed in just one
-C     batch.
-C
-C     OUTPUT
-C     ======
-C
-C     NBATCH      : Number of batches
-C     LBATCH(*)   : Number of blocks in a given batch
-C     LEBATCH(*)  : Number of elements in a given batch ( packed ) !
-C     I1BATCH(*)  : Number of first block in a given batch
-C     IBATCH(8,*) : TTS blocks in Start of a given TTS block with respect to
-C                   start
-C     of batch --
-C     IBATCH(1,*) : Alpha type
-C     IBATCH(2,*) : Beta  type
-C     IBATCH(3,*) : Sym of alpha
-C     IBATCH(4,*) : Sym of beta
-C     IBATCH(5,*) : Offset of block with respect to start of block in
-C                   expanded form
-C     IBATCH(6,*) : Offset of block with respect to start of block in
-C                   packed form
-C     IBATCH(7,*) : Length of block, expandend form
-C     IBATCH(8,*) : Length of block, packed form
-C    
-C     original version : Jeppe Olsen     - August 1995
-C     parallel adaption: S. Knecht       - March  2007 
-C
-C     Last revision:     S. Knecht       - March  2007
-C
-************************************************************************
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "maxorb.h"
-#include "infpar.h"
-#include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
-#include "parluci.h"
-C     Input
-      INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
-      INTEGER IOCOC(NOCTPA,NOCTPB)
-      INTEGER IBLTP(*)
-      INTEGER ISMOST(*)
-      DIMENSION IBLOCKD(NDIM)
-C     Output
-      INTEGER LBATCH(*)
-      INTEGER LEBATCH(*)
-      INTEGER I1BATCH(*)
-      INTEGER IBATCH(8,*)
-*
-      NTEST = 0000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' ==================='
-        WRITE(6,*) '    PART_CIV_PAR1   '
-        WRITE(6,*) ' ==================='
-        WRITE(6,*) ' IDC = ', IDC
-        WRITE(6,*)
-        WRITE(6,*) ' IOCOC Array '
-        CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
-        if (NTEST.ge.500) then
-          WRITE(6,*) ' NSSOA array ( input ) '
-          CALL IWRTMA(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA)
-          WRITE(6,*) ' NSSOB array ( input ) '
-          CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
-          write(6,*) ' IBLTP array: '
-          call iwrtma(IBLTP,1,NSMST,1,NSMST)
-        end if
-      END IF
-*
-*. block zero
-*
-      IB = 1
-      IA = 1
-      ISM = 1
-      IFRST = 1
-      NBATCH = 0
-      IBLOCK = 0
-      IFINI = 0
-*. Loop over batches of blocks
- 2000 CONTINUE
-      NBATCH = NBATCH + 1
-      LBATCH(NBATCH) = 0
-      I1BATCH(NBATCH) = IBLOCK  + 1
-      LENGTH = 0
-      LENGTHP= 0
-      NBLOCK = 0
-      IFRST = 1
-*. Loop over blocks in batch
- 1000 CONTINUE
-      IF(IFRST.EQ.0) THEN
-        call nxt_tts(ITTSS_ORD,IA,IB,ISM,IFINI,NOCTPA,NOCTPB,NSMST)
-      END IF
-      IFRST = 0
-      IF (IFINI.EQ.1) GOTO 2002
-*. Should this block be included
-      IF(IBLTP(ISM).EQ.0) GOTO 1000
-      IF(IBLTP(ISM).EQ.2.AND.IA.LT.IB) GOTO 1000
-      IF(IOCOC(IA,IB).EQ.0) GOTO 1000
-*. can this block be included
-      IBSM = ISMOST(ISM)
-      NSTA = NSSOA(ISM,IA)
-      NSTB = NSSOB(IBSM,IB)
-      LBLOCK= NSTA*NSTB
-C     set unpacked length for unused block to zero
-      IF( IBLOCKD(IBLOCK+1) .ne. LUCI_MYPROC ) LBLOCK = 0
-      IF(IBLTP(ISM).EQ.1.OR.(IBLTP(ISM).EQ.2.AND.IA.NE.IB)) THEN
-        LBLOCKP = NSTA*NSTB
-      ELSE IF (IBLTP(ISM) .EQ. 2.AND.IA.EQ.IB) THEN
-        LBLOCKP = NSTA*(NSTA+1)/2
-      END IF
-C     set packed length for unused block to zero
-      IF( IBLOCKD(IBLOCK+1) .ne. LUCI_MYPROC ) LBLOCKP = 0
-C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
-      IF(LENGTH+LBLOCK.LE.MXLNG.OR.ICOMP.EQ.1) THEN
-        NBLOCK = NBLOCK + 1
-        IBLOCK = IBLOCK + 1
-        LBATCH(NBATCH) = LBATCH(NBATCH)+1
-        IBATCH(1,IBLOCK) = IA
-C       only s-blocks corresponding to distribution
-        IF( IBLOCKD(IBLOCK) .ne. LUCI_MYPROC ) IBATCH(1,IBLOCK) = 0
-        IBATCH(2,IBLOCK) = IB
-        IBATCH(3,IBLOCK) = ISM
-        IBATCH(4,IBLOCK) = IBSM
-        IBATCH(5,IBLOCK) = LENGTH+1
-        IBATCH(6,IBLOCK) = LENGTHP+1
-        IBATCH(7,IBLOCK) = LBLOCK
-        IBATCH(8,IBLOCK) = LBLOCKP
-        LENGTH = LENGTH + LBLOCK
-        LENGTHP= LENGTHP+ LBLOCKP
-        LEBATCH(NBATCH) = LENGTHP
-        GOTO 1000
-      ELSE IF(ICOMP.EQ.0.AND.
-     &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
-        WRITE(6,*) ' Not enough scratch space to include a single Block'
-        WRITE(6,*) ' Since I cannot procede I will stop '
-        WRITE(6,*) ' Insufficient buffer detected in PART_CIV_PAR1'
-        write(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
-        WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
-        call quit( ' Insufficient buffer space in PART_CIV_PAR1. ' )
-      ELSE
-*. This batch is finished, goto next batch
-        GOTO 2000
-      END IF
- 2002 CONTINUE
-*
-      IF(NTEST.NE.0) THEN
-        WRITE(luwrt,*) 'Output from PART_CIV_PAR1'
-        WRITE(luwrt,*) '========================='
-        WRITE(luwrt,*)
-        WRITE(luwrt,*) ' Number of batches ', NBATCH
-        DO JBATCH = 1, NBATCH
-          WRITE(luwrt,*)
-          WRITE(luwrt,*) ' Info on batch ', JBATCH
-          WRITE(luwrt,*) ' *********************** '
-          WRITE(luwrt,*)
-          WRITE(luwrt,*) ' Number of blocks included ', LBATCH(JBATCH)
-          WRITE(luwrt,*) ' TTSS and offsets and lenghts of each block '
-          DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
-            WRITE(luwrt,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
-          END DO
-        END DO
-      END IF
-*
-      END
-***********************************************************************
+!*******************************************************************************
 
       SUBROUTINE PART_CIV_PAR2(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
      &                         NSMST,MXLNG,IOCOC,ISMOST,
@@ -4150,6 +4353,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 C     input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -4319,10 +4523,12 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION LBATC(*),LEBATC(*),I1BATC(*),IBATC(8,*)
       DIMENSION ICCTOS(NBLOCK,NBLOCK),ICWEIGHT(NBLOCK)
-      DIMENSION IBTOTW(NBLOCK),ICWEIGHTF(NBLOCK)
+      DIMENSION ICWEIGHTF(NBLOCK)
+      INTEGER*8 IBTOTW(NBLOCK)
       INTEGER*8 IABSOLUTE_WEIGHT
 *
       NTEST = 99
@@ -4408,6 +4614,8 @@ C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ncomm_mpi
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VECIN(*),VECOUT(*)
       INTEGER DATATYPE
@@ -4429,12 +4637,13 @@ CSK        DATATYPE = MPI_REAL8
         CALL quit('ERROR in REDVEC: Nonexisting DATATYPE')
       END IF
 *
+      ncomm_mpi = ncomm
       IF(NTARGET.GE.0)THEN
         CALL MPI_REDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,NTARGET,
-     &                  NCOMM,IERR)
+     &                  NCOMM_mpi,IERR)
       ELSE IF(NTARGET.LT.0)THEN
         CALL MPI_ALLREDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,
-     &                     NCOMM,IERR)
+     &                     NCOMM_mpi,IERR)
       ENDIF
 *. return since everything is reduced now!
 *
@@ -4453,7 +4662,9 @@ CSK        DATATYPE = MPI_REAL8
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
-      DIMENSION VECIN(*),VECOUT(*)
+      integer(kind=MPI_INTEGER_KIND) ncomm_mpi
+      integer(kind=MPI_INTEGER_KIND) ierr
+      real*8  VECIN(*),VECOUT(*)
       INTEGER DATATYPE
 *
       IF(NTYPE .EQ. 1) THEN
@@ -4473,12 +4684,13 @@ CSK        DATATYPE = MPI_REAL8
         CALL quit('ERROR in REDVEC: Nonexisting DATATYPE')
       END IF
 *
+      ncomm_mpi = NCOMM
       IF(NTARGET.GE.0)THEN
         CALL MPI_REDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,NTARGET,
-     &                  NCOMM,IERR)
+     &                  NCOMM_mpi,IERR)
       ELSE IF(NTARGET.LT.0)THEN
         CALL MPI_ALLREDUCE(VECIN,VECOUT,NDIM,DATATYPE,NOP,
-     &                     NCOMM,IERR)
+     &                     NCOMM_mpi,IERR)
       ENDIF
 *. return since everything is reduced now!
 *
@@ -4558,6 +4770,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
 *     input
       DIMENSION IPLAC(*),VAL(*),IBLOCKL(NBLOCK),IBLOCKD(NBLOCK)
@@ -4686,6 +4899,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) ierr
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -4764,6 +4978,122 @@ C
      &                  DDOT(LEBATCH(ISBATCH),VEC1,1,VEC2,1)
 C
   100   CONTINUE
+C
+C       keep track of correct offset
+        IOFFSET_SCRATCH = IOFFSET_SCRATCH + LEBATCH(ISBATCH)
+        NUM_BLK         = NUM_BLK + NUM_ACTIVE_BATCH
+C
+      END DO
+C
+      END
+***********************************************************************
+
+      SUBROUTINE VECSUM_PP_B_RL(VEC1,VEC2,LUINLIST,LUOUTLIST,
+     &                          NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
+     &                          MY_IOFF_LUIN,MY_IOFF_LUOUT,
+     &                          IROOT,LUIN,LUOUT,fac1,fac2)
+C
+C**********************************************************************
+C
+C     scale vector from file LUIN and LUOUT batchwise and write result 
+C     of vector summation to luin
+C
+C     NOTE: IROOT = IROOT
+C
+C     active blocks on the MPI-files are flagged by a nonzero list entry
+!
+************************************************************************
+      IMPLICIT REAL*8 ( A-H,O-Z)
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION my_STATUS(MPI_STATUS_SIZE)
+#include "parluci.h"
+      DIMENSION VEC1(*), VEC2(*)
+      DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
+      DIMENSION LUINLIST(*), LUOUTLIST(*)
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN
+      INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUOUT
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_LUOUT
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER NUM_BLK
+      real(8) :: fac1, fac2
+C
+C     initialize scratch offsets
+      NUM_BLK           = 0
+      IOFFSET_SCRATCH   = 0
+      IOFFSET_IN_LUIN   = 0
+      IOFFSET_LUOUT     = 0
+      IOFFSET_INT_IN    = 0
+      IOFFSET_INT_LUOUT = 0
+C
+C
+      DO ISBATCH = 1, NBATCH
+C
+C       offset for batch ISBATCH w.r.t JOFF
+C
+        CALL DZERO(VEC1,LEBATCH(ISBATCH))
+C
+C       set new offset
+C
+C       position in file is at the end of vector IROOT - 1
+C
+        IOFFSET_IN_LUIN  = MY_IOFF_LUIN + IOFFSET_SCRATCH +
+     &                   ( IROOT - 1 )   * MY_VEC1_IOFF
+        IOFFSET_INT_IN   = 1 + NUM_BLK  +
+     &                   ( IROOT - 1 )   * MY_ACT_BLK1
+C
+CSK         WRITE(LUWRT,*) 'This is my OFFSET for LUIN',
+CSK     &                   IOFFSET_IN_LUIN
+C
+        CALL RDVEC_BATCH_DRV4(LUIN,VEC1,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_IN_LUIN,IOFFSET_INT_IN,
+     &                        LUINLIST,NUM_ACTIVE_BATCH)
+
+        IOFFSET_LUOUT      =  MY_IOFF_LUOUT + IOFFSET_SCRATCH + 
+     &                        ( IROOT - 1 ) * MY_VEC1_IOFF
+C
+        IOFFSET_INT_LUOUT  = 1 + NUM_BLK    +
+     &                        ( IROOT - 1 ) * MY_ACT_BLK1
+
+        CALL RDVEC_BATCH_DRV4(LUOUT,VEC2,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
+     &                        LUOUTLIST,NUM_ACTIVE_BATCH)
+C
+#ifdef LUCI_DEBUG
+        WRITE(LUWRT,*) 'initial VEC1 on LUIN'
+        CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
+     &                LUWRT)
+        WRITE(LUWRT,*) 'initial VEC2 on luout'
+        CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
+     &                LUWRT)
+#endif
+
+!       y := a*x + b*y
+!       call daxpby(LEBATCH(ISBATCH), fac1, vec1, 1, fac2, vec2, 1)
+        call dscal(LEBATCH(ISBATCH), fac2, vec2, 1)
+        call daxpy(LEBATCH(ISBATCH), fac1, vec1, 1, vec2, 1)
+
+        IOFFSET_LUOUT      =  MY_IOFF_LUOUT + IOFFSET_SCRATCH + 
+     &                        ( IROOT - 1 ) * MY_VEC1_IOFF
+        IOFFSET_INT_LUOUT  = 1 + NUM_BLK    +
+     &                        ( IROOT - 1 ) * MY_ACT_BLK1
+
+#ifdef LUCI_DEBUG
+        WRITE(LUWRT,*) 'scaled VEC2 on luout'
+        CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),
+     &                LUWRT)
+        WRITE(LUWRT,*) 'luout, luin, offset ',
+     &                  luout,luin,IOFFSET_LUOUT,IOFFSET_INT_LUOUT
+#endif
+
+        CALL WTVEC_BATCH_DRV4(LUOUT,VEC2,LBATCH(ISBATCH),
+     &                        IBATCH(1,I1BATCH(ISBATCH)),
+     &                        IOFFSET_LUOUT,IOFFSET_INT_LUOUT,
+     &                        LUOUTLIST,NUM_ACTIVE_BATCH)
 C
 C       keep track of correct offset
         IOFFSET_SCRATCH = IOFFSET_SCRATCH + LEBATCH(ISBATCH)

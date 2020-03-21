@@ -73,6 +73,8 @@ C
 C Symmetry and number of variational parameters are defined through
 C INFLIN.
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
       DIMENSION DV(*), PV(*), FC(*), FV(*), CREF(*), CMO(*)
       DIMENSION FDC(N2ORBX,*),FDV(N2ORBX,*),FDQ(*)
@@ -93,10 +95,12 @@ C Used from common blocks:
 C   INFORB : NNASHX,N2ASHX,N2ORBX,NASHT
 C   INFLIN : NVARPT,LSYMRF,LSYMPT,NCONRF,NCONST,NWOPPT
 C CBGETDIS : DISTYP,IADINT
+C dftcom.h : DFT_SPINDNS, ?
 C
 #include "maxorb.h"
 #include "inforb.h"
 #include "inflin.h"
+#include "infinp.h"
 #include "cbgetdis.h"
 #include "dftcom.h"
 #include "priunit.h"
@@ -126,7 +130,8 @@ C
       IF (NASHT .GT. 1 .AND. NCONST .GT. 0) THEN
          KFRCSI = KFREE
          LFRCSI = LFREE
-         CALL MEMGET('REAL',KFDCAC,N2ASHX,WRK,KFRCSI,LFRCSI)
+         CALL MEMGET('REAL',KFDCAC ,N2ASHX,WRK,KFRCSI,LFRCSI)
+         CALL MEMGET('REAL',KFDCACP,N2ASHX,WRK,KFRCSI,LFRCSI)
 C
 C        Set CI control parameters for CISIGD
 C
@@ -154,11 +159,23 @@ C           ... (ij|kl) = (kl|ij) = (ji|kl) = ... 8-fold symmetry
          END IF
 C
          DO 200 IGD = 1,NGD
+
             CALL GETAC1(FDC(1,IGD),WRK(KFDCAC))
+            IF (DFT_SPINDNS)
+     &         CALL QUIT('DFT_SPINDNS not implemented here yet, sorry')
             IF (LONDON) CALL DSCAL(N2ASHX,DM1,WRK(KFDCAC),1)
             CALL DZERO(GD(1,IGD),NCONST)
+
+            if(ci_program .eq. 'SIRIUS-CI')then
+              CALL DCOPY(N2ASHX,WRK(KFDCAC),1,WRK(KFDCACP),1)
+            else if(ci_program .eq. 'LUCITA   ')then
+              cref_is_active_bvec_for_sigma = .true.
+              !... pack matrix in lower triangular form for lucita
+              CALL DSITSP(NASHT,WRK(KFDCAC),WRK(KFDCACP))
+            end if
+
             CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST,
-     &               CREF,GD(1,IGD),WRK(KFDCAC),H2DAC(1,IGD),
+     &               CREF,GD(1,IGD),WRK(KFDCACP),H2DAC(1,IGD),
      &               NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,
      &               WRK(KFRCSI),LFRCSI)
 C           CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
@@ -977,12 +994,14 @@ C Used from common blocks:
 C  INFORB : NORBT, NASHT, N2ASHX, NNASHX, MULD2H(8,8)
 C  INFIND : IROW(:),ISMO(:),NSM(:),ICH(:),IOBTYP(:)
 C  INFVAR : JWOPSY
+C  dftcom.h : DFT_SINPDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
 #include "inforb.h"
 #include "infind.h"
 #include "infvar.h"
+#include "dftcom.h"
 C
       KH2AC1 = 1
       KNEED  = KH2AC1 + N2ASHX
@@ -990,6 +1009,8 @@ C
 C
       CALL GETAC1(H2XCD,WRK(KH2AC1))
 C     CALL GETAC1(HH, HHAC)
+      IF (DFT_SPINDNS)
+     &   CALL QUIT('DFT_SPINDNS not implemented here yet, sorry')
 C
 C We now have the triangular packed one-index transformed integrals
 C in H2ACF:

@@ -1756,7 +1756,7 @@ C
             IBL2  = IBUF(IDABUF+2*I)
             NQ    = IAND(      IBL1     ,IBT16_4)
             NR    = IAND(ISHFT(IBL2,-16),IBT16_4)
-            gS    = IAND(      IBL2     ,IBT16_4)
+            NS    = IAND(      IBL2     ,IBT16_4)
          END IF
 #if defined (VAR_DUPLCHCK)
 C

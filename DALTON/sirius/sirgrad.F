@@ -1,3 +1,4 @@
+!#define notSIRGRAD_DEBUG
 !
 !  Dalton, a molecular electronic structure program
 !  Copyright (C) 2018 by the authors of Dalton.
@@ -55,6 +56,7 @@ C Externals:
 C   CISIGC
 C
 C
+      use lucita_mcscf_ci_cfg
 #include "implicit.h"
       DIMENSION CREF(*),FCAC(*),H2AC(*), INDXCI(*),GCI(*),WRK(*)
       PARAMETER ( D2 = 2.0D0 )
@@ -76,8 +78,10 @@ C
 C *** 1 *** GCI(I) = SUM(J) OF LCI(I,J)*CREF(J)
 C           calculate CI matrix times reference vector
 C
-      DISTYP = 1
-      IADINT = IADH2
+      DISTYP                        = 1
+      IADINT                        = IADH2
+      cref_is_active_bvec_for_sigma = .true.
+
       CALL CISIGC(1,CREF,GCI,NCONF,FCAC,H2AC,INDXCI,WRK,LFREE)
 C     CALL CISIGC(NSIM,BCVECS,SCVECS,LSCVEC,FCAC,H2AC,INDXCI,WRK,LFREE)
 C
@@ -133,7 +137,9 @@ C
 #include "inforb.h"
 #include "infvar.h"
 #include "infpri.h"
-C dftcom.h : DFT_SPINDNS
+!infinp.h: DOHFSRDFT
+#include "infinp.h"
+! dftcom.h : DFT_SPINDNS
 #include "dftcom.h"
 C
 C
@@ -147,6 +153,7 @@ C
 C     ************************************
 C     DVAO matrix
 C
+      
       IF (GETDV) THEN
          CALL DZERO(DVAO,N2BASX)
       IF (NASHT .GT. 0) THEN
@@ -186,9 +193,14 @@ C do spin density matrix
       IF (GETDV .AND. DFT_SPINDNS) THEN
          CALL DZERO(DVAO(1,1,2),N2BASX)
       IF (NASHT .GT. 0) THEN
-         CALL MEMGET('REAL',KDAO1,NASHT*NBAST,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KUDV ,N2ASHX,WRK,KFREE,LFREE)
-         CALL DSPTSI(NASHT,DV(1,2),WRK(KUDV))
+         CALL MEMGET2('REAL','DAO1',KDAO1,NASHT*NBAST,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','UDS',KUDV ,N2ASHX,WRK,KFREE,LFREE)
+! edh: FOR HFSRDF DV(1,2) = 0 - this gave rise to unphyscial values
+          IF (DOHFSRDFT) THEN ! DV only unpaired elec.
+             CALL DSPTSI(NASHT,DV,WRK(KUDV))
+          ELSE 
+             CALL DSPTSI(NASHT,DV(1,2),WRK(KUDV))
+         END IF
          DO 2010 ISYM = 1,NSYM
             JSYM  = MULD2H(ISYM,JWOPSY)
             NASHI = NASH(ISYM)
@@ -276,13 +288,19 @@ C     from molecular orbitals given in CMO matrix and the occupation
 C     data as contained in NISH array (the closed shells) and the open
 C     shell occupation data in _quadratic_ UDV matrix.
 C
+C HJAaJ July 2017: extended with DFT_SPINDNS code for open-shell MC-srDFT
+C
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
+!
+! inforb.h : ...
+! dftcom.h : DFT_SPINDNS
 #include "inforb.h"
-      DIMENSION UDV(NASHT,NASHT)
+#include "dftcom.h"
+      DIMENSION UDV(NASHT,NASHT,2)
       DIMENSION CMO(*)
       DIMENSION DCAO(NBAST,NBAST)
-      DIMENSION DVAO(NBAST,NBAST)
+      DIMENSION DVAO(NBAST,NBAST,2)
       DIMENSION WRK(*)
 C
       CALL QENTER('GTDMSO')
@@ -292,7 +310,13 @@ C Output: inactive and active density matrix AO (actually SO) basis
 C
 C
       CALL DZERO(DCAO,N2BASX)
-      IF (NASHT.GT.0) CALL DZERO(DVAO,N2BASX)
+      IF (NASHT.GT.0) THEN
+         IF (DFT_SPINDNS) THEN
+            CALL DZERO(DVAO,2*N2BASX)
+         ELSE
+            CALL DZERO(DVAO,N2BASX)
+         END IF
+      END IF
 C
       DO ISYM = 1, NSYM
          ICMOI = ICMO(ISYM) + 1
@@ -322,15 +346,29 @@ C
             CALL DGEMM(
      &         'N', 'N', NBASI, NASHI, NASHI,
      &         D1, CMO(ICMOA), NBASI,
-     &             UDV(IASHI,IASHI), NASHT,
+     &             UDV(IASHI,IASHI,1), NASHT,
      &         D0, WRK,NBASI
      &      )
             CALL DGEMM(
      &         'N', 'T', NBASI, NBASI, NASHI,
      &         D1, WRK,       NBASI,
      &             CMO(ICMOA),NBASI,
-     &         D1, DVAO(IBASI,IBASI),NBAST
+     &         D1, DVAO(IBASI,IBASI,1),NBAST
      &      )
+         IF (DFT_SPINDNS) THEN
+            CALL DGEMM(
+     &         'N', 'N', NBASI, NASHI, NASHI,
+     &         D1, CMO(ICMOA), NBASI,
+     &             UDV(IASHI,IASHI,2), NASHT,
+     &         D0, WRK,NBASI
+     &      )
+            CALL DGEMM(
+     &         'N', 'T', NBASI, NBASI, NASHI,
+     &         D1, WRK,       NBASI,
+     &             CMO(ICMOA),NBASI,
+     &         D1, DVAO(IBASI,IBASI,2),NBAST
+     &      )
+         END IF
          END IF
       END DO
       CALL QEXIT('GTDMSO')
@@ -351,8 +389,9 @@ C
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION DV(*), CMO(*), FC(*), FV(NNORBT,*), WRK(*)
-C     ... FV(*,1) is the real FV, FV(*,2) is FS for DFT_SPINDNS
-C         or FV(*,2) is the Kohn-Sham matrix for LSRHYBR
+C     ... FV(*,1) is the real FV,
+C         FV(*,2) is FS for DFT_SPINDNS or
+C         FV(*,2) is the Kohn-Sham matrix for LSRHYBR
 C         / hjaaj Feb 2010
       LOGICAL   ONLYFC, NOFV, LSRHYBR
 C
@@ -376,6 +415,11 @@ C
          CALL QUIT('SRHYBR and non-singlet not implemented')
       END IF
 C
+! Manu debug
+#ifdef SIRGRAD_DEBUG
+      write(lupri,*) 'from FCKMAT: ONLYFC =', ONLYFC 
+      write(lupri,*) 'from FCKMAT: NOFV =', NOFV 
+#endif
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LFRSAV
@@ -396,8 +440,8 @@ C           we need an extra FSRAO and DSRAO for hybrid SRDFT-DFT
 C           in order to evaluate both SR-DFT term and DFT term
             NF = NF + 1
          END IF
-         CALL MEMGET('REAL',KFCAO,NF*N2BASX,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KDCAO,ND*N2BASX,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','NF*FAO',KFCAO,NF*N2BASX,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','ND*DAO',KDCAO,ND*N2BASX,WRK,KFREE,LFREE)
          KFVAO = KFCAO + N2BASX
          KFSAO = KFVAO + N2BASX
          KSRAO = KFCAO + (NF-1)*N2BASX
@@ -533,6 +577,7 @@ C
 C
 C Used from common blocks:
 C   INFINP : DIRFCK
+C dftcom.h ! Manu: for HFXFAC
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -544,6 +589,7 @@ C
 #include "infdim.h"
 #include "infpri.h"
 #include "dfterg.h"
+#include "dftcom.h"
 C
       LOGICAL NOFV
 C
@@ -551,6 +597,8 @@ C
 C
 #ifdef SIRGRAD_DEBUG
       P6FLAG(11) = .true. !Cdbg DEBUG
+      P6FLAG(18) = .true. !Cdbg DEBUG
+      P6FLAG(15) = .true. !Cdbg DEBUG
 #endif
 C
 C
@@ -564,7 +612,25 @@ C
       ESRDFTY = D0
 C     ... make sure ESRDFTY is reset for CISRDFT following HFSRDFT
 C         (ESRDFTY is in common block and is calculated inside FCK2AO)
+!
+!! Manu march 2014: as HFXFAC is set to zero in conventional CI-srDFT
+!calculations, FCK2AO initially computed long-range coulomb integrals only. Consequently the inactive CI-srDFT energy did not
+!reduce to the regular inactive CI one for large mu values. Long-range exchange
+!integrals are now added to FCAO by setting HFXFAC to 1.0 
+      IF (DOCISRDFT) THEN
+         HFXFAC_save=HFXFAC
+         HFXFAC=D1
+      END IF
+#ifdef SIRGRAD_DEBUG
+      write(lupri,*) 'from FCKMAO: ONLYFC =', ONLYFC
+#endif
+!!      
       CALL FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
+!!
+      IF (DOCISRDFT) THEN
+      HFXFAC=HFXFAC_save ! set HFXFAC to its initial value
+      END IF
+!!      
       IF(DODFT) THEN
          IF(NASHT.NE.0) CALL QUIT('Gradient not implemented for RO-DFT')
          EXCTRO = HALF*DDOT(N2BASX,DCAO,1,FCAO,1)
@@ -589,12 +655,27 @@ C
 C ***** INACTIVE ENERGY : EMCMY; ESRDFTY is added in FCKMAT
 C
       IF (NISHT .GT. 0) THEN
-         EMCMY = DDOT(N2BASX,DCAO,1,WRK(KH1AO),1)
+         EMCMY1 = DDOT(N2BASX,DCAO,1,WRK(KH1AO),1)
          IF (P6FLAG(11)) WRITE (LUPRI,'(A,F25.12)')
-     &   ' Inactive one-electron energy :',EMCMY
-         EMCMY = EMCMY + HALF*DDOT(N2BASX,DCAO,1,FCAO,1)+EDFTY
+     &   ' Inactive one-electron energy :',EMCMY1
+         EMCMY = EMCMY1 + HALF*DDOT(N2BASX,DCAO,1,FCAO,1)+EDFTY
+!! Manu debug
+#ifdef SIRGRAD_DEBUG
+        write(lupri,*) 'printing H1AO ...'
+        CALL OUTPUT(WRK(KH1AO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        write(lupri,*) 'DCAO ...'
+        CALL OUTPUT(DCAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+#endif
+!!
       ELSE
-         EMCMY = 0.0D0
+         EMCMY1 = 0.0D0
+         EMCMY  = 0.0D0
+      END IF
+      IF (P6FLAG(11) .AND. NASHT.GT.0) THEN
+         EMCAC1 = DDOT(N2BASX,DVAO,1,WRK(KH1AO),1)
+         WRITE (LUPRI,'(A,F25.12)')
+     &   ' Active   one-electron energy :',EMCAC1,
+     &   ' Total    one-electron energy :',EMCMY1+EMCAC1
       END IF
       IF (P6FLAG(11)) WRITE (LUPRI,'(A,F25.12)')
      &   ' Inactive total energy        :',EMCMY
@@ -670,16 +751,17 @@ C
 #include "priunit.h"
 #include "scbrhf.h"
 C
-      DIMENSION ISYMDM(3), IFCTYP(3)    !JT Aug 09
+      DIMENSION ISYMDM(3), IFCTYP(3)    ! 3 matrices: DC, DV, DS
 C
       CALL QENTER('FCK2AO')
       KFRSAV = KFREE
 C
-C
       LUSUPM_here = LUSUPM
       ! setting "LUSUPM_here = -1" below for cases not OK in RDSUPM
-      ISYMDM(1) = 1
-      ISYMDM(2) = 1
+      ISYMDM(1:3) = 1
+#ifdef SIRGRAD_DEBUG
+      write(lupri,*) 'from FCK2AO: HFXFAC =', HFXFAC
+#endif
       IF (HFXFAC .eq. 0.0D0) THEN
 C        ... only Coulomb term
          IFCTYP(1) = 11
@@ -690,13 +772,10 @@ C        ... Coulomb and Exchange
          IFCTYP(2) = 13
       END IF
 C
-C JT Aug 09 beg
       IF (DFT_SPINDNS) THEN
-         ISYMDM(3) = 1
-         IFCTYP(3) = -12
+         IFCTYP(3) = -12 ! only exchange; minus sign is code for spin density
          LUSUPM_here = -1
       END IF
-C JT Aug 09 end
 C
       IF (ONLYFC) THEN
          NDMAT = 1
@@ -707,7 +786,7 @@ C
          END IF
          IOFFAO = 1
       ELSE IF (NISHT .GT. 0 .OR. ADDSRI) THEN
-         IF (DFT_SPINDNS) THEN !JT Aug 09
+         IF (DFT_SPINDNS) THEN
             NDMAT = 3
             NFMAT = 3
          ELSE
@@ -728,7 +807,7 @@ C     one-electron system
          IOFFAO = 1
       ELSE
 C        DCAO zero matrix, only FVAO contribution
-C        (except for RO-DFT and srDFT we need FCAO for VxcAO)
+C        (except for RO-DFT and srDFT for which we need FCAO for VxcAO)
          NDMAT = 2
          IF (DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT) THEN
             NFMAT  = 2
@@ -761,7 +840,7 @@ C     ... note: NDMAT = # of DCAO and FCAO matrices; NFMAT = # of non-zero FCAO 
      &      WRK(KFREE),LFREE)
       ELSE
          if (iprsir .gt. 5) write(lupri,*)
-     &      'SIRFCK called, NFMAT',NFMAT,ISYMDM(1:NFMAT)
+     &   'SIRFCK called. NFMAT, ISYMDM(1:NFMAT)',NFMAT,ISYMDM(1:NFMAT)
          IF (DIRFCK) THEN ! density matrices may be destroyed in SIRFCK
             CALL MEMGET('REAL',KDMAT_SAVE,N2BASX*NDMAT,WRK,KFREE,LFREE)
             CALL DCOPY(NDMAT*N2BASX,DCAO(IOFFAO),1,WRK(KDMAT_SAVE),1)
@@ -1402,15 +1481,19 @@ C   PV, two-electron d.m. for CREF.
 C   H2AC, the two-electron integrals over active orbitals.
 C   FC, the inactive Fock matrix.
 C   FCAC, part of FC with active orbitals indices.
+C         if (DFT_SPINDNS) FCAC(:,2) is FSAC, part of FS with active orbital indices
 C   FV, the active Fock matrix.
 C   FQ, the "Q" Fock matrix
 C
 C Scratch:
 C   WRK
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg ! needed for storage of EMCMY
+
 #include "implicit.h"
       DIMENSION CREF(*),CMO(*),DV(NNASHX,*),PV(*),FC(*),FV(*),FQ(*)
-      DIMENSION FCAC(*),H2AC(*)
+      DIMENSION FCAC(NNASHX,*),H2AC(*)
       DIMENSION INDXCI(*), G(*), WRK(LFREE)
 #include "iratdef.h"
 C
@@ -1565,6 +1648,9 @@ C Step 2: calculate inactive and active Fock matrices.
 C
       CALL FCKMAT((NASHT.EQ.0),DV,CMO,EMCMY,FC,FV,WRK(KWRKF),LWRKF)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMCMY,FC,FV,WRK,LFREE)
+!     save EMCMY on common variable for LUCITA
+      einact_mc2lu = emcmy
+
       IF (NASHT .EQ. 0) CALL DZERO(FV,NNORBT)
 C     ... ORBGRD and ORBSIG always reference FV
 C
@@ -1580,10 +1666,18 @@ C
       IF (NWOPT.GT.0) CALL DZERO(WRK(KORDIA),NWOPT)
       IF (NASHT .GE. 1) THEN
          CALL GETAC(FC,FCAC)
+         IF (DFT_SPINDNS) THEN
+            CALL GETAC(FV(NNORBT+1),FCAC(1,2))  ! FSAC
+         END IF
          IF (P6FLAG(21)) THEN
             WRITE(LUPRI,'(/A)')
-     &      ' Active block of inactive Fock matrix FCAC'
-            CALL OUTPAK (FCAC,NASHT,1,LUPRI)
+     &      ' FCAC, active block of inactive Fock matrix FC'
+            CALL OUTPAK (FCAC,NASHT,-1,LUPRI)
+            IF (DFT_SPINDNS) THEN
+               WRITE(LUPRI,'(/A)')
+     &         ' FSAC, active block of spin-density Fock matrix FS'
+               CALL OUTPAK (FCAC(1,2),NASHT,-1,LUPRI)
+            EN DIF
          END IF
       END IF
       IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
@@ -1613,7 +1707,9 @@ C
             call quit('Something needs to be done for srdft and hsrohf')
          END IF
          CALL DZERO(FQ,NORBT*NASHT)
-         CALL GETAC(FV,FCAC)
+         CALL GETAC(FV,FCAC) ! put -K(DV), i.e. minus DV exchange, in FCAC
+         IF (DFT_SPINDNS) CALL QUIT(
+     &      'Sorry, DFT_SPINDNS not implemented yet for HSROHF')
          EMCACT = -ENRACT(DV,FCAC,FQ)/2
       ELSE IF (NASHT .EQ. 1) THEN
          CALL DZERO(FQ,NORBT)
@@ -1625,7 +1721,7 @@ C
 C
 C
 C ******************************************************************
-C Step 3: calculate Fock matrix contributions to the diagonal of the
+C Step 4: calculate Fock matrix contributions to the diagonal of the
 C         orbital Hessian.
 C
       IF (NWOPT .GT. 0) THEN
@@ -1745,15 +1841,17 @@ C
 C ******************************************************************
 C Step 5c: Write diagonal of orbital Hessian to LUIT2
 C
+ 5999 CONTINUE
       REWIND LUIT2
-      WRITE (LUIT2) TABLE(1),TABLE(1),TABLE(1),TABLE(2)
-      NWOPX = MAX(4,NWOPT)
-      CALL WRITT (LUIT2,NWOPX,WRK(KORDIA))
+      IF (NWOPT .GT. 0) THEN
+         WRITE (LUIT2) TABLE(1),TABLE(1),TABLE(1),TABLE(2)
+         NWOPX = MAX(4,NWOPT)
+         CALL WRITT (LUIT2,NWOPX,WRK(KORDIA))
+      END IF
       WRITE (LUIT2) TABLE(1),TABLE(1),TABLE(1),TABLE(3)
 C
 C ******************************************************************
 C
- 5999 CONTINUE
       CALL GETTIM(T5,W5)
 C
 C ******************************************************************
@@ -1766,6 +1864,15 @@ C        CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
      *               G,EMCACX,WRK(KWRK4),LWRK4)
 C        CALL CIGRAD(CREF,FCAC,H2AC,INDXCI,
 C    *               GCI,EMCACT,WRK,LFREE)
+         IF (DFT_SPINDNS) THEN
+            KGS_CI = KWRK4
+            KWRK5  = KGS_CI + NCONF
+            LWRK5  = LFREE- KWRK5
+            ES_AC  = 1.0D10 ! code for SOLGC_TRIPLET to remove CREF in GS_CI
+            CALL SOLGC_TRIPLET(CREF,FCAC(1,2),ES_AC,
+     &                         WRK(KGS_CI),INDXCI,WRK(KWRK5),LWRK5)
+            CALL DAXPY(NCONF,1.0D0,WRK(KGS_CI),1,G,1)
+         END IF
          DNCONF = NCONF
          DIFFOK = SQRT(DNCONF)*THRZER
          IF (ABS(EMCACT) .GT. THRZER) THEN
@@ -1896,12 +2003,13 @@ C   Orbital gradient in GORB
 C
 C
 #include "implicit.h"
-      DIMENSION GORB(*), UDV(NASHDI,*)
-      DIMENSION FC(*), FV(*), FQ(NORBT,*)
+      DIMENSION GORB(*), UDV(NASHDI,NASHDI,2)
+      DIMENSION FC(*), FV(NNORBT,*), FQ(NORBT,*)
 C
 C Used from common blocks:
 C   INFVAR : NWOPT,NWOPH,JWOP(2,*)
 C   INFIND : IROW(*),?
+C   DFTCOM : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -1911,13 +2019,14 @@ C
 #include "infind.h"
 #include "infdim.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
 C
       CALL QENTER('ORBGRD')
 C
       IF (NWOPX .NE. NWOPT .AND. NWOPX .NE. NWOPH) THEN
-         WRITE (LUPRI,'(//A/A,2I10)')
+         WRITE (LUPRI,'(//A/A,3I10)')
      &      ' ORBGRD error, NWOPX .ne. NWOPT,NWOPH',
      &      ' NWOPX, NWOPT, NWOPH :',NWOPX,NWOPT,NWOPH
          CALL QUIT('ORBGRD error, NWOPX .ne. NWOPT,NWOPH')
@@ -1953,7 +2062,7 @@ C
          IF (ITYPK .EQ. JTINAC) THEN
 C ** first index inactive:
             LK = IIORBI + IROW(NL) + NK
-            GORB(IG) = GORB(IG) + D4*(FC(LK) + FV(LK))
+            GORB(IG) = GORB(IG) + D4*(FC(LK) + FV(LK,1))
          ELSE
 C ** first index active
 C    (only other possibility, inactive, is already eliminated):
@@ -1963,11 +2072,14 @@ C    (only other possibility, inactive, is already eliminated):
             DO 100 NXW = IASHI+1,IASHI+NASHI
                NX = NX + 1
                IF (NX.LE.NL) THEN
-                  FCXL = FC(IIORBI+IROW(NL)+NX)
+                  J_XL = IIORBI+IROW(NL)+NX
                ELSE
-                  FCXL = FC(IIORBI+IROW(NX)+NL)
+                  J_XL = IIORBI+IROW(NX)+NL
                END IF
-               TEMP = TEMP + UDV(NXW,NKW)*FCXL
+               TEMP = TEMP + UDV(NXW,NKW,1)*FC(J_XL)
+               IF (DFT_SPINDNS) THEN
+                  TEMP = TEMP + UDV(NXW,NKW,2)*FV(J_XL,2)
+               END IF
   100       CONTINUE
             GORB(IG) = GORB(IG) + D2*(TEMP + FQ(L,NKW))
          END IF
@@ -1979,11 +2091,14 @@ C ** second index active:
             DO 200 NXW = IASHI+1,IASHI+NASHI
                NX = NX + 1
                IF (NX.LE.NK) THEN
-                  FCXK = FC(IIORBI+IROW(NK)+NX)
+                  J_XK = IIORBI+IROW(NK)+NX
                ELSE
-                  FCXK = FC(IIORBI+IROW(NX)+NK)
+                  J_XK = IIORBI+IROW(NX)+NK
                END IF
-               TEMP = TEMP + UDV(NXW,NLW)*FCXK
+               TEMP = TEMP + UDV(NXW,NLW,1)*FC(J_XK)
+               IF (DFT_SPINDNS) THEN
+                  TEMP = TEMP + UDV(NXW,NLW,2)*FV(J_XK,2)
+               END IF
   200       CONTINUE
             GORB(IG) = GORB(IG) - D2*(TEMP + FQ(K,NLW))
          END IF
@@ -2522,6 +2637,8 @@ C
 C Scratch:
 C   WRK
 C
+!     module dependencies
+      use lucita_mcscf_ci_cfg ! needed for storage of EMCMY
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION CREF(*),CMO(*),DV(*),PV(*), G(*),
@@ -2543,6 +2660,7 @@ C   INFOPT : GNORM(3),?
 C   -- GNORM, norm of the CI, the orbital, and the total gradient.
 C   INFDIM : ?
 C   INFTAP : LUIT2,?
+C  dftcom.h: DFT_SPINDNS
 C
 #include "maxorb.h"
 #include "infinp.h"
@@ -2553,6 +2671,7 @@ C
 #include "inftap.h"
 #include "infpri.h"
 #include "itinfo.h"
+#include "dftcom.h"
 C ---
       PARAMETER (IDTIM = 3)
 C     ... GRAD has IDTIM = 1
@@ -2622,7 +2741,13 @@ C
 C .. 1.1 .. (MAKDM, CIGRAD)
 C .. 1.2 .. (FCKMAT)
       KFCAC  = 1
-      KWRKF  = KFCAC + NNASHX
+      IF (DFT_SPINDNS) THEN
+         KFSAC  = KFCAC + NNASHX   ! FCAC
+         KWRKF  = KFSAC + NNASHX   ! FCAC, FSAC
+      ELSE
+         KFSAC  = KFCAC + NNASHX   ! FCAC
+         KWRKF  = KFSAC
+      END IF
       LWRKF  = LFREE - KWRKF
 C .. 1.3 .. (GETH2,  ORBGRD, CIGRAD)
       KH2AC  = KWRKF
@@ -2668,15 +2793,25 @@ C Step 2: calculate inactive and active Fock matrices.
 C
       CALL FCKMAT((NASHT.EQ.0),DV,CMO,EMCMY,FC,FV,WRK(KWRKF),LWRKF)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMCMY,FC,FV,WRK,LFREE)
+!     save EMCMY on common variable for LUCITA
+      einact_mc2lu = emcmy
       IF (NASHT .EQ. 0) CALL DZERO(FV,NNORBT)
 C     ... currently ORBGRD and ORBSIG always references FV
 C
       IF (NASHT .GE. 1) THEN
          CALL GETAC(FC,WRK(KFCAC))
+         IF (DFT_SPINDNS) THEN
+            CALL GETAC(FV(NNORBT+1),WRK(KFSAC))
+         END IF
          IF (P6FLAG(21)) THEN
             WRITE(LUPRI,'(/A)')
-     *         ' Active block of inactive Fock matrix FCAC'
-            CALL OUTPAK (WRK(KFCAC),NASHT,1,LUPRI)
+     &         ' FCAC, active block of inactive Fock matrix FC'
+            CALL OUTPAK (WRK(KFCAC),NASHT,-1,LUPRI)
+            IF (DFT_SPINDNS) THEN
+               WRITE(LUPRI,'(/A)')
+     &         ' FSAC, active block of spin-density Fock matrix FS'
+               CALL OUTPAK (WRK(KFSAC),NASHT,-1,LUPRI)
+            END IF
          END IF
       END IF
       CALL GETTIM(T2,W2)
@@ -2780,6 +2915,15 @@ C
      *               INDXCI,G,EMCACX,WRK(KWRK4),LWRK4)
 C        CALL CIGRAD(CREF,FCAC,H2AC,INDXCI,
 C    *               GCI,EMCACT,WRK,LFREE)
+         IF (DFT_SPINDNS) THEN
+            KGS_CI = KWRK4
+            KWRK5  = KGS_CI + NCONF
+            LWRK5  = LFREE- KWRK5
+            ES_AC  = 1.0D10 ! code for SOLGC_TRIPLET to remove CREF in GS_CI
+            CALL SOLGC_TRIPLET(CREF,WRK(KFSAC),ES_AC,
+     &                         WRK(KGS_CI),INDXCI,WRK(KWRK5),LWRK5)
+            CALL DAXPY(NCONF,1.0D0,WRK(KGS_CI),1,G,1)
+         END IF
          DNCONF = NCONF
          DIFFOK = SQRT(DNCONF)*THRZER
          IF (ABS(EMCACT) .GT. THRZER) THEN
@@ -2829,51 +2973,42 @@ C
       RETURN
       END
 C  /* Deck enract */
-      FUNCTION ENRACT(DV,FCAC,FQ)
+      REAL*8 FUNCTION ENRACT(DV,FCAC,FQ)
 C
 C PURPOSE:
 C  DETERMINE ACTIVE ELECTRONIC ENERGY OF MCSCF STATE
 C
 C  EACTIV = SUM(U,V) DV(U,V)*FI(U,V) + SUM(UVXY) P(UV,XY)*(UV/XY)
-C
 C         = SUM(U,V) DV(U,V)*FI(U,V) + 1/2 SUM(U) FQ(U,U)
 C
 #include "implicit.h"
 C
       DIMENSION DV(*),FCAC(*),FQ(NORBT,*)
-      PARAMETER ( DP5 = 0.5D0,  D2=2.0D0 )
 C
 C Used from common blocks:
 C  INFORB : NORBT,NNASHX,NASHT,NISHT
 C  INFIND : IROW(),ISX()
+C  dftcom.h : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
+#include "priunit.h"
 #include "inforb.h"
 #include "infind.h"
-#include "priunit.h"
+#include "dftcom.h"
 !
-      EACT = D2 * DDOT(NNASHX,DV,1,FCAC,1)
-!#define LUCI_DEBUG
-#ifdef LUCI_DEBUG
-      do i = 1, NNASHX
-        write(lupri,*) ' element i, dv(i) and fcac(i) ==> ',
-     &                   i,dv(i),fcac(i)
-      end do
-      write(lupri,*) 'ENRACT: eact after ddot... ==> ',eact
-#endif
+      EV_ACT = 2.0D0 * DDOT(NNASHX,DV,1,FCAC,1)
 !     diagonal elements counted twice now.
-      DO 100 NI = 1,NASHT
+      DO NI = 1,NASHT
         NII  = IROW(NI+1)
         I    = ISX(NISHT+NI)
-        EACT = EACT + DP5*FQ(I,NI) - DV(NII)*FCAC(NII)
-#ifdef LUCI_DEBUG
-        write(lupri,*) 'ENRACT: ni, nii, i elements  ... ==> ',ni,nii,i
-        write(lupri,*) 'ENRACT: eact after element ni... ==> ',ni,eact
-        write(lupri,*) 'ENRACT: FQ(i,ni)             ... ==> ',fq(i,ini)
+        EV_ACT = EV_ACT + 0.5D0*FQ(I,NI) - DV(NII)*FCAC(NII)
+      END DO
+      ENRACT = EV_ACT
+#ifdef SIRGRAD_DEBUG
+      write(lupri,'(/A,3F16.10)'))
+     &  'dbg ENRACT: EV_ACT =',EV_ACT
 #endif
- 100  CONTINUE
-      ENRACT = EACT
       RETURN
       END
 C  /* Deck adh2ac */
@@ -3086,16 +3221,21 @@ C Used from common blocks:
 C  INFORB : NSYM,MULD2H(8,8),NASHT,NNBASX,N2BASX,...
 C  INFVAR : JWOPSY
 C  INFPRI : P6FLAG()
+C  DFTCOM : DFT_SPINDNS
 C
 #include "maxorb.h"
 #include "priunit.h"
 #include "inforb.h"
 #include "infvar.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
 C
       CALL QENTER('FCKDEN2')
 C
+      IF (DFT_SPINDNS) THEN
+         CALL QUIT('DFT_SPINDNS not implemented in FCKDEN2 yet')
+      END IF
 C
       KFRSAV = 1
       KFREE  = KFRSAV
@@ -3188,7 +3328,7 @@ C *** end of subroutine FCKDEN2
 C
        END
 C  /* Deck Make_ds_localspin */
-      SUBROUTINE MAKE_DS_LOCALSPIN(DT,DS,WORK,LWORK)
+C      SUBROUTINE MAKE_DS_LOCALSPIN_MODEL1(DT,DS,WORK,LWORK)
 C
 C FRAN & HJJ - Feb 2010 / Oct 2010
 C
@@ -3196,10 +3336,60 @@ C PURPOSE:
 C  Do the Spin-Density as DS = f(DT) * DT
 C     model 1: f(DT) = (2-DT)*DT
 C
+C#include "implicit.h"
+C#include "priunit.h"
+C#include "inforb.h"
+C#include "infpri.h"
+C      DIMENSION DT(NASHT,NASHT),DS(NASHT,NASHT), WORK(LWORK)
+C
+C     IF (P6FLAG(15)) THEN
+C         WRITE(LUPRI,'(/A)') 'DV from MAKE_DS_LOCALSPIN'
+C         CALL OUTPAK(DT,NASHT,1,LUPRI)
+C     END IF
+C
+C!     IF (model 1) then   ! only model implemented so far
+C         KUDT = 1
+C         KUDS = KUDT + N2ASHX
+C         KUDI = KUDS + N2ASHX ! intermediate matrix
+C         CALL DSPTGE(NASHT,DT,WORK(KUDT))
+C!>       step 1 : D_S = D_I = D_T D_T
+C         CALL DGEMM('N','N',NASHT,NASHT,NASHT,1.0D0,
+C     &      WORK(KUDT),NASHT,
+C     &      WORK(KUDT),NASHT, 0.0D0,
+C     &      WORK(KUDI),NASHT)
+C         CALL DCOPY(N2ASHX,WORK(KUDI),1,WORK(KUDS),1)
+C!>       step 2 : D_S = - D_T D_I + 2 D_S = (2-D_T) D_T D_T
+C         CALL DGEMM('N','N',NASHT,NASHT,NASHT,-1.0D0,
+C     &      WORK(KUDT),NASHT,
+C     &      WORK(KUDI),NASHT, 2.0D0,
+C     &      WORK(KUDS),NASHT)
+C         CALL DGETSP(NASHT,WORK(KUDS),DS)
+C!     END IF ! models
+C
+C     IF (P6FLAG(15)) THEN
+C         WRITE (LUPRI,1000)
+C         CALL OUTPUT(WORK(KUDS),1,NASHT,1,nasht,nasht,nasht,1,LUPRI)
+C     END IF
+C 1000 FORMAT(/' Spin. den. mat.: DS = (2-Dtot)Dtot Dtot , MO-basis')
+C
+C END OF MAKE_DS_LOCALSPIN
+C
+C      RETURN
+C      END
+C  /* Deck Make_ds_localspin */
+      SUBROUTINE MAKE_DS_LOCALSPIN(DT,DS,WORK,LWORK)
+C
+C MNP & HJJ  - NOV 2011               
+C
+C PURPOSE:
+C  Do the Spin-Density as DS = f(DT) * DT
+C     model 2: f(DT) = DT**2 * (2-DT)**2
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "inforb.h"
 #include "infpri.h"
+#include "dftcom.h"
       DIMENSION DT(NASHT,NASHT),DS(NASHT,NASHT), WORK(LWORK)
 C
 !     IF (P6FLAG(15)) THEN
@@ -3207,7 +3397,6 @@ C
          CALL OUTPAK(DT,NASHT,1,LUPRI)
 !     END IF
 
-!     IF (model 1) then   ! only model implemented so far
          KUDT = 1
          KUDS = KUDT + N2ASHX
          KUDI = KUDS + N2ASHX ! intermediate matrix
@@ -3218,19 +3407,26 @@ C
      &      WORK(KUDT),NASHT, 0.0D0,
      &      WORK(KUDI),NASHT)
          CALL DCOPY(N2ASHX,WORK(KUDI),1,WORK(KUDS),1)
-!>       step 2 : D_S = - D_T D_I + 2 D_S = (2-D_T) D_T D_T
-         CALL DGEMM('N','N',NASHT,NASHT,NASHT,-1.0D0,
+!>       step 2 : D_S = - 4*D_T D_I + 4 D_S
+         CALL DGEMM('N','N',NASHT,NASHT,NASHT,-4.0D0,
      &      WORK(KUDT),NASHT,
-     &      WORK(KUDI),NASHT, 2.0D0,
+     &      WORK(KUDI),NASHT, 4.0D0,
      &      WORK(KUDS),NASHT)
+!>       step 3 : D_S = D_I D_I + D_S
+         CALL DGEMM('N','N',NASHT,NASHT,NASHT,1.0D0,
+     &      WORK(KUDI),NASHT,
+     &      WORK(KUDI),NASHT, 1.0D0,
+     &      WORK(KUDS),NASHT)
+      IF (DSLOCALFAC) THEN
+         CALL DSCAL(N2ASHX,DSFAC,WORK(KUDS),1)
+      END IF
          CALL DGETSP(NASHT,WORK(KUDS),DS)
-!     END IF ! models
 C
 C     IF (P6FLAG(15)) THEN
          WRITE (LUPRI,1000)
          CALL OUTPUT(WORK(KUDS),1,NASHT,1,nasht,nasht,nasht,1,LUPRI)
 C     END IF
- 1000 FORMAT(/' Spin. den. mat.: DS = (2-Dtot)Dtot Dtot , MO-basis')
+ 1000 FORMAT(/' Spin. den. mat.: DS = (2-Dtot)**2*Dtot Dtot , MO-basis')
 C
 C END OF MAKE_DS_LOCALSPIN
 C

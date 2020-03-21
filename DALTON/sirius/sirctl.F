@@ -45,7 +45,13 @@ C   Sweden
 C
 C
 
-      use lucita_orbital_spaces
+      use lucita_cfg
+      use gasci_input_cfg
+      use lucita_mcscf_ci_cfg
+      use mcscf_or_gasci_2_define_cfg
+      use lucita_orbital_spaces, only: set_inforb_lucita
+      use lucita_setup, only: setup_lucita_mcci_wrkspc_dimensions
+      use lucita_mcscf_ci_interface_procedures
 #ifdef HAS_PCMSOLVER
       use pcm_config, only: pcm_configuration, pcm_cfg
 #endif
@@ -92,9 +98,11 @@ C
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCM_save
       LOGICAL   DFT_SPINDNS_save, DFT_LOCALSPIN_save, USEDRC_save
+      LOGICAL   dftadd_s, addsri_s
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
       real(8), allocatable :: tmp_space(:)
-
+      integer              :: xctype1, xctype2
+ 
 #include "sirbkd.h"
 #include "center.h"
 C
@@ -294,6 +302,26 @@ C        Also high-spin Fock matrices for all open-shell calcs with dft
 C
          CALL GETTIM(TSTART,WSTART)
 C
+C        Modifications for open-shell HF-srDFT ...
+C        (do not switch off DIIS if DFT_SPINDNS but NASHT.eq.0, i.e. closed-shell SCF)
+C
+         IF (DOHFSRDFT .and. DFT_SPINDNS .AND. NASHT.GT.0) THEN
+         IF (MXDIIS .gt. 0) THEN ! DIIS not implemented for HFSRDFT and open shell SCF
+            MXDIIS = 0
+            NINFO  = NINFO + 1
+            WRITE(LUPRI,'(/A)') '@ INFO: DIIS disabled '//
+     &      'for open-shell HF-srDFT because not implemented.'
+         END IF
+         IF (.NOT.DIRCAL .OR. .NOT.DIRFCK) THEN
+            NINFO  = NINFO + 1
+            WRITE (LUPRI,'(/A)')
+     &      '@ INFO: switched to AO-direct Fock matrices because'
+     &      //' open-shell HF-srDFT will not work otherwise.'
+            DIRCAL = .TRUE.
+            DIRFCK = .TRUE.
+         END IF
+         END IF
+C
 C        Call FCMO to perform MAXFCK Roothaan Fock iterations
 C
          IF (MAXFCK .GT. 0) THEN
@@ -314,7 +342,7 @@ C           CALL FCMO(MAXFCK,CMO,FC,SCRA,LSCRA)
 C
 C        Call SRDIIS to perform MXDIIS DIIS iterations
 C
-         IF (MXDIIS .GT. 0) THEN
+         IF (MXDIIS .gt. 0) THEN
             FLAG(5) = FLAGSV(5)
             JRDMO = 9
             KCMO  = 1
@@ -383,6 +411,9 @@ C              ... orbital super symmetries may have been reordered
                IF (IAVERR .NE. 0) CALL QUIT('SIRCTL error: '//
      &         'inconsistency in sup.sym. averaging before QC-SCF call')
             END IF
+
+! Tell srdft routines to use MCSRDFT version, otherwise qc-hf-srdft will not work for open shells /May2019-hjaaj
+            IF (DOHFSRDFT .AND. NASHT.GT.0) DOMCSRDFT = .TRUE.
 C
             CALL SIROPT(WORK,LWORK,ICONV)
             FLAG(15) = FLAGSV(15)
@@ -442,6 +473,7 @@ C
             FLAG(25) = .FALSE. ! do not write to SIRIFC if MP2 followed by MC or CI
          END IF
          IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
+            NWARN = NWARN + 1
             WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
      &      'implemented in MP2 module and is ignored.'
          END IF
@@ -573,6 +605,7 @@ C        *** CI ***
 C
       IF (DOCI .OR. DOCINO) THEN
          IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
+            NWARN = NWARN + 1
             WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
      &      'implemented in CI module and is ignored.'
          END IF
@@ -774,13 +807,57 @@ C
          WRITE (LUPRI,'(//A)') '@ WARNING: '//
      &      'LUCITA skipped because requested HF/MCSCF not converged.'
        ELSE
+         addsri_s      = addsri
+         dftadd_s      = dftadd
+         DOHFSRDFT     = .FALSE.
+         ADDSRI        = .FALSE.
+C        ... Dont risk adding DFT contributions in later call of FCKMAT
+C            The SR-DFT terms needed in CI-DFT is handled by SRFMAT.
+C            Maybe this should be added to the generel code and not 
+C            just the CIDFT code if one wants to run a CI with KS orbitals !
+C            (if the CISRDFT was specified together with a presceding
+C             HFSRDFT call, we assume the HFSRDFT is done by now!)
+         DFTADD        = .FALSE.
          kfirst_lucita = 1
-         JRDMO  = 9
-         KFRSAV = 1
-         KFREE  = KFRSAV
-         LFREE  = LWORK
+         JRDMO         = 9
+         KFRSAV        = 1
+         KFREE         = KFRSAV
+         LFREE         = LWORK
          CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
          CALL READMO(WORK(KCMO),JRDMO)
+
+!       define LUCITA control variables and orbital spaces provided via GASCI input (irun_type == '2')
+        irun_type =  2 
+
+        xctype1   = -1
+        xctype2   = -1
+
+!       step 1: dynamic variables
+        call define_lucita_cfg_dynamic(gasci_input_ptg_symmetry,
+     &                                 gasci_input_ptg_symmetry,
+     &                                  0, ! no istaci; converge all roots being asked for
+     &                                  0,
+     &                                  0,
+     &                                  gasci_input_nr_roots,
+     &                                  gasci_input_is_spin_multiplett,
+     &                                  gasci_input_max_nr_dav_ci_iter,
+     &                                  gasci_input_density_calc_lvl,
+     &                                  gasci_input_global_print_lvl,
+     &                                  gasci_input_accepted_truncation,
+     &                                  gasci_input_convergence_thr,
+     &                                  gasci_input_aux_convergence_thr,
+     &                                  gasci_input_natural_orb_occ_nr,
+     &                                  gasci_input_analyze_cvec,
+     &                                  .false.,
+     &                                  .false.,
+     &                                  .false.,
+     &                                  .false.,
+     &                                  xctype1, ! vector exchange type1
+     &                                  xctype2, ! vector exchange type2
+     &                                  .false., ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
+     &                                  .false.) ! no vector exchange between lucita/mc using io2io (here: no vector exchange at all...)
+!        step 2: static variables
+         call define_lucita_cfg_static(irun_type)
 
          CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
                                           ! orbital occupations for TRACTL
@@ -789,19 +866,50 @@ C
          USEDRC  = .FALSE. ! Dirac format 2-el. integrals not needed
 
          FTRCTL = .true.
+         if (.not.gasci_input_skip_4index_trafo) then
 
-!        integral transformation
-         CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
+!          integral transformation
+           CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
 
-!        prepare (aa|aa) 1e-/2e- integral file to be read within LUCITA
-         CALL MAKE_LUCITA_INTEGRALS(WORK(KCMO),WORK(KFREE),LFREE)
+!          prepare (aa|aa) 1e-/2e- integral file to be read within LUCITA
+           CALL MAKE_LUCITA_INTEGRALS(WORK(KCMO),WORK(KFREE),LFREE)
+         end if
 
          CALL MEMREL('lucita-tra.done',work,KFRSAV,KFRSAV,KFREE,LFREE)
 
 !        perform large-scale (GAS)CI calculation with LUCITA
+!        ---------------------------------------------------
+
          CALL GETTIM(TSTART,WSTART)
-         CALL LUCITA(WORK,LFREE)
+
+
+!        if FCI dump active - nothing else to do...
+!        ------------------------------------------
+         if(.not.gasci_input_fci_dump)then
+!          a1. calculate dimensions of vector and resolution matrices
+           call mcscf_lucita_interface(vdummy,vdummy,vdummy,vdummy,
+     &                               'return CIdim',work,lfree,iprsir)
+!          a2. calculate dimensions of vector and resolution matrices
+           call setup_lucita_mcci_wrkspc_dimensions('ijkl resort ',0)
+           call mcscf_lucita_interface(vdummy,vdummy,vdummy,vdummy,
+     &                                 'ijkl resort ',work,lfree,iprsir)
+ 
+!          b. set vector, resolution matrices and integral array length in common MC/CI module
+           call setup_lucita_mcci_wrkspc_dimensions('standard ci ',0)
+!          c. allocate vectors (dimensions are provided by the module lucita_mcscf_ci_cfg)
+           call memget('REAL',K_VEC1,len_cref_mc2lu,WORK,KFREE,LFREE)
+           call memget('REAL',K_VEC2,  len_hc_mc2lu,WORK,KFREE,LFREE)
+
+!          d. ------------------- start of LUCITA machinery ---------------------
+           CALL LUCITA('standard ci ',work(k_vec1),work(k_vec2),vdummy,
+     &                 vdummy,work(kfree),lfree)
+!          ---------------------- end of LUCITA machinery -----------------------
+
+           CALL MEMREL('lucita-ci.done',work,kfrsav,kfrsav,kfree,lfree)
+         end if
          CALL GETTIM(TEND,WEND)
+
+!        timing statistics
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
 
@@ -815,8 +923,12 @@ C
          USEDRC = USEDRC_save
 
          CALL SET_INFORB_LUCITA('RESET ')
+         addsri        = addsri_s
+         dftadd        = dftadd_s
        END IF
       END IF
+
+
 C
 C *** POPULATION ANALYSIS AND PROPERTIES
 C

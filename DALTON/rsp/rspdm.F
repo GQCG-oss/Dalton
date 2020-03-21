@@ -132,6 +132,14 @@ C     CALL DENSID(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR,RHO1,RHO2,
 C    *            RHOTYP,CSFEXP,USEPSM,NORHO2,ISPIN1,ISPIN2,TDM,
 C    *            XNDXCI,WORK,KFREE,LFREE)
 C
+      if(ci_program .eq. 'LUCITA   ')then
+        KRHO1 = KFREE
+        call dzero(work(krho1),n2ashx)
+        CALL DSPTSI(NASHT,RHO1,work(krho1))
+        call dcopy(n2ashx,work(krho1),1,rho1,1)
+C       ... unpack RHO1 using CALL DSPTSI(N,ASP,ASI)
+      end if
+
       IF ( IPRRSP.GT.90 ) THEN
          WRITE(LUPRI,'(/A)')' *** LEAVING RSPDM'
          WRITE(LUPRI,'(/A,/2I6,2I4,4I8)')

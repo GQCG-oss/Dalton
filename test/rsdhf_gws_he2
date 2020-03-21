@@ -1,0 +1,70 @@
+#!/bin/sh
+#
+
+info='
+   rsdhf_gws_he2 
+   --------------
+   Molecule:         He2 
+   Wave Function:    RSDHf using HF-srPBEgws orbitals, no frozen core / cc-pVDZ 
+   Test Purpose:     Check the energy 
+'
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+molecule='BASIS
+cc-pVDZ
+He2 cc-pVDZ basis
+
+    1    3  X  Y  Z
+        2    1
+He     0.0000000000000000  0.0000000000000000  3.50000
+'
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+
+dalton='**DALTON INPUT
+.RUN WAVE FUNCTION
+**WAVE FUNCTIONS
+.HFSRDFT
+.SRFUN
+SRXPBEGWS SRCPBEGWS
+.MP2
+*SCF INPUT
+.THRESHOLD
+1.D-6
+*MP2 INPUT
+.RSDHF
+1.0
+*PRINT
+*ORBITAL INPUT
+.NOSUPSYM
+**INTEGRALS
+.NOSUP
+*TWOINT
+.DOSRIN
+.ERF
+0.4 
+**END OF INPUT
+'
+#######################################################################
+
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+
+test='
+check_RSDHf_energy -5.8542830290 1e-6'                    
+
+. ./functions || { echo "'functions' library not found." ; exit 1; }
+check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"
+
+
+#######################################################################

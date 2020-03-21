@@ -132,10 +132,10 @@ ERROR[3]="CC3 EXCITATION ENERGIES NOT CORRECT"
 
 
 # CCSD onephoton transition moments:
-CRIT1=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.48077965 *. * (0| |\-|\-0)\.95231131 *. * (0| )\.45785190" $log | wc -l`
-CRIT2=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.0000022. *. * (0| |\-|\-0)\.00000457 *. * (0| )\.00000000" $log | wc -l`
-CRIT3=`$GREP -m 1 "(Y|X)DIPLEN * . * (0| |\-|\-0)\.0000001. *. * (0| |\-|\-0)\.00000021 *. * (0| )\.00000000" $log | wc -l`
-CRIT4=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.00000150 *. * (0| |\-|\-0)\.00000304 *. * (0| )\.00000000" $log | wc -l`
+CRIT1=`$GREP "ZDIPLEN * . * (0|\-|\-0)\.48077965 *. * (0|\-|\-0)\.95231131 *. * (0| )\.45785190" $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN * . * (0|\-|\-0)\.0000022. *. * (0|\-|\-0)\.00000457 *. * (0| )\.00000000" $log | wc -l`
+CRIT3=`$GREP -m 1 "(Y|X)DIPLEN * . * (0|\-|\-0)\.0000001. *. * (0|\-|\-0)\.00000021 *. * (0| )\.00000000" $log | wc -l`
+CRIT4=`$GREP "ZDIPLEN * . * (0|\-|\-0)\.00000150 *. * (0|\-|\-0)\.00000304 *. * (0| )\.00000000" $log | wc -l`
 CRIT5=`$GREP "oscillator strength .length gauge. * . * (0| )\.41265595" $log | wc -l`
 #CRIT6=`$GREP "oscillator strength .length gauge. * . * (0| )\.00000000" $log | wc -l`
 #CRIT7=`$GREP "oscillator strength .length gauge. * . * (0| )\.00000000" $log | wc -l`
@@ -146,10 +146,10 @@ ERROR[4]="CCSD ONEPHOTON TRANSITION MOMENTS NOT CORRECT"
 
 
 # CC3 onephoton transition moments:
-CRIT1=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.48079338 *. * (0| |\-|\-0)\.95174601 *. * (0| )\.45759318" $log | wc -l`
-CRIT2=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.0000022. *. * (0| |\-|\-0)\.00000457 *. * (0| )\.00000000" $log | wc -l`
-CRIT3=`$GREP -m 1 "(Y|X)DIPLEN * . * (0| |\-|\-0)\.0000001. *. * (0| |\-|\-0)\.00000021 *. * (0| )\.00000000" $log | wc -l`
-CRIT4=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.00000151 *. * (0| |\-|\-0)\.00000306 *. * (0| )\.00000000" $log | wc -l`
+CRIT1=`$GREP "ZDIPLEN * . * (0|\-|\-0)\.48079338 *. * (0|\-|\-0)\.95174601 *. * (0| )\.45759318" $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN * . * (0|\-|\-0)\.0000022. *. * (0|\-|\-0)\.00000457 *. * (0| )\.00000000" $log | wc -l`
+CRIT3=`$GREP -m 1 "(Y|X)DIPLEN * . * (0|\-|\-0)\.0000001. *. * (0|\-|\-0)\.00000021 *. * (0| )\.00000000" $log | wc -l`
+CRIT4=`$GREP "ZDIPLEN * . * (0|\-|\-0)\.00000151 *. * (0|\-|\-0)\.00000306 *. * (0| )\.00000000" $log | wc -l`
 CRIT5=`$GREP "oscillator strength .length gauge. * . * (0| )\.41237882" $log | wc -l`
 #CRIT6=`$GREP "oscillator strength .length gauge. * . * (0| )\.00000000" $log | wc -l`
 #CRIT7=`$GREP "oscillator strength .length gauge. * . * (0| )\.00000000" $log | wc -l`

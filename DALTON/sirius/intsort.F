@@ -19,7 +19,6 @@ C
 C     FILE : intsort.F
 C
 #define VAR_AOCANORDER
-#ifdef OLD_REV_LOG
 !===========================================================================
 !961213-hjaaj
 !    removed check for LSORT .ge. 8*1024**2 (see MAERKE)
@@ -70,7 +69,6 @@ C
 !  save INTSYM as IDATA(2) on LUORD
 !  set KEEP(I)=1 if NBAS(I)=0  
 !===========================================================================
-#endif
 C ======================================================================
       SUBROUTINE SORTAO(SCR,LSORT)
 C ======================================================================
@@ -115,6 +113,8 @@ C     THE MAXIMUM NUMBER OF SYMMETRY BLOCKS IS 666 (D2H SYMMETRY)
 C     AT MOST 106 OF THEM CORRESPOND HOWEVER TO NON-ZERO INTEGRALS.
 C
 C     EXTERNAL REFERENCES: DAFILE - DIRECT ACCESS FILE I/O ROUTINE
+C                          SETTIM - SET THE CLOCK TO ZERO
+C                          TIMING - TIMING ROUTINE
 C
 C          ********** IBM-3090 RELEASE 86 11 28 **********
 C
@@ -174,7 +174,10 @@ C
 C
 C     Read input
 C
-      CALL GETTIM(TCPU0,TWALL0)
+#ifdef TIMING
+! hjaaj: SETTIM/TIMING is not working on unix /Oct. 2004
+      CALL SETTIM
+#endif
 C
 C     MINUS ONE AS A R*8 PACKED NUMBER
       XLABEL = D0
@@ -259,9 +262,9 @@ C
       WRITE(LUPRI,1151) (NBAS(I),I = 1,NSYM)
       WRITE(LUPRI,1152) (KEEP(I),I = 1,NSYM)
  1150 FORMAT(//' NUMBER OF SYMMETRIES',I4,
-     *        /' SYMMETRY SPECIES',10X,8I6)
- 1151 FORMAT(  ' NUMBER OF BASIS FUNCTIONS ',8I6)
- 1152 FORMAT(  ' SYMMETRIES DELETED',8X,8I6)
+     *        /' SYMMETRY SPECIES',20X,8I4)
+ 1151 FORMAT(  ' NUMBER OF BASIS FUNCTIONS',11X,8I4)
+ 1152 FORMAT(  ' SYMMETRIES DELETED',18X,8I4)
 C
       WRITE(LUPRI,'(/A,1P,D10.2)')
      *   ' Threshold for omitting integrals            :',THRQ2

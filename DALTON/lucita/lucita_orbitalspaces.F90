@@ -30,18 +30,12 @@ module lucita_orbital_spaces
 
 contains 
  
-  subroutine define_lucita_orb_spaces(number_of_ptg_irreps,        &
-                                      number_of_gas_spaces,        &
-                                      init_input_type,             &
-                                      init_wave_f_type)
+  subroutine define_lucita_orb_spaces(init_wave_f_type)
 !*******************************************************************************
 !
 !    purpose:  define the orbital spaces for LUCITA ci/mcscf calculations.
 !
 !*******************************************************************************
-    integer, intent(in) :: number_of_ptg_irreps
-    integer, intent(in) :: number_of_gas_spaces
-    integer, intent(in) :: init_input_type
     integer, intent(in) :: init_wave_f_type
 !-------------------------------------------------------------------------------
 
@@ -50,36 +44,21 @@ contains
       nash_lucita = 0
       nocc_lucita = 0
 
-!     transfer information from temporary arrays provided in: 
-!     case 1: lucita input 
-!     case 2:  mcscf input
-!     ------------------------------------------
-      select case(init_input_type)
-
-        case(1)
-
-          call fill_lucita_orb_spaces_ci(number_of_ptg_irreps,        &
-                                         number_of_gas_spaces,        &
-                                         max_number_of_ptg_irreps,    &
-                                         max_number_of_gas_spaces,    &
-                                         nish_lucita,                 &
-                                         nash_lucita,                 &
-                                         nocc_lucita,                 &
-                                         nfro_lucita,                 &
-                                         nas1_lucita,                 &
-                                         nas2_lucita,                 &
-                                         nas3_lucita,                 &
-                                         ngsh_lucita,                 &
-                                         init_wave_f_type)
-
-        case(2)
-
-          call quit(' *** error in lucita_orb_spaces_init: mcscf orbital' & 
-                    //' input conversion not available yet. ***')
-          
-!         call fill_lucita_orb_spaces_mcscf
-
-      end select
+!     transfer information from temporary arrays provided in gasci/mcscf input 
+!     ------------------------------------------------------------------------
+      call fill_lucita_orb_spaces_ci(lucita_cfg_nr_ptg_irreps,    &
+                                     lucita_cfg_nr_gas_spaces,    &
+                                     max_number_of_ptg_irreps,    &
+                                     max_number_of_gas_spaces,    &
+                                     nish_lucita,                 &
+                                     nash_lucita,                 &
+                                     nocc_lucita,                 &
+                                     nfro_lucita,                 &
+                                     nas1_lucita,                 &
+                                     nas2_lucita,                 &
+                                     nas3_lucita,                 &
+                                     ngsh_lucita,                 &
+                                     init_wave_f_type)
 
   end subroutine define_lucita_orb_spaces
 !*******************************************************************************
@@ -102,6 +81,7 @@ contains
 !    purpose:  fill orbital spaces for LUCITA from ci input.
 !
 !*******************************************************************************
+#include "priunit.h"
     integer, intent(in)    :: number_of_ptg_irreps
     integer, intent(in)    :: number_of_gas_spaces
     integer, intent(in)    :: mx_number_of_ptg_irreps
@@ -131,6 +111,14 @@ contains
       case(2) ! RAS
 
         tmp_nr_gas_spaces = 3
+!       check for atypical ras (no ras3): 
+        i = 0
+        do j = 1, number_of_ptg_irreps
+          i = i + is_nas3_lucita(j)
+        end do
+        
+        if(i == 0) tmp_nr_gas_spaces = 2
+        
 
 !       a. active shells for each point group irrep in RAS1, RAS2 and RAS3
         do i = 1, tmp_nr_gas_spaces
@@ -149,6 +137,10 @@ contains
               end do
           end select
         end do
+
+      case default ! whatever
+
+        tmp_nr_gas_spaces = -1
  
     end select
 
@@ -172,13 +164,13 @@ contains
 
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-    print *, ' debug print of orbital spaces:'
-    print *, ' nfro_lucita        : ',(is_nfro_lucita(i),i=1,number_of_ptg_irreps)
-    print *, ' nish_lucita        : ',(is_nish_lucita(i),i=1,number_of_ptg_irreps)
-    print *, ' nash_lucita        : ',(is_nash_lucita(i),i=1,number_of_ptg_irreps)
-    print *, ' nocc_lucita        : ',(is_nocc_lucita(i),i=1,number_of_ptg_irreps)
+    write(lupri,*) ' debug print of orbital spaces:'
+    write(lupri,*) ' nfro_lucita        : ',(is_nfro_lucita(i),i=1,number_of_ptg_irreps)
+    write(lupri,*) ' nish_lucita        : ',(is_nish_lucita(i),i=1,number_of_ptg_irreps)
+    write(lupri,*) ' nash_lucita        : ',(is_nash_lucita(i),i=1,number_of_ptg_irreps)
+    write(lupri,*) ' nocc_lucita        : ',(is_nocc_lucita(i),i=1,number_of_ptg_irreps)
     do j = 1, tmp_nr_gas_spaces
-      print *, ' ngsh_lucita per gas: ',(is_ngsh_lucita(j,i),i=1,number_of_ptg_irreps)
+      write(lupri,*) ' ngsh_lucita per gas: ',(is_ngsh_lucita(j,i),i=1,number_of_ptg_irreps)
     end do
 #endif
 !#undef LUCI_DEBUG
@@ -206,6 +198,8 @@ contains
       select case(keyword)
 
         case('LUCITA')
+
+!         call set_lucita_automatic_gas_space_selector()
 
           NFRO_SAVE(1:8) = NFRO(1:8)
           NISH_SAVE(1:8) = NISH(1:8)

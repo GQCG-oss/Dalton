@@ -181,13 +181,23 @@ C
 #include "implicit.h"
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0 )
+#ifdef LUCI_DEBUG
+#include <priunit.h>
+#endif
 C
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
             ASP(JOFF+I) = DP5 * (AGE(I,J) + AGE(J,I))
+#ifdef LUCI_DEBUG
+            write(lupri,*) 'joff,i,j ==> age(i,j), age(j,i,)',joff,
+     &                      i,j,AGE(I,J), AGE(J,I),ASP(JOFF+I)
+#endif
   100    CONTINUE
   200 CONTINUE
+#ifdef LUCI_DEBUG
+      write(lupri,*) 'end of DGETSP'
+#endif
 C
       RETURN
       END

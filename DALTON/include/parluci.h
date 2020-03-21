@@ -50,30 +50,26 @@
      &                I_NZERO_LEN_C, IFERM_SYM_T,                       &
      &                LU_INFO
 
-!     currently we work with 9 scratch files
-!     --------------------------------------
-      integer, parameter :: nr_files = 9
-
 !     MPI file lists and MPI file handles
 !     --------------------------------------
-      INTEGER IDIA,ILU1,ILU2,ILU3,ILU4,ILU5,ILU6,ILU7,ILUC
+      INTEGER IDIA,ILU1,ILU2,ILU3,ILU4,ILU5,ILU6,ILU7,ILUC,ILUR
       INTEGER IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4, IALL_LU5,         &
-     &        IALL_LU6, IALL_LU7, IALL_LUC, IIJKL_ROD, ILPRP_X,         &
-     &        IJKL_PRE
+     &        IALL_LU6, IALL_LU7, IALL_LUC, IALL_LUR, IIJKL_ROD,        &
+     &        ILPRP_X , IJKL_PRE
       COMMON/LUCIAPFILE/ IDIA,ILU1,ILU2,ILU3,ILU4,ILU5,ILU6,ILU7,ILUC,  &
-     &                   IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4,        &
+     &                   ILUR, IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4,  &
      &                   IALL_LU5, IALL_LU6, IALL_LU7, IALL_LUC,        &
-     &                   IIJKL_ROD, ILPRP_X, IJKL_PRE
+     &                   IALL_LUR, IIJKL_ROD, ILPRP_X, IJKL_PRE
 #if defined (VAR_MPI)
       INTEGER MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL, FILE_INFO_OBJ
       INTEGER*8 MY_VEC1_IOFF, MY_VEC2_IOFF, MY_DIA_OFF, MY_LU1_OFF,     &
      &          MY_LU2_OFF, MY_LU3_OFF, MY_LU4_OFF, MY_LU5_OFF,         &
-     &          MY_LU6_OFF, MY_LU7_OFF, MY_LUC_OFF
+     &          MY_LU6_OFF, MY_LU7_OFF, MY_LUC_OFF, MY_LUR_OFF
       COMMON/LUCIFILEOFF/ MY_VEC1_IOFF, MY_VEC2_IOFF,                   &
      &                    MY_DIA_OFF, MY_LU1_OFF,                       &
      &                    MY_LU2_OFF, MY_LU3_OFF, MY_LU4_OFF,           &
      &                    MY_LU5_OFF, MY_LU6_OFF, MY_LU7_OFF,           &
-     &                    MY_LUC_OFF,                                   &
+     &                    MY_LUC_OFF, MY_LUR_OFF,                       &
      &                    MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL,     &
      &                    FILE_INFO_OBJ
 #endif

@@ -1,2 +1,2 @@
-*comdeck comjep.inc $Revision: 1.1.2.1 $ 
+      integer :: MXACJ,MXACIJ,MXAADST
       COMMON/COMJEP/MXACJ,MXACIJ,MXAADST

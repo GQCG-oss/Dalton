@@ -16,13 +16,11 @@
 !
 !
 C
-#ifdef REV_LOG
 c ===========================================================================
 c Revision 1.2  2000/05/24 12:20:33  hjj
 c 1) NCDETS new parameter in SETCI
 c 2) GETDETS new subroutine for getting det. vector from csf vector
 c ===========================================================================
-#endif
 C  /* Deck getcix */
       SUBROUTINE GETCIX(INDXCI,ICSYM,IHCSYM,WRK,LFRSAV,NOSYM)
 C
@@ -74,8 +72,9 @@ C
      *      ' ICSYM, IHCSYM, NOSYM :',ICSYM,IHCSYM,NOSYM
          DTIM = SECOND()
       END IF
-      LFREE  = LFRSAV
-      IF (MCTYPE .GT. 0) THEN ! MCSCF
+      IF (ci_program .eq. 'LUCITA') GOTO 9000
+      IF (MCTYPE .GT. 0) THEN
+        LFREE  = LFRSAV
         LUSTR = -9999
         IF (FLAG(26) .AND. IFIRST .EQ. 1) THEN
           CALL GPOPEN(LUSTR,'SIRIUS.STRINGINFO','UNKNOWN',
@@ -122,7 +121,7 @@ C     ... RHF or ROHF
          DTIM = SECOND() - DTIM
          WRITE (LUPRI,'(/A,F10.2,A)') ' Time used in GETCIX :',DTIM,'s'
       END IF
-      CALL QEXIT('GETCIX')
+ 9000 CALL QEXIT('GETCIX')
 C
       RETURN
       END
@@ -197,6 +196,9 @@ C
 C for westa compatibility NOSYM has been added . if
 C NOSYM is nonvanishing symmetry is neglected
 C
+      use mcscf_or_gasci_2_define_cfg
+      use lucita_mcscf_ci_interface_procedures
+
 #include "implicit.h"
       DIMENSION WORK(LFREE)
 C
@@ -223,6 +225,7 @@ C
 #include "ciinfo.h"
 #include "spinfo.h"
 #include "cbespn.h"
+#include "dummy.h"
 C
 C
       LOGICAL  REFSPC, NEWCI, NOCSF, CHCKCI
@@ -290,14 +293,69 @@ CMAERKE-hjaaj-910730: code missing in NUMST2, NUMSTR, DETGN4, ?
      *         ' 2 * M_S value      :',MS2
             DTIM = SECOND()
          END IF
-         CALL DETFO(NACTEL,NASHT,ISPIN,ICSYM,IPRCIX,
-     *              NELMN1,NELMX3,NAS1,NAS2,NAS3,
-     *              NCDET,NCCSF,LCINSV,LACISV,LBCISV,WORK,LFREEL,
-     *              NELMX1,NELMN3,NOSYM,ICSF,NCNSM,REFSPC)
-C        CALL DETFO(NEL,NORB,MULTS,ICSYM,NTEST,
-C    *              NELMN1,NELMX3,NRAS1,NRAS2,NRAS3,
-C    *              NCDET,NCCSF,LCINDX,LLOCA,LLOCB,WORK,LFREE,
-C    *              MELMN3,NOSYM,ICSF,NCNSM,REFSPC)
+
+C        Specify singlet-singlet 2-electron density matrix
+C
+         ISPIN1   = 0
+         ISPIN2   = 0
+         LCINSV   = 0 
+         LACISV   = 0 
+         LBCISV   = 0 
+         NCDET_LU = 0
+         NCCSF_LU = 0
+
+         IF(CI_PROGRAM .eq. 'SIRIUS-CI')THEN
+           CALL DETFO(NACTEL,NASHT,ISPIN,ICSYM,IPRCIX,
+     *                NELMN1,NELMX3,NAS1,NAS2,NAS3,
+     *                NCDET,NCCSF,LCINSV,LACISV,LBCISV,WORK,LFREEL,
+     *                NELMX1,NELMN3,NOSYM,ICSF,NCNSM,REFSPC)
+C          CALL DETFO(NEL,NORB,MULTS,ICSYM,NTEST,
+C    *                NELMN1,NELMX3,NRAS1,NRAS2,NRAS3,
+C    *                NCDET,NCCSF,LCINDX,LLOCA,LLOCB,WORK,LFREE,
+C    *                MELMN3,NOSYM,ICSF,NCNSM,REFSPC)
+         ELSE IF(CI_PROGRAM .eq. 'LUCITA   ')THEN
+           
+!          calculate CI dimensions in MCSCF run
+!          ------------------------------------
+!          a. define LUCITA control variables and orbital spaces provided via MCSCF input (== '1')
+!          step 1: dynamic variables
+           call define_lucita_cfg_dynamic(icsym,
+     &                                    icsym,  
+     &                                    icstate,
+     &                                    ispin1,
+     &                                    ispin2,
+     &                                    nroots,
+     &                                    ispin,
+     &                                    mxcima,
+     &                                    0,
+     &                                    iprcix,
+     &                                    1.0d-10,
+     &                                    thrci,
+     &                                    thrci,
+     &                                    docino,
+     &                                    .true.,
+     &                                    .false., ! important for parallel runs: calculate static task distribution always with 2e-interaction!!!
+     &                                    .false.,
+     &                                    .false.,
+     &                                    .false.,
+     &                                    -1     ,     ! vector exchange type1
+     &                                    -1     ,     ! vector exchange type2
+     &                                    .false.,     ! vector exchange active in parallel runs in mc2lu interface (both mc-->lu and lu-->mc)
+     &                                    .false.)
+!          step 2: static variables
+           call define_lucita_cfg_static(1)
+
+!          b. run 'return CIdim' and extract LUCITA common block information
+           call mcscf_lucita_interface(vdummy,vdummy,vdummy,vdummy,
+     &                                 'return CIdim',work,lfreel,
+     &                                 IPRCIX)
+
+           NCDET  = NDTASM(ICSYM)
+           NCCSF  = NDTASM(ICSYM)
+           LCINSV = 0 
+           LACISV = 0 
+           LBCISV = 0 
+         END IF
 C
 C        LACISV and LBCISV contain information about core
 C        allocation for lintrn/cilin routines (will be used
@@ -305,26 +363,22 @@ C        as LACIMX + NCSIM*LBCIMX).
 C        LCINSV is length needed for core allocation to string
 C        information.
 C
-C
-C        Specify singlet-singlet 2-electron density matrix
-C
-         ISPIN1 = 0
-         ISPIN2 = 0
-C
-         IF (IPRCIX .GT. 0) THEN
-            WRITE (LUPRI,'(/A,3(/A,I10))')
+!        IF (IPRCIX .GT. 0) THEN
+            WRITE (LUPRI,'(/A,3(/A,I12))')
      *      ' SETCI, core memory needed for CI:',
      *      ' LCINDX =',LCINSV,' LACIMX =',LACISV,' LBCIMX =',LBCISV
-            WRITE (LUPRI,'(/A,I10)')
-     *      ' Number of determinants:  ',NCDET,
+            WRITE (LUPRI,'(/A,I12)')
+     *      ' Number of determinants:  ',NCDET
+            WRITE (LUPRI,'(/A,I12)')
      *      ' Number of configurations:',NCCSF
             DTIM = SECOND() - DTIM
             WRITE (LUPRI,'(/A,F10.2,A)')
      *         ' Time used in SETCI :',DTIM,'s'
-         END IF
+!        END IF
       END IF
 C
-      IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
+!     IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
+      IF ( MCTYPE .GT. 0 ) THEN ! not Hartree-Fock
          IF (ICSF .EQ. 0) THEN
 C           ... do not use CSF expansion
             NCONF  = NDTASM(ICSYM)
@@ -343,14 +397,16 @@ C               symmetries or triplet in ABACUS and RESPONSE
          LBCIMX = LBCISV
          LCINDX = LCINSV
       ELSE
-C     ... NASHT .le. 1 .or. HSROHF (Hartree-Fock)
+C     ... RHF, ROHF, or HSROHF (Hartree-Fock)
          IF (HSROHF .OR. DOMC) THEN
 C        ... high spin ROHF
             JCSYM = LSYM
          ELSE IF (NASHT .EQ. 1) THEN
 C        ... one open shell ROHF
             JCSYM = IOPRHF
-         ELSE 
+         ELSE IF (NASHT .GT. 1) THEN
+            CALL QUIT('SETCI error, NASHT > 1 for Hartree-Fock')
+         ELSE
             JCSYM = 1
          END IF
          IF (ICSYM .EQ. JCSYM) THEN
@@ -452,7 +508,8 @@ C            for reference symmetry in this version). /980820-hjaaj
          ICSF = 1
       END IF
 C
-      IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
+!     IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
+      IF ( MCTYPE .GT. 0 ) THEN
          IF (ICSF .EQ. 0) THEN
 C           ... do not use CSF expansion
             NCONF  = NDTASM(ICSYM)
@@ -469,11 +526,13 @@ C                  symmetries in ABACUS and RESPONSE
             END IF
          END IF
       ELSE
-C     ... NASHT .le. 1 (Hartree-Fock)
+C     ... Hartree-Fock
          IF (NASHT .EQ. 1) THEN
             JCSYM = IOPRHF
          ELSE IF (HSROHF) THEN
             JCSYM = LSYM
+         ELSE  IF (NASHT .GT. 1) THEN
+            CALL QUIT('SETCI2 error, NASHT > 1 for Hartree-Fock')
          ELSE 
             JCSYM = 1
          END IF

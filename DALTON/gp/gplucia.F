@@ -1035,17 +1035,18 @@ COLD    END IF
 * only combinations with type(I) .ge. type(K) and type(J).ge.type(L)
 * are included
 *
+#include "priunit.h"
       INTEGER IL(NOBTP),IR(NOBTP)
       INTEGER ITP(*),JTP(*),KTP(*),LTP(*)
 *
-      NTEST = 00
+      NTEST = 000
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' DXTYP_GAS in action '
-        WRITE(6,*) ' ===================='
-        WRITE(6,*) ' Occupation of left string '
-        CALL IWRTMA(IL,1,NOBTP,1,NOBTP)
-        WRITE(6,*) ' Occupation of right string '
-        CALL IWRTMA(IR,1,NOBTP,1,NOBTP)
+        WRITE(lupri,*) ' DXTYP_GAS in action '
+        WRITE(lupri,*) ' ===================='
+        WRITE(lupri,*) ' Occupation of left string '
+        CALL IWRTMAMN(IL,1,NOBTP,1,NOBTP,lupri)
+        WRITE(lupri,*) ' Occupation of right string '
+        CALL IWRTMAMN(IR,1,NOBTP,1,NOBTP,lupri)
       END IF
 *
 *. Number of differing occupations
@@ -1141,13 +1142,13 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
       END IF
 *
       IF(NTEST.NE.0) THEN
-        WRITE(6,'(A,I4)')
+        WRITE(lupri,'(A,I4)')
      &  ' Number of connecting double excitations ', NDXTP
         IF(NDXTP.NE.0) THEN
-          WRITE(6,*) '  ITYP KTYP LTYP JTYP '
-          WRITE(6,*) '  ===================='
+          WRITE(lupri,*) '  ITYP KTYP LTYP JTYP '
+          WRITE(lupri,*) '  ===================='
           DO  IDX = 1,NDXTP
-            WRITE(6,'(1X,4I5)')ITP(IDX),KTP(IDX),LTP(IDX),JTP(IDX)
+            WRITE(lupri,'(1X,4I5)')ITP(IDX),KTP(IDX),LTP(IDX),JTP(IDX)
           END DO
         END IF
       END IF
@@ -1896,13 +1897,10 @@ C?   &  ISCALE,SCLFAC
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*                                                                     *
-***********************************************************************
-      FUNCTION GTH1ES(IREOTS,IPNT,H,IBSO,MXPNGAS,
-     &           IBTSOB,NACOBS,IORB,ITP,ISM,JORB,JTP,JSM,IJSM)
+!**********************************************************************
+
+      FUNCTION GTH1ES(IREOTS,IPNT,H,IBSO,MXPNGAS,IBTSOB,NACOBS,
+     &                IORB,ITP,ISM,JORB,JTP,JSM,IJSM)
 *
 * one electron integral between orbitals (iorb,itp,ism,jorb,jsm,jtp)
 * correct combination of row and column symmetry is assumed
@@ -1915,6 +1913,10 @@ C?   &  ISCALE,SCLFAC
       INTEGER IREOTS(*),IPNT(*),IBTSOB(MXPNGAS,*),IBSO(*)
       INTEGER NACOBS(*)
       DIMENSION H(*)
+
+#ifdef LUCI_DEBUG
+#include "priunit.h"
+#endif
 *
       IABS = IORB+IBTSOB(ITP,ISM)-1
       IREO = IREOTS(IABS)
@@ -1941,15 +1943,14 @@ C?    write(6,*) ' GTH1ES : IBSO ', IBSO(ISM)
       END IF
 *
       GTH1ES = H(IJ)
-      NTEST = 0
-      IF(NTEST.NE.0) THEN
-        WRITE(6,*) ' one electron integral '
-        WRITE(6,*) ' IORB ITP ISM ',IORB,ITP,ISM
-        WRITE(6,*) ' JORB JTP JSM ',JORB,JTP,JSM
-        WRITE(6,*) ' IJ and H(IJ) ', IJ,H(IJ)
-      END IF
-*
-      RETURN
+
+#ifdef LUCI_DEBUG
+      WRITE(lupri,*) ' one electron integral '
+      WRITE(lupri,*) ' IORB ITP ISM ',IORB,ITP,ISM
+      WRITE(lupri,*) ' JORB JTP JSM ',JORB,JTP,JSM
+      WRITE(lupri,*) ' IJ and H(IJ) ', IJ,H(IJ)
+#endif
+
       END
 ***********************************************************************
 *                                                                     *
@@ -2469,11 +2470,9 @@ C     WRITE(6,'(1X,A)') CARD
       INTEGER IGAT(*)
       DIMENSION GATSGN(*)
       DIMENSION CIN(NROWI,*),COUT(NROWO,*)
+#include "priunit.h"
 *
-C?    write(6,*) ' MATCG NROWI,NROWO,IROWI1,NGCOL '
-C?    write(6,*)         NROWI,NROWO,IROWI1,NGCOL
       DO 100 IG = 1, NGCOL
-C?      write(6,*) ' igat,sign ',IGAT(IG),GATSGN(IG)
         IF(IGAT(IG).EQ.0) THEN
           DO 20 IR = 1, NROWO
             COUT(IR,IG)=0.0D0
@@ -2487,10 +2486,11 @@ C?      write(6,*) ' igat,sign ',IGAT(IG),GATSGN(IG)
         END IF
   100 CONTINUE
 *
-      NTEST = 0
+      NTEST = 0 ! no debug
+!     NTEST = 1 ! debug
       IF(NTEST.NE.0) THEN
-        WRITE(6,*) ' Column gathered matrix '
-        CALL WRTMT_LU(COUT,NROWO,NGCOL,NROWO,NGCOL)
+        write(lupri,*) ' Column gathered matrix '
+        call wrtmatmn(cout,nrowo,ngcol,nrowo,ngcol,lupri)
       END IF
 *
       RETURN
@@ -2755,6 +2755,7 @@ C 100     CONTINUE
 * Jeppe Olsen, April 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 *. General input
       INTEGER ISPGPAN(NGAS,*),ISPGPCR(NGAS,*)
 *. Specific input
@@ -2763,9 +2764,13 @@ C 100     CONTINUE
       INTEGER OUTSPGP
 *
       OUTSPGP = INSPGP
+!     write(lupri,'(a,4i4)') 'NGAS, NOP,IACOP(IOP),INSPGP',
+!    &NGAS, NOP,IACOP(NOP),INSPGP
       DO IOP = 1, NOP
-        IF(IACOP(IOP).EQ.1) THEN
+        IF(IACOP(IOP) == 1) THEN
+!         write(lupri,*) 'OUTSPGP befor',OUTSPGP
           OUTSPGP = ISPGPAN(ITPOP(IOP),OUTSPGP)
+!         write(lupri,*) 'OUTSPGP after',OUTSPGP
         ELSE
           OUTSPGP = ISPGPCR(ITPOP(IOP),OUTSPGP)
         END IF
@@ -3988,10 +3993,13 @@ C
 * Jeppe Olsen, April 1, 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 *. General input : Number of electrons in each gasspace
       INTEGER INSPGRP(MXPNGAS,*),IOUTSPGRP(MXPNGAS,*)
 *. Output
       INTEGER ISPGRP_AC(NGAS,*)
+!     scratch
+      integer :: iamokay(1)
 *. Check first that supergroups + IAC information is consistent
       NELIN = 0
       NELOUT = 0
@@ -4016,12 +4024,13 @@ C
 *. Find corresponding supergroup
           ITO = 0
           DO JSPGRP = IBASEOUT, IBASEOUT+NOUTSPGRP-1
-            IAMOKAY = 1
+            call isetvc(iamokay,1,1)
             DO JGAS = 1, NGAS
-              IF( INSPGRP(JGAS,ISPGRP).NE.IOUTSPGRP(JGAS,JSPGRP))
-     &        IAMOKAY=0
+              IF(INSPGRP(JGAS,ISPGRP) /= IOUTSPGRP(JGAS,JSPGRP))then
+                call isetvc(iamokay,0,1)
+              END IF
             END DO
-            IF(IAMOKAY.EQ.1) ITO = JSPGRP
+            if(iamokay(1) == 1) ITO = JSPGRP
           END DO
           ISPGRP_AC(IGAS,ISPGRP) = ITO
 *. And clean up
@@ -4033,23 +4042,25 @@ C
         END DO
       END DO
 *
-      NTEST = 000
+!     NTEST = 1000 ! debug
+      NTEST = 0000
       IF(NTEST.GE.1000) THEN
-        WRITE(6,*) ' Input supergroups '
-        CALL IWRTMA(INSPGRP(1,IBASEIN),NGAS,NINSPGRP,
-     &  MXPNGAS,NINSPGRP)
-        WRITE(6,*) ' Output supergroups '
-        CALL IWRTMA(IOUTSPGRP(1,IBASEOUT),NGAS,NOUTSPGRP,
-     &  MXPNGAS,NOUTSPGRP)
+        WRITE(lupri,*) ' Input supergroups '
+        CALL IWRTMAmn(INSPGRP(1,IBASEIN),NGAS,NINSPGRP,
+     &  MXPNGAS,NINSPGRP,lupri)
+        WRITE(lupri,*) ' Output supergroups '
+        CALL IWRTMAmn(IOUTSPGRP(1,IBASEOUT),NGAS,NOUTSPGRP,
+     &  MXPNGAS,NOUTSPGRP,lupri)
       END IF
 *
       IF(NTEST.GE.100) THEN
-       WRITE(6,*) ' Output from SPGP_AC '
-       WRITE(6,*) ' ===================='
-       WRITE(6,*)
-       WRITE(6,*) ' IAC = ', IAC
-       WRITE(6,*) ' Mapping : '
-       CALL IWRTMA(ISPGRP_AC(1,IBASEIN),NGAS,NINSPGRP,NGAS,NINSPGRP)
+       WRITE(lupri,*) ' Output from SPGP_AC '
+       WRITE(lupri,*) ' ===================='
+       WRITE(lupri,*)
+       WRITE(lupri,*) ' IAC = ', IAC
+       WRITE(lupri,*) ' Mapping : '
+       CALL IWRTMAmn(ISPGRP_AC(1,IBASEIN),NGAS,NINSPGRP,NGAS,NINSPGRP,
+     &               lupri)
       END IF
 *
       RETURN
@@ -4708,7 +4719,8 @@ C
       DO 100 I=1,NROW
         WRITE(LUWRT,1010) I,(A(I,J),J=1,NCOL)
   100 CONTINUE
- 1010 FORMAT(/I4,':',5F16.8,/,(5X,5F16.8))
+!1010 FORMAT(/I4,':',5F16.8,/,(5X,5F16.8))
+ 1010 FORMAT(/I4,':',5F20.14,/,(5X,5F20.14))
 ! 200 CONTINUE
       END
 ***********************************************************************
@@ -5087,6 +5099,7 @@ C?      write(6,*) ' NOOS(IA,IB,ISM) ',NOOS(IAOCC,IBOCC,IASYM)
 * Jeppe Olsen, August 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
+#include "priunit.h"
 *.Input
 C     INTEGER NOOS(NOCTPA,NOCTPB,NSMST)
 C     INTEGER NOOSP(NOCTPA,NOCTPB,NSMST)
@@ -5100,44 +5113,44 @@ C     INTEGER NOOSP(NOCTPA,NOCTPB,NSMST)
       INTEGER I1BATCH(*)
       INTEGER IBATCH(8,*)
 *
-      NTEST = 0000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' =================='
-        WRITE(6,*) '     PART_CIV2     '
-        WRITE(6,*) ' =================='
-        WRITE(6,*) ' IDC = ', IDC
-        WRITE(6,*)
-        WRITE(6,*) ' IOCOC Array '
-        CALL IWRTMA(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
-        if (NTEST.ge.500) then
-          WRITE(6,*) ' NSSOA array ( input ) '
-          CALL IWRTMA(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA)
-          WRITE(6,*) ' NSSOB array ( input ) '
-          CALL IWRTMA(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB)
-          write(6,*) ' IBLTP array: '
-          call iwrtma(IBLTP,1,NSMST,1,NSMST)
-        end if
-      END IF
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      WRITE(lupri,*)
+      WRITE(lupri,*) ' =================='
+      WRITE(lupri,*) '     PART_CIV2     '
+      WRITE(lupri,*) ' =================='
+      WRITE(lupri,*) ' IDC = ', IDC
+      WRITE(lupri,*)
+      WRITE(lupri,*) ' IOCOC Array '
+      CALL IWRTMAmn(IOCOC,NOCTPA,NOCTPB,NOCTPA,NOCTPB,lupri)
+      if (NTEST.ge.500) then
+        WRITE(lupri,*) ' NSSOA array ( input ) '
+        CALL IWRTMAmn(NSSOA,NSMST,NOCTPA,NSMST,NOCTPA,lupri)
+        WRITE(lupri,*) ' NSSOB array ( input ) '
+        CALL IWRTMAmn(NSSOB,NSMST,NOCTPB,NSMST,NOCTPB,lupri)
+        write(lupri,*) ' IBLTP array: '
+        call iwrtmamn(IBLTP,1,NSMST,1,NSMST,lupri)
+      end if
+#endif
 *
 *. block zero
 *
-      IB = 1
-      IA = 1
-      ISM = 1
-      IFRST = 1
+      IB     = 1
+      IA     = 1
+      ISM    = 1
+      IFRST  = 1
       NBATCH = 0
       IBLOCK = 0
-      IFINI = 0
+      IFINI  = 0
 *. Loop over batches of blocks
  2000 CONTINUE
-      NBATCH = NBATCH + 1
-      LBATCH(NBATCH) = 0
+      NBATCH          = NBATCH + 1
+      LBATCH(NBATCH)  = 0
       I1BATCH(NBATCH) = IBLOCK  + 1
-      LENGTH = 0
-      LENGTHP= 0
-      NBLOCK = 0
-      IFRST = 1
+      LENGTH          = 0
+      LENGTHP         = 0
+      NBLOCK          = 0
+      IFRST           = 1
 *. Loop over blocks in batch
  1000 CONTINUE
       IF(IFRST.EQ.0) THEN
@@ -5178,11 +5191,12 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
         GOTO 1000
       ELSE IF(ICOMP.EQ.0.AND.
      &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
-        WRITE(6,*) ' Not enough scratch space to include a single Block'
-        WRITE(6,*) ' Since I cannot procede I will stop '
-        WRITE(6,*) ' Insufficient buffer detected in PART_CIV2'
-        write(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
-        WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
+        WRITE(lupri,*) 
+     &  ' Not enough scratch space to include a single Block'
+        WRITE(lupri,*) ' Since I cannot procede I will stop '
+        WRITE(lupri,*) ' Insufficient buffer detected in PART_CIV2'
+        write(lupri,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
+        WRITE(lupri,*) ' Alter GAS space of raise Buffer from ', MXLNG
         call quit( ' Insufficient buffer space in PART_CIV2. ' )
       ELSE
 *. This batch is finished, goto next batch
@@ -5190,23 +5204,22 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
       END IF
  2002 CONTINUE
 *
-      IF(NTEST.NE.0) THEN
-C?      WRITE(6,*) 'Output from PART_CIV'
-C?      WRITE(6,*) '====================='
-        WRITE(6,*)
-        WRITE(6,*) ' Number of batches ', NBATCH
-        DO JBATCH = 1, NBATCH
-          WRITE(6,*)
-          WRITE(6,*) ' Info on batch ', JBATCH
-          WRITE(6,*) ' *********************** '
-          WRITE(6,*)
-          WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
-          DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
-            WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
-          END DO
+#ifdef LUCI_DEBUG
+      WRITE(lupri,*)
+      WRITE(lupri,*) ' Number of batches ', NBATCH
+      DO JBATCH = 1, NBATCH
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Info on batch ', JBATCH
+        WRITE(lupri,*) ' *********************** '
+        WRITE(lupri,*)
+        WRITE(lupri,*) ' Number of blocks included ', LBATCH(JBATCH)
+        WRITE(lupri,*) ' TTSS and offsets and lenghts of each block '
+        DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
+          WRITE(lupri,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
         END DO
-      END IF
+      END DO
+#undef LUCI_DEBUG
+#endif
 *
       END
 ***********************************************************************

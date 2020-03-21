@@ -1,2 +1,2 @@
-*comdeck cands.inc $Revision: 1.1.2.1 $ 
+      integer :: ICSM,ISSM,ICSPC,ISSPC
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC

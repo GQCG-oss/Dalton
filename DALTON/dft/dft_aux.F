@@ -31,7 +31,7 @@ C------------------------------------------------------------------------------
 #include "dftd.h"
       IPRDFT = IPRUSR
       HFXFAC = D1
-      HFXMU  = D0 
+      HFXMU  = D0
       HFXSET = .FALSE. !hjaaj: HFXFAC has not been set (i.e. redefined) by user
       WDFTX  = D0
       WDFTC  = D0
@@ -45,9 +45,10 @@ C------------------------------------------------------------------------------
       RADINT = 1.0D-13
       ANGINT = 35
       ANGMIN = 15
-c     LEBMIN is in the common block but is used only internall in dftgrd
+c     LEBMIN is in the common block but is used only internally in make_dftgrid
       DFTADD = .FALSE.
-      GRDONE = .FALSE.
+      DFTGRID_DONE = .FALSE.
+      DFTGRID_DONE_OLD = .FALSE.
       DFTRUN = .FALSE.
       DFTPOT = .FALSE.
       DFTORD = .FALSE.
@@ -60,13 +61,17 @@ C
       DFTBR1 = 1.0D-20
       DFTBR2 = 1.0D-20
 C
-C     Common block used by SR-DFT hybrids.
+C     Common block variables used when SR-DFT hybrids.
 C
-      IF (ERFEXP) THEN
-C        default scaling factor for ERFEXP, as proposed by Savin & Toulouse
+      SRDFTRUN = .FALSE.
+      IF (ERFEXP(1)) THEN
+C        default scaling factor for ERFGAU, as proposed by Savin & Toulouse
 C        (COPFAC becomes approx. 1/3.375)
          COPFAC   = 1.0D0+6.0D0*SQRT(3.0D0)
          COPFAC   = 1.0D0/SQRT(COPFAC)
+      ELSE IF (ERFEXP(2)) THEN
+         COPFAC = 1.0D0/2.25D0 ! mu=1 for erf is mu=2.25 for new erfexp(2)
+         ! COPFAC*MU is used when the erf functionals are used for new erfexp(2)
       ELSE
          COPFAC   = D1
       ENDIF
@@ -89,6 +94,7 @@ C JT 12-02-05 beg
       DOSRX_PBERI  = .FALSE.
       DOSRC_PBERI  = .FALSE.
 C JT 12-02-05 end
+      DOSRC_LYPRI  = .FALSE.
 
 C JT 11-08-09 beg
       DOSRX_PBEGWS = .FALSE.
@@ -96,40 +102,53 @@ C JT 11-08-09 beg
 C JT 11-08-09 end
 
 C JT 17-08-09 beg
-      DOSRX_LDAS = .FALSE.
-      DOSRC_LDAS = .FALSE.
-C JT 17-08-09 end
+      DOSRX_LDA_S = .FALSE.
+      DOSRC_LDA_S = .FALSE.
 
+C EDH 10-02-16
+      DOSRX_PBEGWS_S = .FALSE.
+      DOSRC_PBEGWS_S = .FALSE.
+
+C SR correlation functionals
       DOSRC_LDA = .FALSE.
       DOSRC_GGA = .FALSE.
       DOSRC_WIB = .FALSE.
-      DOSRMULO = .FALSE.
+      DOSRC_MULOCAL(0:3) = .FALSE.
       DOSRLYPT = .FALSE.
 
+C MNP 30.01.12
+      SRCMULOFAC = .FALSE.
+      DSLOCALFAC = .FALSE.
+      DOSRC_MULOC_GGA = .FALSE.
+      DOSRC_MULOD_GGA = .FALSE.
+      DOSRC_MULOE_GGA = .FALSE.
+      DOSRC_PBELO = .FALSE.
+      HEAVISIDE_PVALUE = 4.0d0
+
 CAMT --- DFT-D correction initialize
-      DODFTD = .FALSE.
-      DFTD_TEST = .FALSE.
-      L_INP_D2PAR=.FALSE.
-      L_INP_D3PAR=.FALSE.
-      DO_DFTD2 = .FALSE.
-      DO_DFTD3 = .FALSE.
-      DO_BJDAMP = .FALSE.
-      DO_3BODY = .FALSE.
-      D2_s6_inp=0.0d0
-      D2_alp_inp=0.0d0
-      D2_rs6_inp=0.0d0
-      D3_s6_inp=0.0d0
-      D3_alp_inp=0.0d0
-      D3_rs6_inp=0.0d0
-      D3_rs18_inp=0.0d0
-      D3_s18_inp=0.0d0
+      DODFTD     = .FALSE.
+      DFTD_TEST  = .FALSE.
+      L_INP_D2PAR= .FALSE.
+      L_INP_D3PAR= .FALSE.
+      DO_DFTD2   = .FALSE.
+      DO_DFTD3   = .FALSE.
+      DO_BJDAMP  = .FALSE.
+      DO_3BODY   = .FALSE.
+      D2_s6_inp  = 0.0d0
+      D2_alp_inp = 0.0d0
+      D2_rs6_inp = 0.0d0
+      D3_s6_inp  = 0.0d0
+      D3_alp_inp = 0.0d0
+      D3_rs6_inp = 0.0d0
+      D3_rs18_inp= 0.0d0
+      D3_s18_inp = 0.0d0
 
 C DFTVXC Init
       LDFTVXC = .FALSE.
 C DFTAC Init
       LGRAC = .FALSE.
-      LLIN = .FALSE.
-      LTAN = .FALSE.
+      LLIN  = .FALSE.
+      LTAN  = .FALSE.
       DOLB94 = .FALSE.
 
       RETURN
@@ -179,11 +198,11 @@ c
       ishell_cnt = KMAX
       END
 c
-      SUBROUTINE get_grid_paras(Lgrdone, Pradint, Iangmin, Iangint)
+      SUBROUTINE get_grid_paras(LDFTGRID_DONE,Pradint,Iangmin,Iangint)
 #include "implicit.h"
 #include "dftcom.h"
-      LOGICAL LGRDONE
-      LGRDONE = GRDONE
+      LOGICAL LDFTGRID_DONE
+      LDFTGRID_DONE = DFTGRID_DONE
       PRADINT = RADINT
       IANGMIN = ANGMIN
       IANGINT = ANGINT
@@ -192,7 +211,7 @@ c
       SUBROUTINE set_grid_done
 #include "implicit.h"
 #include "dftcom.h"
-      GRDONE = .TRUE.
+      DFTGRID_DONE = .TRUE.
       END
       SUBROUTINE get_no_atoms(natom_CNT)
 c return total number of atoms.
@@ -217,7 +236,7 @@ csymmetry is not completely implemented here yet.
       NDEG   = MULT(MULCNT)
       NAT = 0
       IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
-         DO ISYMOP = 0, MAXOPR         
+         DO ISYMOP = 0, MAXOPR
             IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                NAT = NAT + 1
                X(NAT) = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
@@ -254,19 +273,20 @@ c
          JSYM  = MULD2H(ISYM,KSYMOP)
          NORBI = NORB(ISYM)
          NORBJ = NORB(JSYM)
-         IF (NORBI.GT.0 .AND. NORBJ.GT.0) THEN 
+         IF (NORBI.GT.0 .AND. NORBJ.GT.0) THEN
             CALL AUTPV(ISYM,JSYM,CMO(ICMO(ISYM)+1),CMO(ICMO(JSYM)+1),
      &                 FAOMAT,NBAS,NBAST,WORK(KDA1),NORB,
      &                 NORBT,WORK(KLST),LWRK)
          END IF
       END DO
-      CALL DAXPY(N2ORBX,D2,WORK(KDA1),1,FMAT,1) 
+      CALL DAXPY(N2ORBX,D2,WORK(KDA1),1,FMAT,1)
       END
+      SUBROUTINE dft_get_ao_dens_mat(cmo,dmat,work,lwork)
+c
 c     dft_get_ao_dens_mat:
 c     compute AO density matrix dmat using provided CMO.
 c     dmat must be previously allocated.
 c
-      SUBROUTINE dft_get_ao_dens_mat(cmo,dmat,work,lwork)
 #include "implicit.h"
 #include "dummy.h"
 #include "infvar.h"
@@ -276,11 +296,11 @@ c
       CALL FCKDEN(1,0,DMAT,VDUMMY,CMO,VDUMMY,WORK,LWORK)
       JWOPSY = JKEEP
       END
+      SUBROUTINE dft_get_ao_dens_matab(cmo,dmata,dmatb,work,lwork)
 c
 c dft_get_ao_dens_matab:
 c   compute AO active and inactive density matrices using provided CMO.
 c
-      SUBROUTINE dft_get_ao_dens_matab(cmo,dmata,dmatb,work,lwork)
 #include "implicit.h"
 #include "inforb.h"
       DIMENSION CMO(*), DMATA(*),DMATB(*),WORK(LWORK)
@@ -304,7 +324,7 @@ c
 #include "dftcom.h"
       HFXFAC = W
       END
-C     
+C
       FUNCTION dftgethf()
 #include "implicit.h"
 #include "dftcom.h"
@@ -316,7 +336,7 @@ C
 #include "dftcom.h"
       WDFTMP = W
       END
-C     
+C
       FUNCTION dftgetmp2()
 #include "implicit.h"
 #include "dftcom.h"
@@ -327,7 +347,7 @@ c
 #include "implicit.h"
 #include "dftcom.h"
       HFXMU = W
-      HFXATT = BETA 
+      HFXATT = BETA
       END
 c
       SUBROUTINE DFT_GET_THRESHOLDS(TDFTI,TDFT0)

@@ -22,7 +22,7 @@ cat > cc_rsp_beta2.info <<'%EOF%'
    ------------
    Molecule:         HF in C2
    Wave Function:    CCS, CCSD / 6-31G**
-   Test Purpose:     - Parallel (beta_||) and orthogonal averages (beta_|_)
+   Test Purpose:     - Parallel (beta_|| ) and orthogonal averages (beta_|_)
                      - A & B coefficients 
                      - Frozen-core approximation for hyperpolarizabilities
 %EOF%
@@ -54,7 +54,7 @@ cat > cc_rsp_beta2.dal <<'%EOF%'
 .TITLE
   first hyperpolarizability for the HF molecule
   for CCS and CCSD wavefunctions compute:
-  - parallel (beta_||) and orthogonal averages (beta_|_)
+  - parallel (beta_|| ) and orthogonal averages (beta_|_)
   - A & B coefficients  (2. and 4. order dispersion coefficients)
   - core orbital frozen
 .CC

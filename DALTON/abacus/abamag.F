@@ -2067,7 +2067,7 @@ ckr               IDORCT(IREC) = 1
      &                   ' Norms:     ',DN1,DN2
                END IF
                IF (IPRTRP .GT. 10) THEN
-                  CALL OUTPUT(WORK,1,NVARPT,1,2,NVARPT,1,2,LUPRI)
+                  CALL OUTPUT(WORK,1,NVARPT,1,2,NVARPT,2,1,LUPRI)
                END IF
  10         CONTINUE
          END IF
@@ -2534,48 +2534,48 @@ cmbh change output slightly
       LAPRPC = '_COMP  '
       midasname=NAME//'  '
       call stripblanks(midasname)
-      LANAME = 'X'//LAPRPC
-      LBNAME = 'X'//LAPRPC
+      LANAME = 'X'//LAPRPC(1:7)
+      LBNAME = 'X'//LAPRPC(1:7)
       CALL WRIPRO(TMAT(1,1),"SCF/DFT   ",402,
      *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = 'X'//LAPRPC
-      LBNAME = 'Y'//LAPRPC
+      LANAME = 'X'//LAPRPC(1:7)
+      LBNAME = 'Y'//LAPRPC(1:7)
       CALL WRIPRO(TMAT(2,1),"SCF/DFT   ",402,
      *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = 'X'//LAPRPC
-      LBNAME = 'Z'//LAPRPC
+      LANAME = 'X'//LAPRPC(1:7)
+      LBNAME = 'Z'//LAPRPC(1:7)
       CALL WRIPRO(TMAT(3,1),"SCF/DFT   ",402,
      *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = 'Y'//LAPRPC
-      LBNAME = 'X'//LAPRPC
+      LANAME = 'Y'//LAPRPC(1:7)
+      LBNAME = 'X'//LAPRPC(1:7)
       CALL WRIPRO(TMAT(1,2),"SCF/DFT   ",402,
      *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = 'Y'//LAPRPC
-      LBNAME = 'Y'//LAPRPC
+      LANAME = 'Y'//LAPRPC(1:7)
+      LBNAME = 'Y'//LAPRPC(1:7)
       CALL WRIPRO(TMAT(2,2),"SCF/DFT   ",402,
      *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = 'Y'//LAPRPC
-      LBNAME = 'Z'//LAPRPC
+      LANAME = 'Y'//LAPRPC(1:7)
+      LBNAME = 'Z'//LAPRPC(1:7)
       CALL WRIPRO(TMAT(3,2),"SCF/DFT   ",402,
      *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = 'Z'//LAPRPC
-      LBNAME = 'X'//LAPRPC
+      LANAME = 'Z'//LAPRPC(1:7)
+      LBNAME = 'X'//LAPRPC(1:7)
       CALL WRIPRO(TMAT(1,3),"SCF/DFT   ",402,
      *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = 'Z'//LAPRPC
-      LBNAME = 'Y'//LAPRPC
+      LANAME = 'Z'//LAPRPC(1:7)
+      LBNAME = 'Y'//LAPRPC(1:7)
       CALL WRIPRO(TMAT(2,3),"SCF/DFT   ",402,
      *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-      LANAME = 'Z'//LAPRPC
-      LBNAME = 'Z'//LAPRPC
+      LANAME = 'Z'//LAPRPC(1:7)
+      LBNAME = 'Z'//LAPRPC(1:7)
       CALL WRIPRO(TMAT(3,3),"SCF/DFT   ",402,
      *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)

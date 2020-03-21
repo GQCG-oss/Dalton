@@ -23,7 +23,8 @@
      &                IORTO,ICI0,KDEL,ICHECK,NTIT,                      &
      &                MAXMAC,MAXMIC,MAXJT,MAXCIT,MAXUIT,MAXAPM,MAXABS,  &
      &                ITRLVL,ITRFIN,JCHSYM,JCHORB,                      &
-     &                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO, N_in_RN
+     &                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO, N_in_RN,    &
+     &                SPINDENS_lvl
       COMMON /INTINP/ NFIELD, ISPIN,NMCAVER,ISTATE,LSYM,NACTEL, MCTYPE, &
      &                LSOLMX,NLMSOL,NELMN1,NELMX1,NELMN3,NELMX3,        &
      &                LROOTS,NROOTS,IROOT(MAXRTS),                      &
@@ -31,7 +32,8 @@
      &                IORTO,ICI0,KDEL,ICHECK,NTIT,                      &
      &                MAXMAC,MAXMIC,MAXJT,MAXCIT,MAXUIT,MAXAPM,MAXABS,  &
      &                ITRLVL,ITRFIN,JCHSYM,JCHORB,                      &
-     &                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO, N_in_RN
+     &                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO, N_in_RN,    &
+     &                SPINDENS_lvl
 !
       LOGICAL         FLAG,        DOSCF,DOMP2,DOCINO,DOCI,DOMC,DORSP,  &
      &                FCVORB,LNOROT,LMOORD,DIRFCK,CORHOL,CORRLX,RESPHP, &
@@ -46,6 +48,8 @@
      &                BOYORB,PIPORB,DOFCI,DOCISD,DOLUCITA,DOMEP,        &
      &                DOCISRDFT,DOHFSRDFT,DOMCSRDFT,ADDSRI,SRHYBR,      &
      &                DO_CUBE, DOAPSG, DO_VIRTRUNC
+      LOGICAL         LOGINPlast
+      COMMON /LOGINP/ LOGINPlast ! for MPI and getbytespan
       LOGICAL         SUPSYM
       EQUIVALENCE (SUPSYM,FLAG(17))
 !

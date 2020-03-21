@@ -96,15 +96,15 @@ CTRL[1]=2
 ERROR[1]="ATOMBASIS NOT READ CORRECTLY"
 
 # Reading molecular geometry:
-CRIT1=`$GREP "1 * x *  (0| )\.0000000000" $log | wc -l`
+CRIT1=`$GREP "1 * x *  0*\.0000000000" $log | wc -l`
 CRIT2=`$GREP "2 * y * (\-0|\-)\.2249058930" $log | wc -l`
-CRIT3=`$GREP "3 * z *  (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "3 * z *  0*\.0000000000" $log | wc -l`
 CRIT4=`$GREP "4 * x *  1\.4523500000" $log | wc -l`
-CRIT5=`$GREP "5 * y *  (0| )\.8996230000" $log | wc -l`
-CRIT6=`$GREP "6 * z *  (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "5 * y *  0*\.8996230000" $log | wc -l`
+CRIT6=`$GREP "6 * z *  0*\.0000000000" $log | wc -l`
 CRIT7=`$GREP "7 * x * \-1\.4523500000" $log | wc -l`
-CRIT8=`$GREP "8 * y *  (0| )\.8996230000" $log | wc -l`
-CRIT9=`$GREP "9 * z *  (0| )\.0000000000" $log | wc -l`
+CRIT8=`$GREP "8 * y *  0*\.8996230000" $log | wc -l`
+CRIT9=`$GREP "9 * z *  0*\.0000000000" $log | wc -l`
 CRIT10=`$GREP "Total number of coordinates: * 9" $log | wc -l`
 TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10`
@@ -156,8 +156,8 @@ ERROR[7]="INITIAL ENERGY NOT CORRECT"
 
 # Gradient, 1st iteration:
 CRIT1=`$GREP "O * y * (\-0|\-)\.04102" $log | wc -l`
-CRIT2=`$GREP "H * x * (0| )\.04951" $log | wc -l`
-CRIT3=`$GREP "H * y * (0| )\.04102" $log | wc -l`
+CRIT2=`$GREP "H * x * 0*\.04951" $log | wc -l`
+CRIT3=`$GREP "H * y * 0*\.04102" $log | wc -l`
 TEST[8]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="INITIAL GRADIENT NOT CORRECT"
@@ -169,23 +169,23 @@ CTRL[9]=22
 ERROR[9]="INITIAL HESSIAN NOT CORRECT"
 
 # Dipole moment, 1st iteration:
-CRIT1=`$GREP "(0| )\.88703. * 2\.2546.. * 7\.5206" $log | wc -l`
+CRIT1=`$GREP "0*\.88703. * 2\.2546.. * 7\.5206" $log | wc -l`
 TEST[10]=`expr $CRIT1`
 CTRL[10]=1
 ERROR[10]="INITIAL DIPOLE MOMENT NOT CORRECT"
 
 # Step, 1st iteration:
-CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0395[0-9]* * (0| )\.0000000000" $log | wc -l`
-CRIT2=`$GREP "H * _1 * (\-0|\-)\.0357[0-9]* * (\-0|\-)\.0197[0-9]* * (0| )\.0000000000" $log | wc -l`
-CRIT3=`$GREP "H * _2 * (0| )\.0357[0-9]* * (\-0|\-)\.0197[0-9]* * (0| )\.0000000000" $log | wc -l`
+CRIT1=`$GREP "O * 0*\.0000000000 * 0*\.0395[0-9]* * 0*\.0000000000" $log | wc -l`
+CRIT2=`$GREP "H * _1 * (\-0|\-)\.0357[0-9]* * (\-0|\-)\.0197[0-9]* * 0*\.0000000000" $log | wc -l`
+CRIT3=`$GREP "H * _2 * 0*\.0357[0-9]* * (\-0|\-)\.0197[0-9]* * 0*\.0000000000" $log | wc -l`
 TEST[11]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[11]=3
 ERROR[11]="INITIAL STEP NOT CORRECT"
 
 # Geometry, 2nd iteration:
-CRIT1=`$GREP "O * (0| )\.0000000000 * (\-0|\-)\.1853[0-9]* * (0| )\.0000000000" $log | wc -l`
-CRIT2=`$GREP "H * _1 * 1\.4165[0-9]* * (0| )\.8798[0-9]* * (0| )\.0000000000" $log | wc -l`
-CRIT3=`$GREP "H * _2 * \-1\.4165[0-9]* * (0| )\.8798[0-9]* * (0| )\.0000000000" $log | wc -l`
+CRIT1=`$GREP "O * 0*\.0000000000 * (\-0|\-)\.1853[0-9]* * 0*\.0000000000" $log | wc -l`
+CRIT2=`$GREP "H * _1 * 1\.4165[0-9]* * 0*\.8798[0-9]* * 0*\.0000000000" $log | wc -l`
+CRIT3=`$GREP "H * _2 * \-1\.4165[0-9]* * 0*\.8798[0-9]* * 0*\.0000000000" $log | wc -l`
 TEST[12]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3`
 CTRL[12]=6
 ERROR[12]="SECOND GEOMETRY NOT CORRECT"
@@ -197,7 +197,7 @@ CTRL[13]=1
 ERROR[13]="SECOND ENERGY NOT CORRECT"
 
 # Gradient, 2nd iteration:
-CRIT1=`$GREP "O * y * (0| )\.0042" $log | wc -l`
+CRIT1=`$GREP "O * y * 0*\.0042" $log | wc -l`
 CRIT2=`$GREP "H * x * (\-0|\-)\.0068" $log | wc -l`
 CRIT3=`$GREP "H * y * (\-0|\-)\.0042" $log | wc -l`
 TEST[14]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
@@ -253,9 +253,9 @@ CTRL[20]=3
 ERROR[20]="CIOSLOWSKI CHARGES NOT CORRECT"
 
 # Static polarizabilities:
-CRIT1=`$GREP "Ex * 7\.4199.. * 0*\.0000.. * 0*\.000000" $log | wc -l`
-CRIT2=`$GREP "Ey * 0*\.0000.. * 5\.8490.. * 0*\.000000" $log | wc -l`
-CRIT3=`$GREP "Ez * 0*\.0000.. * 0*\.0000.. * 5\.5011.." $log | wc -l`
+CRIT1=`$GREP "Ex * 7\.4199.. * 0*\.000000( |E\+00) * 0*\.000000" $log | wc -l`
+CRIT2=`$GREP "Ey * 0*\.000000( |E\+00) * 5\.8490.. * 0*\.000000" $log | wc -l`
+CRIT3=`$GREP "Ez * 0*\.000000( |E\+00) * 0*\.000000( |E\+00) * 5\.5011" $log | wc -l`
 TEST[21]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[21]=6
 ERROR[21]="STATIC POLARIZABILITIES NOT CORRECT"
@@ -291,15 +291,15 @@ CTRL[24]=2
 ERROR[24]="ROTATIONAL CONSTANTS NOT CORRECT"
 
 # Vibrational frequencies:
-CRIT1=`$GREP "2 * A1 * 4143\.1. * (0| )\.01887." $log | wc -l`
-CRIT2=`$GREP "3 * A1 * 1726\.1. * (0| )\.00786." $log | wc -l`
-CRIT3=`$GREP "1 * B2 * 4245\.(0|1). * (0| )\.01934." $log | wc -l`
+CRIT1=`$GREP "2 * A1 * 4143\.1. * 0*\.01887." $log | wc -l`
+CRIT2=`$GREP "3 * A1 * 1726\.1. * 0*\.00786." $log | wc -l`
+CRIT3=`$GREP "1 * B2 * 4245\.(0|1). * 0*\.01934." $log | wc -l`
 TEST[25]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[25]=3
 ERROR[25]="VIBRATIONAL FREQUENCIES NOT CORRECT"
 
 # IR intensities:
-CRIT1=`$GREP "2 * A1 * ....... * ........ * 25\.49. * (0| )\.603(2|3)" $log | wc -l`
+CRIT1=`$GREP "2 * A1 * ....... * ........ * 25\.49. * 0*\.603(2|3)" $log | wc -l`
 CRIT2=`$GREP "3 * A1 * ....... * ........ * 85\.62. * 2\.026." $log | wc -l`
 CRIT3=`$GREP "1 * B2 * ....... * ........ * 88\.29. * 2\.089." $log | wc -l`
 TEST[26]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`

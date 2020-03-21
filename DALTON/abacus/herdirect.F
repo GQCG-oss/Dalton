@@ -436,7 +436,7 @@ C               two-electron part of the fock matrices.
 C               We assume the densities and fock matrices are full
 C               squares and without symmetry reduction .
 C
-C     10-Apr-1996-hjaaj: select if we want to use HRFCK1 or ERIFCK
+C     10-Apr-1996-hjaaj: select if we want to use HERFCK_1 or ERIFCK
 C     (old integral routines or new ERI integral routines)
 C
 #include "implicit.h"
@@ -511,7 +511,7 @@ C
          CALL DALTON_LSLIB_FCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &               ICEDIF,IFTHRS,WORK(KFREE),LFREE)
       ELSE IF (.NOT. USEERI) THEN
-         CALL HRFCK1(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+         CALL HERFCK_1(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &               ICEDIF,IFTHRS,WORK(KFREE),LFREE)
       ELSE
 #if defined (VAR_MPI)
@@ -549,8 +549,8 @@ C
       CALL QEXIT('HERFCK')
       RETURN
       END
-C  /* Deck hrfck1 */
-      SUBROUTINE HRFCK1(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,IPRFCK,
+C  /* Deck HERFCK_1 */
+      SUBROUTINE HERFCK_1(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,IPRFCK,
      &                  ICEDIF,IFTHRS,WORK,LWORK)
 C
 C     Written by Henrik Koch and Trygve Helgaker 22-November-1991.
@@ -612,7 +612,7 @@ C
 C defined parallel calculation types  
 #include "iprtyp.h"
       IF (NDMAT .LE. 0) RETURN  
-      CALL QENTER('HRFCK1')
+      CALL QENTER('HERFCK_1')
       I2TYP = 0
 
 C
@@ -621,7 +621,7 @@ C
       CALL ABARUN(ABA)
       IF (IPRFCK .GT. 3) THEN
          write(lupri,'(/A,I10,3L10)')
-     &   '-- HRFCK1: NDMAT, PARHER, ABA, SRINTS:',
+     &   '-- HERFCK_1: NDMAT, PARHER, ABA, SRINTS:',
      &   NDMAT,PARHER,ABA,SRINTS
       END IF
 C
@@ -669,17 +669,20 @@ C
       CALL MEMGET2('INTE','KORBSH',KKORBS,NPAO  ,WORK,KFREE,LFREE)
       CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
      &            WORK(KJORBS),WORK(KKORBS),0,.FALSE.,IPRINT)
-      CALL MEMREL('HRFCK1.PAOVEC',WORK,KWORK,KJORBS,KFREE,LFREE)
+      CALL MEMREL('HERFCK_1.PAOVEC',WORK,KWORK,KJORBS,KFREE,LFREE)
 C
 C     Transform density to AO basis
 C     Modified july-97, kr
 C     FMAT still empty, and we use this array to store DMAT in AO-basis 
 C     temporarily
 C
-      DO 200 IMAT = 1,NDMAT
-         CALL DSOTAO(DMAT(1,IMAT),FMAT(1,1),NBAST,ISYMDM(IMAT),IPRINT)
-         CALL DCOPY(N2BASX,FMAT(1,1),1,DMAT(1,IMAT),1)
-  200 CONTINUE
+      IF (MAXREP .GT. 0) THEN
+         DO IMAT = 1,NDMAT
+            CALL DSOTAO(DMAT(1,IMAT),FMAT(1,1),
+     &         NBAST,ISYMDM(IMAT),IPRINT)
+            CALL DCOPY(N2BASX,FMAT(1,1),1,DMAT(1,IMAT),1)
+         END DO
+      END IF
       CALL DZERO(FMAT(1,1),NDMAT*N2BASX)
 C
 C     Prepare for screening
@@ -701,7 +704,7 @@ C
      &               WORK(KFREE),LFREE)
       END IF
 #if HERFCK_DEBUG > 1
-      write(lupri,*) 'hrfck1 after GETGAB';flush(LUPRI)
+      write(lupri,*) 'HERFCK_1 after GETGAB';flush(LUPRI)
 #endif
 C
 C     Make reduced density matrix for screening
@@ -709,7 +712,7 @@ C
       CALL MKDRAO(DMAT,WORK(KDRAO),NDMAT,
      &            WORK(KFREE),LFREE,IPRINT)
 #if HERFCK_DEBUG > 1
-      write(lupri,*) 'hrfck1 after MKDRAO';flush(LUPRI)
+      write(lupri,*) 'HERFCK_1 after MKDRAO';flush(LUPRI)
 #endif
 C
 C--------------------------------
@@ -735,7 +738,7 @@ C
          IF (IPRINT .GT. 0) THEN
            CALL GETTIM(CPU2,WALL2)
            WALL   = WALL2 - WALL1
-           CALL SCRSTA('HRFCK1/PARDRV',WORK(KDSKP),WALL)
+           CALL SCRSTA('HERFCK_1/PARDRV',WORK(KDSKP),WALL)
          END IF
 
          HFXMU = HFXM0
@@ -772,7 +775,7 @@ c             calculation.
             IF (IPRINT .GT. 0) THEN
               CALL GETTIM(CPU1,WALL1)
               WALL   = WALL1 - WALL2
-              CALL SCRSTA('HRFCK1/PARDRV-hfxatt',WORK(KDSKP),WALL)
+              CALL SCRSTA('HERFCK_1/PARDRV-hfxatt',WORK(KDSKP),WALL)
             END IF
 
             if(.not.rma_model)then
@@ -782,7 +785,7 @@ c             calculation.
             HFXFAC = HFXFC0
          END IF
 
-         CALL MEMREL('HRFCK1.PARDRV',WORK,KWORK,KNSTAT,KFREE,LFREE)
+         CALL MEMREL('HERFCK_1.PARDRV',WORK,KWORK,KNSTAT,KFREE,LFREE)
       ELSE
 #endif
 C
@@ -807,7 +810,7 @@ C
          IF (IPRINT .GT. 0) THEN
            CALL GETTIM(CPU2,WALL2)
            WALL   = WALL2 - WALL1
-           CALL SCRSTA('HRFCK1/TWOINT',WORK(KDSKP),WALL)
+           CALL SCRSTA('HERFCK_1/TWOINT',WORK(KDSKP),WALL)
          END IF
 C
 C        Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
@@ -830,16 +833,16 @@ C
             IF (IPRINT .GT. 0) THEN
               CALL GETTIM(CPU1,WALL1)
               WALL   = WALL1 - WALL2
-              CALL SCRSTA('HRFCK1/TWOINT-hfxatt',WORK(KDSKP),WALL)
+              CALL SCRSTA('HERFCK_1/TWOINT-hfxatt',WORK(KDSKP),WALL)
             END IF
             HFXFAC = HFXFC0
          END IF
-         IF (IPRINT .GT. 0) CALL TIMER('HRFCK1/TWOINT',TIMSTR,TIMEND)
+         IF (IPRINT .GT. 0) CALL TIMER('HERFCK_1/TWOINT',TIMSTR,TIMEND)
 #if defined (VAR_MPI)
       END IF
 #endif
 #if HERFCK_DEBUG > 1
-      write(lupri,*) 'hrfck1 calling SKLFCK';flush(LUPRI)
+      write(lupri,*) 'HERFCK_1 calling SKLFCK';flush(LUPRI)
 #endif
       CALL SKLFCK(FMAT,DUMMY,WORK(KFREE),LFREE,IPRINT,.TRUE.,
      &            .FALSE.,.FALSE.,.FALSE.,NODV,MAXDER,.FALSE.,
@@ -850,7 +853,7 @@ C     Write out densities and associated fock matrices.
 C------------------------------------------------------
 C
       IF (IPRINT.GT.5) THEN
-         CALL HEADER('Density and Fock matrices in HRFCK1',-1)
+         CALL HEADER('Density and Fock matrices in HERFCK_1',-1)
          DO 300 I = 1, NDMAT
             WRITE (LUPRI,'(//A,I3,A,I3)')
      &         ' Density matrix No.',I,' of',NDMAT
@@ -861,8 +864,8 @@ C
   300    CONTINUE
       END IF
 C
-      CALL MEMREL('HRFCK1',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('HRFCK1')
+      CALL MEMREL('HERFCK_1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('HERFCK_1')
       RETURN
       END
 C  /* Deck aindex */

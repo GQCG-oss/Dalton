@@ -88,7 +88,7 @@ C     save LUORDA, LUMINT (may point to normal integrals)
       LUMINTSV = LUMINT
       LUMINT   = LUMHSO
 C
-      CALL TRASET(JRDAO,KWORK)
+      CALL N_TRASET(JRDAO,KWORK)
       IF (IPRFIO .GE. 3) CALL FASTIO('STATUS')
 C
       IF (IPRTRA .GE. 2) THEN
@@ -96,9 +96,9 @@ C
      &   ' Transformation of spin-orbit 2-el. integrals to MO basis.'
       END IF
 C
-      CALL TRACT2(ITRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,DUMMY,
+      CALL N_TRACT2(ITRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,DUMMY,
      &            WRK,KWORK)
-C     CALL TRACT2(ITRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
+C     CALL N_TRACT2(ITRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
 C    &            WRK,MEMX)
 C
 C
@@ -122,8 +122,8 @@ C     restore LUORDA, LUMINT (may point to normal integrals)
       CALL QEXIT('TRAHSO')
       RETURN
       END
-C/*deck  traset_2*/
-      SUBROUTINE TRASET_2( LX2X3,LWORK )
+C/*deck  N_traset_2*/
+      SUBROUTINE N_TRASET_2( LX2X3,LWORK )
 C
 C 19-Jun-1990 Hans Joergen Aa. Jensen
 C
@@ -145,7 +145,7 @@ C
 #include "trhso.h"
 #include "trunit.h"
 C
-      CALL QENTER('TRASET_2')
+      CALL QENTER('N_TRASET_2')
 C
          LX2X3  = 2*600 + 4*600
 C        for BUF(600), IBUF(600), and INDX(4,600) for both i*4 and i*8
@@ -177,7 +177,7 @@ C
   200 CONTINUE
       IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A,I8)')
      &   ' Symmetry of spin-orbit integrals from LUAHSO :',INTSYM
-      CALL QEXIT('TRASET_2')
+      CALL QEXIT('N_TRASET_2')
       RETURN
       END
 C /*deck  rdhso2*/

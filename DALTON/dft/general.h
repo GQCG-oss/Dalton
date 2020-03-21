@@ -223,7 +223,7 @@ void FSYM(outmat)(const real* mat, const integer* rowlow, const integer* rowhi,
              const integer* rowdim, const integer* coldim);
 void FSYM(getrho)(const real*dmat, const real* atv, real* rho, real* dmagao, 
 	     const real* densthr);
-void FSYM(dftgrd)(real* work, integer* lwork, const integer* d1, const integer* log1);
+void FSYM(make_dftgrid)(real* work, integer* lwork, const integer* d1, const integer* log1);
 void FSYM(dftdns)(real* dmat, real* work, integer *lwork, const integer* iprint);
 void FSYM(gtdmso)(real* udv, real* cmo, real* di, real* dv, real* work);
 void FSYM(dftdnsab)(real* dmata,real* dmatb, real* work,

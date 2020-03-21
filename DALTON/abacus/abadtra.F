@@ -36,13 +36,16 @@ from abaltra.u:
 ========================================================================
 #endif
 C  /* Deck dertra */
-      SUBROUTINE DERTRA(IATOM,CMO,PV,H2DAC,FQD,WORK,KWORK,MWORK)
+      SUBROUTINE DERTRA(IATOM,JCOOR,JCORSY,CMO,PV,
+     &                  H2DAC,FQD,WORK,KWORK,MWORK,IPRTRD)
 C
 C     ***************************************************************
 C     *****   Transformation of symmetry integral derivatives   *****
 C     ***************************************************************
 C
 C Written 1992 by Hans Joergen Aa. Jensen.
+C
+C     JCOOR is direction and JCORSY is symmetry type of differentiation.
 C
 C IPRTRD in common /CBDTRA/ controls printout,
 C IPRTRD .le. 0, no printout
@@ -71,7 +74,6 @@ C
 C
 #include "priunit.h"
 #include "nodint.h"
-#include "cbdtra.h"
 #include "nuclei.h"
 #include "inforb.h"
 #include "infind.h"
@@ -98,17 +100,6 @@ C
         JTER = 0
       ENDIF
 C
-C     Decide direction and symmetry type of differentiation.  This
-C     is held in the LOGICAL arrays SRTCOO and SRTSYM in /CBDTRA/
-C
-      JCOOR = 0
-      DO 10 KCOOR = 1,3
-         IF (SRTCOO(KCOOR)) JCOOR = KCOOR
-10    CONTINUE
-      JCORSY = 0
-      DO 20 KOPSYM = 1,NSYM
-         IF (SRTSYM(KOPSYM)) JCORSY = KOPSYM
-20    CONTINUE
       IF (JCOOR .EQ. 0 .OR. JCORSY .EQ. 0) THEN
          WRITE(LUPRI,'(/A,//,2(A,I4,/))')
      1      ' DERTRA: error in coordinate or symmetry specification',

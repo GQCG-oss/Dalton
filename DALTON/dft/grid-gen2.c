@@ -3355,7 +3355,7 @@ do_cartesian_grid(integer nbast, const real* dmat, DftGridReader* res)
 				 global_maxerror,
 				 global_boxdist,
 				 global_targetRhoError,
-				 "DALTON.QUAD",
+				 "DALTON.cQUAD",
 				 global_nThreads,
 				 global_doTestIntegration);
       if(nGridPoints <= 0)
