@@ -68,8 +68,9 @@
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) ITEST_OFF
+      integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND)  :: ITEST_OFF
       integer                                   :: file_offset_off
       integer,                      allocatable :: file_offset_fac_i4(:)
       integer(KIND=MPI_OFFSET_KIND),allocatable :: file_offset_fac(:)
@@ -588,7 +589,7 @@ C     debug printing
             IF( LUCI_MYPROC .eq. IPROC ) THEN
               CALL GET_BLOCK_LENGTH(block_list,IIBLK,ILEN)
               CALL MPI_FILE_READ_AT(IDIA,ITEST_OFF,WORK(KVEC1),ILEN,
-     &                              MPI_REAL8,my_STATUS,IERR)
+     &                              my_MPI_REAL8,my_STATUS,IERR)
               WRITE(LUWRT,*) ' Diagonal elements',ILEN
               CALL WRTMATMN(WORK(KVEC1),1,ILEN,1,ILEN,LUWRT)
               ITEST_OFF = ITEST_OFF + ILEN

@@ -564,9 +564,11 @@
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mpif.h"
 #endif
-      integer(MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE), IERR
-      integer(MPI_INTEGER_KIND) :: LUCINT_mpi
-      integer(MPI_OFFSET_KIND)  :: my_internal_in_off
+      integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8
+      integer(kind=MPI_INTEGER_KIND) :: ierr
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) :: LUCINT_mpi
+      integer(kind=MPI_OFFSET_KIND)  :: my_internal_in_off
 #else
       IMPLICIT REAL*8(A-H,O-Z)
 #endif
@@ -692,7 +694,7 @@
             LUCIN_mpi = LUCIN
             LDET_mpi  = LDET
             CALL MPI_FILE_READ_AT(LUCIN_mpi,my_internal_in_off,C,
-     &                            LDET_mpi,MPI_REAL8,my_STATUS,IERR)
+     &                            LDET_mpi,my_MPI_REAL8,my_STATUS,IERR)
 !           new offset (not yet...)
             my_internal_in_off = my_internal_in_off
           end if
@@ -747,7 +749,7 @@
           LUCIN_mpi = LUCIN
           LDET_mpi  = LDET
           CALL MPI_FILE_WRITE_AT(LUCIN_mpi,my_internal_in_off,C,
-     &                           LDET_mpi,MPI_REAL8,my_STATUS,IERR)
+     &                           LDET_mpi,my_MPI_REAL8,my_STATUS,IERR)
 #endif
 !         new offset (now...)
           my_internal_in_off = my_internal_in_off + ldet

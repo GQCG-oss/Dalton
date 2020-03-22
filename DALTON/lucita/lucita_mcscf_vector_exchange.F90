@@ -29,6 +29,10 @@ module lucita_mcscf_vector_exchange
    public vector_exchange_driver
 
    private
+
+   integer(kind=MPI_INTEGER_KIND)         :: my_MPI_REAL8 = MPI_REAL8
+   integer(kind=MPI_INTEGER_KIND)         :: ierr_mpi
+
    integer, parameter, private :: mc_offset = 4 ! offset to mc types in exchange_f... ==> must be equal to max #/2 (1/2 <= lucita; 1/2 >  mcscf)
 
 !  print unit
@@ -394,7 +398,7 @@ contains
 !-------------------------------------------------------------------------------
       real(8), external                :: ddot
       real(8)                          :: checkdot
-      integer                          :: ioff, ierr
+      integer                          :: ioff
       integer                          :: my_STATUS(mpi_status_size)
       integer                          :: current_block
       integer                          :: block_length_rw
@@ -408,8 +412,8 @@ contains
         case(1) 
           call dzero(xmat(1+current_offset),B%total_present_vec)
         case(2) 
-          call mpi_bcast(xmat(1+current_offset),B%total_present_vec,MPI_REAL8,         &
-                         0,mpi_comm_world,ierr)
+          call mpi_bcast(xmat(1+current_offset),B%total_present_vec,my_MPI_REAL8,         &
+                         0,mpi_comm_world,ierr_mpi)
       end select
 
 !#define LUCI_DEBUG
@@ -445,7 +449,7 @@ contains
           case(1) ! pull block from file to core memory
             if(D%iluxlist(ioffset_int,A%present_vector_type) > 0)then
               call mpi_file_read_at(A%present_fh_par,ioffset,xmat(ioff-block_length_rw),          &
-                                    block_length_rw,mpi_real8,my_STATUS,ierr)
+                                    block_length_rw,my_mpi_real8,my_STATUS,ierr_mpi)
             end if
           case(2) ! push block from core memory to file
             D%iluxlist(ioffset_int,A%present_vector_type) = 0
@@ -453,7 +457,7 @@ contains
                                                                                  xmat(ioff-block_length_rw),1)
             if(checkdot > 0.0d0)then
               call mpi_file_write_at(A%present_fh_par,ioffset,xmat(ioff-block_length_rw),         &
-                                     block_length_rw,mpi_real8,my_STATUS,ierr)
+                                     block_length_rw,my_mpi_real8,my_STATUS,ierr_mpi)
               D%iluxlist(ioffset_int,A%present_vector_type) = 1
             end if
         end select
@@ -475,12 +479,12 @@ contains
         case(1) 
           if(A%my_process_id > 0)then
 !           write(lupri,*) 'A%my_process_id ',A%my_process_id, B%total_present_vec, current_offset
-            call mpi_reduce(xmat(1+current_offset),mpi_in_place,B%total_present_vec,MPI_REAL8,      &
-                            mpi_sum,0,mpi_comm_world,ierr)
+            call mpi_reduce(xmat(1+current_offset),mpi_in_place,B%total_present_vec,my_MPI_REAL8,      &
+                            mpi_sum,0,mpi_comm_world,ierr_mpi)
           else
 !           write(lupri,*) 'A%my_process_id ',A%my_process_id, B%total_present_vec, current_offset
-            call mpi_reduce(mpi_in_place,xmat(1+current_offset),B%total_present_vec,MPI_REAL8,      &
-                            mpi_sum,0,mpi_comm_world,ierr)
+            call mpi_reduce(mpi_in_place,xmat(1+current_offset),B%total_present_vec,my_MPI_REAL8,      &
+                            mpi_sum,0,mpi_comm_world,ierr_mpi)
           end if
         case(2) 
           ! nothing to do

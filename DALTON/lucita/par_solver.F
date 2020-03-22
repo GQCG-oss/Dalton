@@ -39,7 +39,7 @@
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION IBLINF(NBLOCK),SCALFAC(NBLOCK),ICCTOS(NBLOCK,NBLOCK)
       DIMENSION ICWEIGHT(NBLOCK),ICWEIGHTF(NBLOCK)
@@ -198,7 +198,7 @@
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION ICCTOS(NBLOCK,NBLOCK)
       integer, intent(in) :: active_block(*)
@@ -312,7 +312,8 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SUBVAL(*),ISCAT(*),RECVARRAY(*),TESTARR(*)
       DIMENSION IRECVARRAY(*),ITESTARRAY(*)
@@ -342,18 +343,18 @@ C
 *
 *. gather lowest elements from nodes on all nodes - we need no master
 #ifdef sometimes_problematic_with_i8
-      CALL MPI_ALLGATHER(SUBVAL,NSUBMX,MPI_REAL8,RECVARRAY,NSUBMX,
-     &                   MPI_REAL8,MPI_COMM_WORLD,IERR)
+      CALL MPI_ALLGATHER(SUBVAL,NSUBMX,my_MPI_REAL8,RECVARRAY,NSUBMX,
+     &                   my_MPI_REAL8,MPI_COMM_WORLD,IERR)
       CALL MPI_ALLGATHER(ISCAT,NSUBMX,my_MPI_INTEGER,IRECVARRAY,NSUBMX,
      &                   my_MPI_INTEGER,MPI_COMM_WORLD,IERR)
 #endif
-      CALL MPI_GATHER(SUBVAL,NSUBMX,MPI_REAL8,RECVARRAY,NSUBMX,
-     &                MPI_REAL8,LUCI_MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_GATHER(SUBVAL,NSUBMX,my_MPI_REAL8,RECVARRAY,NSUBMX,
+     &                my_MPI_REAL8,LUCI_MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_GATHER(ISCAT,NSUBMX,my_MPI_INTEGER,IRECVARRAY,NSUBMX,
      &                my_MPI_INTEGER,LUCI_MASTER,MPI_COMM_WORLD,IERR)
 
       CALL MPI_BCAST(RECVARRAY,NSUBMX*LUCI_NMPROC,
-     &               MPI_REAL8,LUCI_MASTER,MPI_COMM_WORLD,IERR)
+     &               my_MPI_REAL8,LUCI_MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(IRECVARRAY,NSUBMX*LUCI_NMPROC,
      &               my_MPI_INTEGER,LUCI_MASTER,MPI_COMM_WORLD,IERR)
 *
@@ -561,6 +562,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
+      integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
       integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
       integer(kind=MPI_INTEGER_KIND) :: mynew_comm_mpi, icomm_mpi
       integer(kind=MPI_INTEGER_KIND) :: ierr
@@ -762,7 +764,7 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,luwrt)
  
 !     synchronize MPI_COMM_WORLD
       iredl = ninvec*(ninvec-1)/2 + ninvec
-      call mpi_allreduce(mpi_in_place,aproj,iredl,mpi_real8,
+      call mpi_allreduce(mpi_in_place,aproj,iredl,my_mpi_real8,
      &                   mpi_sum,mpi_comm_world,ierr)
 *
 *
@@ -1046,7 +1048,7 @@ csk     CALL IWRTMAMN(LU3LIST,1,IALL_LU3,1,IALL_LU3,LUWRT)
       xidletime = MPI_WTIME()
       call dzero(aproj(istred),imustred)
       call mpi_allreduce(tmp_space0(istred),aproj(istred),imustred,
-     &                   mpi_real8,mpi_sum,mpi_comm_world,ierr)
+     &                   my_mpi_real8,mpi_sum,mpi_comm_world,ierr)
       xixidletime = xixidletime - xidletime + MPI_WTIME()
  
 #ifdef LUCI_DEBUG
@@ -1359,7 +1361,7 @@ C
       call dzero(aproj(istred),imustred)
       starttime = MPI_WTIME()
       call mpi_allreduce(tmp_space0,aproj(istred),imustred,
-     &                   mpi_real8,mpi_sum,mpi_comm_world,ierr)
+     &                   my_mpi_real8,mpi_sum,mpi_comm_world,ierr)
       endtime = MPI_WTIME()
       WALLTID = SECTID(endtime-starttime)
       IF( TIMING_par ) WRITE(luwrt,9460) WALLTID

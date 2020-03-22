@@ -538,7 +538,10 @@ C*****************************************************************************
 #ifdef VAR_MPI
 !  mpif.h   : for MPI
 #include "mpif.h"
+      integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
+      integer(kind=MPI_INTEGER_KIND) :: ierr_mpi
 #endif
+
 ! infpar.h : MYNUM, NODTOT
 #include "maxorb.h"
 #include "gnrinf.h"
@@ -737,18 +740,18 @@ C
 !
 #if defined  (VAR_MPI)
       IF (NODTOT .GT. 0) THEN
-         CALL MPI_BARRIER(MPI_COMM_WORLD,ierr)
+         CALL MPI_BARRIER(MPI_COMM_WORLD,ierr_mpi)
 C
          IF (MYNUM .EQ. 0) THEN
             CALL MPI_REDUCE(MPI_IN_PLACE,RESULTS,11,
-     &         MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+     &        my_MPI_REAL8, MPI_SUM, 0, MPI_COMM_WORLD, ierr_mpi)
             CALL MPI_REDUCE(MPI_IN_PLACE,EXCMAT,N2BASX*NEXCMAT,
-     &         MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+     &         my_MPI_REAL8, MPI_SUM, 0, MPI_COMM_WORLD, ierr_mpi)
          ELSE
             CALL MPI_REDUCE(RESULTS,MPI_IN_PLACE,11,
-     &         MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+     &         my_MPI_REAL8, MPI_SUM, 0, MPI_COMM_WORLD, ierr_mpi)
             CALL MPI_REDUCE(EXCMAT,MPI_IN_PLACE,N2BASX*NEXCMAT,
-     &         MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+     &         my_MPI_REAL8, MPI_SUM, 0, MPI_COMM_WORLD, ierr_mpi)
          END IF
          IF (IPRINT .GE. 1) THEN
             write(lupri,*) 'srdft results on node, DOATR',mynum,DOATR
