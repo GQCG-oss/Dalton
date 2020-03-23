@@ -539,7 +539,8 @@ C*****************************************************************************
 !  mpif.h   : for MPI
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
-      integer(kind=MPI_INTEGER_KIND) :: ierr_mpi
+      integer(kind=MPI_INTEGER_KIND) :: my_MPI_SUM   = MPI_SUM  
+      integer(kind=MPI_INTEGER_KIND) :: ierr_mpi, len_mpi
 #endif
 
 ! infpar.h : MYNUM, NODTOT
@@ -557,7 +558,9 @@ C*****************************************************************************
       DATA       first_call /.true./
       real*8 :: EXCMAT(NBAST,NBAST,*),DMAT(N2BASX,*),ESRDFT(3)
       real*8 :: WORK(LWORK)
-      real*8 :: RESULTS(11)
+      real*8 :: RESULTS(11), RESULTS_tmp(11)
+      real*8, allocatable :: excmat_tmp(:)
+      integer*8 :: i,j,loc
 
       CALL QENTER('SRDFT')
       CALL TIMER('START ',TIMSTR,TIMEND)
@@ -618,7 +621,7 @@ C*****************************************************************************
          flush(lupri)
 #endif
          CALL SRDFT_PAR_MASTER(
-     &        ND_SIM,EXCMAT,DMAT,ESRDFT,
+     &        ND_SIM,DMAT,ESRDFT,
      &        DOERG,DO_MOLGRAD,DOATR,TRIPLET,
      &        WORK,LWORK,IPRINT)
 #if SRDFT_DEBUG > 4
@@ -743,19 +746,33 @@ C
          CALL MPI_BARRIER(MPI_COMM_WORLD,ierr_mpi)
 C
          IF (MYNUM .EQ. 0) THEN
-            CALL MPI_REDUCE(MPI_IN_PLACE,RESULTS,11,
+            len_mpi = 11
+            RESULTS_TMP(:) = 0.0d0 ! RESULTS(:) is already zeroed
+            CALL MPI_REDUCE(RESULTS_TMP,RESULTS,len_mpi,
      &        my_MPI_REAL8, MPI_SUM, 0, MPI_COMM_WORLD, ierr_mpi)
-            CALL MPI_REDUCE(MPI_IN_PLACE,EXCMAT,N2BASX*NEXCMAT,
+
+            length  = N2BASX*NEXCMAT
+            allocate(excmat_tmp(length))
+            excmat_tmp(1:length) = 0.0d0
+            call dzero(EXCMAT,length)
+            len_mpi = length
+            CALL MPI_REDUCE(excmat_tmp,EXCMAT,len_mpi,
      &         my_MPI_REAL8, MPI_SUM, 0, MPI_COMM_WORLD, ierr_mpi)
+            deallocate(excmat_tmp)
          ELSE
-            CALL MPI_REDUCE(RESULTS,MPI_IN_PLACE,11,
+            len_mpi = 11
+            CALL MPI_REDUCE(RESULTS,dummy,len_mpi,
      &         my_MPI_REAL8, MPI_SUM, 0, MPI_COMM_WORLD, ierr_mpi)
-            CALL MPI_REDUCE(EXCMAT,MPI_IN_PLACE,N2BASX*NEXCMAT,
+
+            len_mpi = N2BASX*NEXCMAT
+            CALL MPI_REDUCE(EXCMAT,dummy,len_mpi,
      &         my_MPI_REAL8, MPI_SUM, 0, MPI_COMM_WORLD, ierr_mpi)
          END IF
          IF (IPRINT .GE. 1) THEN
             write(lupri,*) 'srdft results on node, DOATR',mynum,DOATR
             write(lupri,'(6F15.10)') RESULTS(1:11)
+            write(lupri,*) 'srdft excmat on node, DOATR',mynum,DOATR
+            call output(excmat,1,nbast,1,nbast,nbast,nbast,-1,lupri)
             flush(lupri)
          END IF
       END IF
