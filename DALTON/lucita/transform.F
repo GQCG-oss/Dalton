@@ -92,7 +92,7 @@
       real(8)                :: cdummy(2), sdummy(2)
       logical                :: skip_orbital
 #ifdef VAR_MPI
-      integer(kind=MPI_INTEGER_KIND) :: mynew_comm_mpi, ierr
+      integer(kind=MPI_INTEGER_KIND) :: mynew_comm_mpi, ierr_mpi
       integer                :: my_MPI_COMM_WORLD = MPI_COMM_WORLD
 #endif
 
@@ -156,7 +156,7 @@
 #ifdef VAR_MPI
         if(luci_nmproc .gt. 1)then
           mynew_comm_mpi = mynew_comm
-          CALL MPI_BARRIER(myNEW_COMM_MPI,IERR)
+          CALL MPI_BARRIER(myNEW_COMM_MPI,ierr_mpi)
 !
 !         reset LUCLIST
           call izero(lu_BVClst,len_iBVC)
@@ -245,7 +245,7 @@
 #ifdef VAR_MPI
         if(luci_nmproc .gt. 1)then
           mynew_comm_mpi = mynew_comm
-          CALL MPI_BARRIER(myNEW_COMM_MPI,IERR)
+          CALL MPI_BARRIER(myNEW_COMM_MPI,ierr_mpi)
 !
 !         reset LUCLIST
           call izero(lu_BVClst,len_iBVC)
@@ -557,15 +557,19 @@
 *
 
 #ifdef VAR_MPI
-#ifdef USE_MPI_MOD_F90
-      use mpi
-      IMPLICIT REAL*8(A-H,O-Z)
-#else
+! hjaaj March 2020: disabled "use mpi" because mpich could not
+!    find specific subroutine for mpi_file_read_at and mpi_file_write_at
+!    when mpich is int32 and dalton is int64. I cannot figure out why not.
+
+!ifdef USE_MPI_MOD_F90
+!     use mpi
+!     IMPLICIT REAL*8(A-H,O-Z)
+!else
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mpif.h"
-#endif
+!endif
       integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8
-      integer(kind=MPI_INTEGER_KIND) :: ierr
+      integer(kind=MPI_INTEGER_KIND) :: ierr_mpi
       integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
       integer(kind=MPI_INTEGER_KIND) :: LUCINT_mpi
       integer(kind=MPI_OFFSET_KIND)  :: my_internal_in_off
@@ -694,9 +698,9 @@
             LUCIN_mpi = LUCIN
             LDET_mpi  = LDET
             CALL MPI_FILE_READ_AT(LUCIN_mpi,my_internal_in_off,C,
-     &                            LDET_mpi,my_MPI_REAL8,my_STATUS,IERR)
+     &         LDET_mpi,my_MPI_REAL8,my_STATUS,ierr_mpi)
 !           new offset (not yet...)
-            my_internal_in_off = my_internal_in_off
+!           my_internal_in_off = my_internal_in_off
           end if
 #endif
         else
@@ -749,7 +753,7 @@
           LUCIN_mpi = LUCIN
           LDET_mpi  = LDET
           CALL MPI_FILE_WRITE_AT(LUCIN_mpi,my_internal_in_off,C,
-     &                           LDET_mpi,my_MPI_REAL8,my_STATUS,IERR)
+     &        LDET_mpi,my_MPI_REAL8,my_STATUS,ierr_mpi)
 #endif
 !         new offset (now...)
           my_internal_in_off = my_internal_in_off + ldet
