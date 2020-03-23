@@ -24,8 +24,10 @@ module lucita_ci_task_interface
 
   private
 
+#ifdef VAR_MPI
   integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
   integer(kind=MPI_INTEGER_KIND) :: ierr_mpi
+#endif
 
 contains
 

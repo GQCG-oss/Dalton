@@ -30,8 +30,10 @@ module lucita_mcscf_vector_exchange
 
    private
 
+#ifdef VAR_MPI
    integer(kind=MPI_INTEGER_KIND)         :: my_MPI_REAL8 = MPI_REAL8
    integer(kind=MPI_INTEGER_KIND)         :: ierr_mpi
+#endif
 
    integer, parameter, private :: mc_offset = 4 ! offset to mc types in exchange_f... ==> must be equal to max #/2 (1/2 <= lucita; 1/2 >  mcscf)
 
