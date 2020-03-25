@@ -5436,6 +5436,7 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
+      integer(kind=MPI_INTEGER_KIND) my_luci_master
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       dimension work_dalton(lwork_dalton)
@@ -5450,6 +5451,7 @@ C
 *     to the total number of running invocations.
 *
       LUCI_MASTER = MASTER
+      my_luci_master = luci_master ! make sure right kind in mpi calls
       LUCI_MYPROC = MYNUM
 C     Add the master node, NODTOT = number of co-workers
       LUCI_NMPROC = NODTOT + 1
@@ -5510,15 +5512,15 @@ C
 
 !     the co-workers have finished, waiting for the master
       LUEND = .FALSE.
-      CALL MPI_ISEND(LUCI_MYPROC,1,my_MPI_INTEGER,LUCI_MASTER,20,
+      CALL MPI_ISEND(LUCI_MYPROC,1,my_MPI_INTEGER,my_LUCI_MASTER,20,
      &              MPI_COMM_WORLD,IREQ,IERR)
     1    CONTINUE
          CALL SLEEP(1)
-         CALL MPI_IPROBE(LUCI_MASTER,30,MPI_COMM_WORLD,
+         CALL MPI_IPROBE(my_LUCI_MASTER,30,MPI_COMM_WORLD,
      &                   LUEND,my_STATUS,IERR)
          IF (.NOT.LUEND) GOTO 1
 
-      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,LUCI_MASTER,30,
+      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,my_LUCI_MASTER,30,
      &               MPI_COMM_WORLD,my_STATUS,IERR)
 C
       call qexit('lucita_coworker_main')

@@ -313,11 +313,14 @@ C
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
+      integer(kind=MPI_INTEGER_KIND) :: my_luci_master
       integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION SUBVAL(*),ISCAT(*),RECVARRAY(*),TESTARR(*)
       DIMENSION IRECVARRAY(*),ITESTARRAY(*)
 *
+      my_luci_master = luci_master ! to always get right kind in mpi calls
+
       NTESTL = 0
       NTEST  = MAX(NTESTG,NTESTL)
       NTEST  = 0
@@ -349,14 +352,14 @@ C
      &                   my_MPI_INTEGER,MPI_COMM_WORLD,IERR)
 #endif
       CALL MPI_GATHER(SUBVAL,NSUBMX,my_MPI_REAL8,RECVARRAY,NSUBMX,
-     &                my_MPI_REAL8,LUCI_MASTER,MPI_COMM_WORLD,IERR)
+     &                my_MPI_REAL8,my_LUCI_MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_GATHER(ISCAT,NSUBMX,my_MPI_INTEGER,IRECVARRAY,NSUBMX,
-     &                my_MPI_INTEGER,LUCI_MASTER,MPI_COMM_WORLD,IERR)
+     &                my_MPI_INTEGER,my_LUCI_MASTER,MPI_COMM_WORLD,IERR)
 
       CALL MPI_BCAST(RECVARRAY,NSUBMX*LUCI_NMPROC,
-     &               my_MPI_REAL8,LUCI_MASTER,MPI_COMM_WORLD,IERR)
+     &               my_MPI_REAL8,my_LUCI_MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(IRECVARRAY,NSUBMX*LUCI_NMPROC,
-     &               my_MPI_INTEGER,LUCI_MASTER,MPI_COMM_WORLD,IERR)
+     &               my_MPI_INTEGER,my_LUCI_MASTER,MPI_COMM_WORLD,IERR)
 *
 #ifdef LUCI_DEBUG
       write(luwrt,*) 'NSUBMX are ==> ',NSUBMX
