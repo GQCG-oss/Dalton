@@ -370,6 +370,8 @@ add_dalton_runtest(cc2dc_resp                    "dalton;serial;runtest;cc;mediu
 add_dalton_runtest(cc2dc_exci                    "dalton;serial;runtest;cc;short")
 add_dalton_runtest(cc2dc_resp_newlr              "dalton;serial;runtest;cc;medium")
 add_dalton_runtest(cc_beta_solv                  "dalton;serial;runtest;cc;medium")
+add_dalton_runtest(newcc3_h2o                    "dalton;serial;cc;runtest;medium")
+add_dalton_runtest(newccsdpt_h2o                 "dalton;serial;cc;runtest;short")
 add_dalton_test(ccr3_exci                        "dalton;serial;cc;short;essential")
 
 add_dalton_test(cc3_LIH1s1p_pol                  "dalton;serial;cc;cc3;short")
