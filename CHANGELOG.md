@@ -1,28 +1,22 @@
-# DALTON Change Log -- All notable changes to the DALTON project will be documented in this file.
+# DALTON Change Log -- All notable changes to the DALTON program will be documented in this file.
 
-## special changes for MC-srDFT
+## [2020.0] (2020-04-15)
 
-### Fixed
-- Oct. 2016: state specific MC-srDFT for excited states
-
-
-
-
-## [2020.alpha] (Dalton2020 alpha)
-
-### New features added
-- Added pcH-n and aug-pcH-n basis sets levels 1-4 to Dalton basis set library.
-- Extended "super matrix integrals" to work with >255 basis functions. (H. J. Aa. Jensen)
-- Calculate and print oscillator strengths based on .EEF dipole transition moments. (H. J. Aa. Jensen)
-- Added ".TDA TR" keyword for invoking Tamm-Dancoff approximation for triplet response properties under \*\*PROPERTIES.
-  Useful for avoiding (near-)triplet-instability problems, for example in DFT calculations of spin-spin coupling constants. (H. J. Aa. Jensen)
-- Added ".TDA SI" keyword for invoking Tamm-Dancoff approximation for singlet response properties under \*\*PROPERTIES. (H. J. Aa. Jensen)
-- Added possibility to optimize MCSCF singlet wave functions with CSFs when used for triplet properties,
-  both in \*\*RESPONS and \*\*PROPERTIES. Previously .DETERMINANTS in wave function optimization was required. (H. J. Aa. Jensen)
+### Major new features added
+- MC-srDFT code (H. J. Aa. Jensen, E. Fromager, S. Knecht, E. R. Kjellgren and others)
+  - HF-srDFT, MP2-srDFT, CAS-srDFT, RAS-srDFT, NEVPT2-srDFT ground state energies and wave functions
+  - State specific CAS-srDFT and RAS-srDFT for excited states
+  - Singlet and triplet excitation energies and transition moments for HF-srDFT and MC-srDFT (linear response module)
+  - Singlet and triplet excitation energies and transition moments from SOPPA-srDFT, using MP2-srDFT
+  - srLDA and srPBEGWS short-range functionals
+- Added ".TDA TRIPLET" keyword for invoking Tamm-Dancoff approximation for triplet response properties under \*\*PROPERTIES.
+  Useful for avoiding (near-)triplet-instability problems, for example in DFT or MC-srDFT calculations of spin-spin coupling constants. (H. J. Aa. Jensen)
+- Added ".TDA SINGLET" keyword for invoking Tamm-Dancoff approximation for singlet response properties under \*\*PROPERTIES. (H. J. Aa. Jensen)
 - Added the ability in QFITLIB to fit up to and including quadrupoles (C. Steinmann)
-- Added the CVS approximation for CC calculations of core-excited states (S. Coriani et al.)
+- Added the core-valence separation ( CVS ) approximation for CC calculations of core-excited states (S. Coriani et al.)
 - Added the possibility to calculate triplet-triplet excited state moments using the EOM-CC approximation (R. Faber)
 - New features available through the Polarizable Embedding library (PElib)
+  - Calculate and print oscillator strengths based on .EEF dipole transition moments. (N. List, J. M. H. Olsen, H. J. Aa. Jensen)
   - Polarizable density embedding (PDE) model (use -DENABLE\_PDE=ON during setup to enable it [requires HDF5])
     - J. M. H. Olsen, C. Steinmann, K. Ruud, and J. Kongsted, J. Phys. Chem. A 119, 5344 (2015)
     - P. Reinholdt, J. Kongsted, and J. M. H. Olsen, J. Phys. Chem. Lett. 8, 5949 (2017)
@@ -35,9 +29,12 @@
     - J. M. H. Olsen and J. Kongsted, Adv. Quantum Chem. 61, 107 (2011)
   - Effective external field (EEF) can now be used for all dipole properties
   - Added support for AMOEBA potential
-- Added the ability to run SOPPA linear response calculations via the AOSOPPA module (R. Faber et al.)
 
-### Added
+### Other new features added
+- Added the ability to run SOPPA linear response calculations via the AOSOPPA module (R. Faber et al.)
+- Added possibility to optimize MCSCF singlet wave functions with CSFs when used for triplet properties,
+  both in \*\*RESPONS and \*\*PROPERTIES. Previously .DETERMINANTS in wave function optimization was required. (H. J. Aa. Jensen)
+- Extended "super matrix integrals" to work with >255 basis functions. (H. J. Aa. Jensen)
 - Added information about .MS2 input option to manual, quit if invalid value specified. (H. J. Aa. Jensen)
 
 ### Fixed
@@ -56,13 +53,16 @@
 - Fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
 - Fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
 
-### Fixes in enclosed basis set files
+### Additions and fixes in enclosed basis set files
+- Added pcH-n and aug-pcH-n basis sets levels 1-4 to Dalton basis set library.
 - Error in diffuse d-orbital exponents for Aluminum and Silicon (factor 10 too big) in aug-cc-pV(D+d)Z basis sets (H. J. Aa. Jensen)
 - Error in diffuse f-orbital exponents for Aluminum and Silicon (factor 10 too big) in aug-cc-pV(Q+d)Z basis sets (H. J. Aa. Jensen)
 - Error in diffuse f-orbital exponent for Aluminum (factor 10 too big) in aug-cc-pV(T+d)Z basis sets (H. J. Aa. Jensen)
 
 ### Changed
 - Allow basis set(s) after BASIS in line 1 of .mol file (instead of on second line). (H. J. Aa. Jensen)
+- Moved .SUPSYM and .THRSSY options to \*OPTIMIZATION from \*ORBITAL INPUT; updated Sirius part of manual (H. J. Aa. Jensen)
+- Removed .NOSUPSYM option (H. J. Aa. Jensen)
 
 
 ## [2018.2] (2019-03-17)
