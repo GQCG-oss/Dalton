@@ -1779,7 +1779,7 @@ C           CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
 C
          IF (MAXCIT .LT. 0) THEN ! user not specified .MAX CI
             MAXCIT = 8
-            THRCIX = 1.D-3 ! Usually initial orbital gradient is larger ...
+            THRCIX = 1.D-2 ! Usually initial orbital gradient is larger ...
          ELSE
             THRCIX = DP5*THRGRD
          END IF
