@@ -1544,6 +1544,7 @@ C          routine. This call is preceded by a transformation call.
 C          The CI-vector is afterwards written on LUIT1.
 C          If MAXCIT .gt. 0, or the ISTATE configuration is degenerate,
 C          then call CICTL to do MAXCIT iterations (3 if deg.).
+C          If MAXCIT .lt. 0, then decide here how many CI iterations
 C
 C     =2 : *OBSOLETE* (860804 hjaaj); now as ICI0 = 4 (880616 hjaaj)
 C
@@ -1776,8 +1777,14 @@ C           CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
             FLAG(14) = .TRUE.
          END IF
 C
+         IF (MAXCIT .LT. 0) THEN ! user not specified .MAX CI
+            MAXCIT = 8
+            THRCIX = 1.D-3 ! Usually initial orbital gradient is larger ...
+         ELSE
+            THRCIX = DP5*THRGRD
+         END IF
          IF (ICHECK .GT. 0) THEN
-            IF (MAXCIT .LE. 0) THEN
+            IF (MAXCIT .LE. 2) THEN
                WRITE (LUPRI,'(//A/A)')
      &         ' --- INFO OPTST, symmetry check of CI vectors'//
      &         ' only works after CI iterations.',
@@ -1792,7 +1799,6 @@ C               specified in input; use this value
             END IF
          END IF
 C
-         THRCIX = DP5*THRGRD
          LSAV15   = FLAG(15)
          FLAG(15) = .FALSE.
          ISTASV   = ISTACI

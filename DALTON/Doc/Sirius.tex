@@ -312,7 +312,8 @@ Specification of which wave function calculation is to be performed.
 
 \item[\Key{PRINT}] \ \\
   \kw{READ (LUINP,*) IPRSIR} \\
-  General {\sir} print level and default for all other print parameters in this module.
+  General {\sir} print level and default for all other print parameters in this module
+  (default is the general print level from \verb|**DALTON|).
 
 \item[\Key{RESTART}]
   Restart {\sir}\index{restart!wave function} second order optimization,
@@ -1308,7 +1309,8 @@ For open--shell SCF, the singly occupied orbitals are frozen in the MP2 section.
 
 \item[\Key{PRINT}] \ \\
   \kw{READ (LUINP,*) IPRMP2} \\
-  Print level for MP2 calculation.
+  Print level for MP2 calculation
+  (default is the general print level from \verb|**DALTON| plus four).
 
 \item[\Key{SAVE WF1}] \ \\
   Save first order wave function on SIRIFC.
@@ -1411,7 +1413,10 @@ not higher than 14.
 
 {\bf Purpose:}
 
-To change defaults for optimization of an MCSCF\index{MCSCF} wave function.
+To change defaults for optimization of an MCSCF\index{MCSCF} wave function,
+to specify which state to converge to (lowest state or higher state in specified symmetry),
+to invoke use of super symmetry\index{super symmetry},
+and to specify CORE HOLE calculations.\\
 Some of the options also affect a QC-HF optimization.
 
 \begin{description}
@@ -1590,6 +1595,11 @@ Some of the options also affect a QC-HF optimization.
   spin symmetry\index{spin symmetry}
   specified under \Sec{CONFIGURATION INPUT}).
 
+\item[\Key{SUPSYM}]
+  Enforce automatic identification of "super symmetry"
+  \index{super symmetry} (see comments and .THRSSY keyword below).\\
+  Default is that "super symmetry" is not identified.
+
 \item[\Key{SYM CHECK}]
   Default: ICHECK = 2 when NROOTS $>$ 1, else ICHECK = -1.\\
   \kw{READ (LUINP,*) ICHECK} \\
@@ -1618,6 +1628,13 @@ Some of the options also affect a QC-HF optimization.
   Convergence threshold for energy gradient in MCSCF optimization.
   The convergence of the energy will be approximately the square of this
   number.
+
+\item[\Key{THRSSY}] \ \\
+  \kw{READ (LUINP,*) THRSSY} \\
+  Threshold for identification of "super
+  symmetry"\index{super symmetry} and degeneracies among
+  "super symmetries" from matrix elements of the kinetic energy matrix
+  (default: 5.0D-8).
 
 \item[\Key{TRACI}]
   Activate TRACI option (default : program decides).\\
@@ -1678,6 +1695,42 @@ optimal orbital trial\index{optimal orbital trial vector} vectors are
 used and they are therefore not used
 by default.
 
+If \quotekw{\Key{SUPSYM}} is specified, then
+{\sir} automatically identifies "super symmetry"\index{super symmetry!orbitals},
+{\it i.e.\/} it assigns orbitals to the irreps of the true point
+group of the molecule\index{symmetry!group} which is a
+"super group" of the Abelian group used in the calculation.
+Degenerate orbitals will be averaged and the "super symmetry"
+will be enforced in the orbitals.
+Note that "super symmetry" can only be used
+in the RHF, MP2, MCSCF, and RESPONS modules, and should
+not be invoked if other modules are used,
+for example, if \Sec{*PROPERTIES} (\aba) is invoked.
+%hj aug 04: it should be OK for closed shell cases, also for CC ???
+% it is only for spatially degenerate states that elements
+% of the orbital gradient may be non-zero, right ???
+Also, it cannot be used
+in finite field calculations where the field lowers the symmetry.
+The initial orbitals must be symmetry orbitals, and the super symmetry
+analysis is performed on the kinetic energy matrix in this basis.
+The \quotekw{.THRSSY} option is used to define when the kinetic
+energy matrix element between two orbitals is considered to be
+zero and when two diagonal matrix elements are degenerate. In the
+first case the orbitals can belong to different irreps of the
+supergroup and in the second case the two orbitals are considered
+to be degenerate. The analysis will fail if there are accidental
+degeneracies in diagonal elements.  This can happen if the nuclear
+geometry deviates slightly from a higher symmetry point group, for
+example because too few digits has been used in the input of the
+nuclear geometry. If the program stops because the super symmetry
+analysis fails with a degeneracy error, you might consider to use
+more digits in the nuclear coordinates, to change \kw{THRSSY}, or
+to disable super symmetry by not using \quotekw{.SUPSYM}.  The value of
+\kw{THRSSY} should be sufficiently small to avoid accidental
+degeneracies and sufficiently large to ignore small errors in
+geometry and numerical round-off errors.
+
+
 SYM CHECK: The symmetry check is performed on the matrix element
 $\langle VEC1 \mid oper \mid VEC2\rangle$, where "oper" is
 the CI-diagonal.
@@ -1710,8 +1763,7 @@ excited singlet\index{excited state} states which often have lower lying triplet
 {\bf Purpose:}
 
 To define an initial set of molecular orbitals\index{molecular orbital!initial set}
-and to control the use of super symmetry\index{supersymmetry}, frozen
-orbitals\index{frozen orbitals}, deletion of orbitals\index{delete orbitals},
+and to control frozen orbitals\index{frozen orbitals}, deletion of orbitals\index{delete orbitals},
 reordering and punching of orbitals.
 
 \begin{description}
@@ -1835,14 +1887,6 @@ reordering and punching of orbitals.
    \item[{\tt SIRIFC\ }] Input from {\sir} interface file ("\verb|SIRIFC|")
 \end{description}
 
-%Oct 2003 hjaaj: now NOSUPSYM always default,
-% SUPSYM must be activated explicitly with .SUPSYM
-%\item[\Key{NOSUPSYM}]
-%  Deactivate automatic identification of "super
-%  symmetry"\index{supersymmetry} (see
-%  comments). This is automatically enforced in case of \aba\ or
-%  \resp\ calculations.
-
 \item[\Key{PUNCHINPUTORBITALS}]
   Punch input orbitals with label \Sec{*MOLORB}, Format (4F18.14).
   These orbitals may {\it e.g.\/} be transferred to another computer and
@@ -1874,63 +1918,15 @@ For example if orbitals 1 and 5 in symmetry 1 should change place, specify
 \end{verbatim}
   Reordering of molecular orbitals (see comments).
 
-\item[\Key{SUPSYM}]
-  Default is NOSUPSYM.\\
-  Enforce automatic identification of "super
-  symmetry"\index{supersymmetry} (see comments).
-
 \item[\Key{SYMMETRIC ORTHONORMALIZATION}]
   Default: Gram-Schmidt orthonormalization\\
   Symmetric orthonormalization of input
   orbitals\index{orthonormalization!symmetric}.
 
-\item[\Key{THRSSY}] \ \\
-  \kw{READ (LUINP,*) THRSSY} \\
-  Threshold for identification of "super
-  symmetry"\index{supersymmetry} and degeneracies among
-  "super symmetries" from matrix elements of the kinetic energy matrix
-  (default: 5.0D-8).
-
 \end{description}
 
 
 \noindent{\bf Comments:}
-
-If \quotekw{\Key{SUPSYM}} is specified, then
-{\sir} automatically identifies "super symmetry"\index{super symmetry!orbitals},
-{\it i.e.\/} it assigns orbitals to the irreps of the true point
-group of the molecule\index{symmetry!group} which is a
-"super group" of the Abelian group used in the calculation.
-Degenerate orbitals will be averaged and the "super symmetry"
-will be enforced in the orbitals.
-Note that "super symmetry" can only be used
-in the RHF, MP2, MCSCF, and RESPONS modules, and should
-not be invoked if other modules are used,
-for example, if \Sec{*PROPERTIES} (\aba) is invoked.
-%hj aug 04: it should be OK for closed shell cases, also for CC ???
-% it is only for spatially degenerate states that elements
-% of the orbital gradient may be non-zero, right ???
-Also, it cannot be used
-in finite field calculations where the field lowers the symmetry.
-The initial orbitals must be symmetry orbitals, and the super symmetry
-analysis is performed on the kinetic energy matrix in this basis.
-The \quotekw{.THRSSY} option is used to define when the kinetic
-energy matrix element between two orbitals is considered to be
-zero and when two diagonal matrix elements are degenerate. In the
-first case the orbitals can belong to different irreps of the
-supergroup and in the second case the two orbitals are considered
-to be degenerate. The analysis will fail if there are accidental
-degeneracies in diagonal elements.  This can happen if the nuclear
-geometry deviates slightly from a higher symmetry point group, for
-example because too few digits has been used in the input of the
-nuclear geometry. If the program stops because the super symmetry
-analysis fails with a degeneracy error, you might consider to use
-more digits in the nuclear coordinates, to change \kw{THRSSY}, or
-to disable super symmetry by not using \quotekw{.SUPSYM}.  The value of
-\kw{THRSSY} should be sufficiently small to avoid accidental
-degeneracies and sufficiently large to ignore small errors in
-geometry and numerical round-off errors.
-
 
 \Key{REORDER}\index{orbital reordering} can for instance be used for
 linear molecules to interchange
@@ -2003,25 +1999,29 @@ To control the printing of output.
 \item[\Key{IPRAVE}] \ \\
   \kw{READ (LUINP,*) IPRAVE} \\
   Sets print level for routines used in "super symmetry" averaging
-  (default = 0).
+  (default is the general print level from \verb|**DALTON|).
 
 \item[\Key{IPRCIX}] \ \\
   \kw{READ (LUINP,*) IPRCIX} \\
   Sets print level for setup of determinant/CSF index information (default = 0).
+  (default is the general print level from \verb|**DALTON|).
 
 \item[\Key{IPRCNO}] \ \\
   \kw{READ (LUINP,*) IPRCNO} \\
-  Sets print level for \quotekw{.TRACI} option (default = 1,
-  to print the natural orbital occupations in each iteration set
-  IPRCNO = 1, higher values will give more print).
+  Sets print level for \quotekw{.TRACI} option.
+  To print the natural orbital occupations in each iteration set
+  IPRCNO = 1, higher values will give more print.
+  (default is the general print level from \verb|**DALTON| plus one).
 
 \item[\Key{IPRDIA}] \ \\
   \kw{READ (LUINP,*) IPRDIA} \\
-  Sets print level for calculation of CI diagonal (default = 0)
+  Sets print level for calculation of CI diagonal
+  (default is the general print level from \verb|**DALTON| minus one).
 
 \item[\Key{IPRDNS}] \ \\
   \kw{READ (LUINP,*) IPRDNS} \\
-  Sets print level for calculation of CI density matrices (default = 0)
+  Sets print level for calculation of CI density matrices
+  (default is the general print level from \verb|**DALTON|).
 
 %\item[\Key{IPRERR}] \ \\
 %  \kw{READ (LUINP,*) IPRERR} \\
@@ -2029,21 +2029,23 @@ To control the printing of output.
 
 \item[\Key{IPRFCK}] \ \\
   \kw{READ (LUINP,*) IPRFCK} \\
-  Sets print level in the supersymmetry section (default=0).
+  Sets print level in the Fock matrix construction routines
+  (default is the general print level from \verb|**DALTON|).
 
 \item[\Key{IPRKAP}] \ \\
   \kw{READ (LUINP,*) IPRKAP} \\
-  Sets print level in routines for calculation of optimal orbital trial
-  vectors (default = 0)
+  Sets print level in routines for calculation of optimal orbital trial vectors
+  (default is the general print level from \verb|**DALTON|).
 
 \item[\Key{IPRSIG}] \ \\
   \kw{READ (LUINP,*) IPRSIG} \\
-  Sets print level for calculation of CI sigma vectors (default = 0)
+  Sets print level for calculation of CI sigma vectors
+  (default is the general print level from \verb|**DALTON|).
 
 \item[\Key{IPRSOL}] \ \\
   \kw{READ (LUINP,*) IPRSOL} \\
-  Sets print level in the solvent contribution parts of the
-  calculation (default = 5).
+  Sets print level in the solvent contribution parts of the calculation
+  (default is the general print level from \verb|**DALTON| plus four).
 
 \item[\Key{NOSUMMARY}]
   No final summary of calculation.
@@ -2239,7 +2241,7 @@ in the \Sec{CONFIGURATION INPUT} section.
 \item[\Key{PRINT}] \ \\
   \kw{READ (LUINP,*) IPRRHF} \\
   Resets general print level to \verb|IPRRHF| in Hartree--Fock/DFT calculations
-  (if not specified, global print levels will be used).
+  (default is the general print level from \verb|**DALTON| minus one).
 
 \item[\Key{SHIFT}]  \ \\
   \kw{READ (LUINP,*) SHFTLVL} \\
@@ -2483,7 +2485,8 @@ will activate this model.
 
 \item[\Key{PRINT}] \ \\
   \kw{READ (LUINP,*) IPRSOL} \\
-  Print level in solvent module routines (default = 0).
+  Print level in solvent module routines
+  (default is the general print level from \verb|**DALTON| plus four).
 \end{description}
 
 \noindent{\bf Comments:}

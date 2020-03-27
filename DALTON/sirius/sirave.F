@@ -214,7 +214,7 @@ Chjaaj         ... this is an inactive orbital
                IF (NERR .GT. 0) THEN
                   CALL QTRACE(LUPRI)
                   CALL QUIT(
-     &            'AVERSS error: not all deg. rotations included')
+     &            'AVERSS error: not all degenerate rotations included')
                END IF
                DO 460 IVSIM = 1,NVSIM
                   XKAPIJ = VECS(IDEGV(1),IVSIM)
