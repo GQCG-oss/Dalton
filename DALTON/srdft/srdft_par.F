@@ -28,7 +28,7 @@
 
 C*****************************************************************************
 #ifdef VAR_MPI
-      SUBROUTINE SRDFT_PAR_MASTER(ND_SIM,EXCMAT,DMAT,EDFT,
+      SUBROUTINE SRDFT_PAR_MASTER(ND_SIM,DMAT,EDFT,
      &                 DOERG,DO_MOLGRAD,DOATR,TRIPLET,
      &                 WORK,LWORK,IPRINT_in)
 C*****************************************************************************
@@ -45,7 +45,7 @@ C*****************************************************************************
       implicit none
       logical :: DOERG,DO_MOLGRAD,DOATR,TRIPLET
       integer :: ND_SIM, LWORK, IPRINT_in
-      real*8 :: EXCMAT(N2BASX,*),DMAT(N2BASX,*),EDFT(3),
+      real*8 :: DMAT(N2BASX,*),EDFT(3),
      &          WORK(LWORK)
 
 #include "priunit.h"
@@ -81,7 +81,7 @@ C     variables for SRCPBERI
       integer KFREE, LFREE
       integer NDMAT, NEXCMAT
 
-      integer(mpi_integer_kind) :: bytesize, ierr
+      integer(mpi_integer_kind) :: bytesize, ierr_mpi
 
       call qenter('SRDFT_PAR_MASTER')
 
@@ -110,32 +110,32 @@ C     variables for SRCPBERI
 !        (need at least CHIVAL and ERFEXP(:))
       call getbytespan(GRADML, GNRINFlast, bytesize)
       call mpi_bcast(GRADML, bytesize, mpi_byte,
-     &   MASTER, mpi_comm_world, ierr)
+     &   MASTER, mpi_comm_world, ierr_mpi)
 
 !     3) Make sure dft information in dftcom.h is known to nodes
       call getbytespan(HFXFAC, DFTCOMlast, bytesize)
       call mpi_bcast(HFXFAC, bytesize, mpi_byte,
-     &   MASTER, mpi_comm_world, ierr)
+     &   MASTER, mpi_comm_world, ierr_mpi)
 
 !     4) Make sure /LOGINP/ in infinp.h is known to nodes
 !        (need at least DOHFSRDFT and SRHYBR)
       call getbytespan(FLAG(1), LOGINPlast, bytesize)
       call mpi_bcast(FLAG(1), bytesize, mpi_byte,
-     &   MASTER, mpi_comm_world, ierr)
+     &   MASTER, mpi_comm_world, ierr_mpi)
 
 !     5) Transfer input control variables
       CALL MPI_BCAST(DOERG,1,my_MPI_LOGICAL,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
       CALL MPI_BCAST(DO_MOLGRAD,1,my_MPI_LOGICAL,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
       CALL MPI_BCAST(DOATR,1,my_MPI_LOGICAL,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
       CALL MPI_BCAST(TRIPLET,1,my_MPI_LOGICAL,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
       CALL MPI_BCAST(JWOPSY,1,my_MPI_INTEGER,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
       CALL MPI_BCAST(mu_0,1,MPI_DOUBLE_PRECISION,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
 
 !     6) Transfer density matrices
       IF (DFT_SPINDNS) THEN
@@ -147,12 +147,12 @@ C     variables for SRCPBERI
       END IF
       IF (DOATR) NDMAT = NDMAT + 1
       CALL MPI_BCAST(NDMAT,1,my_MPI_INTEGER,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
       CALL MPI_BCAST(DMAT,NDMAT*N2BASX,MPI_DOUBLE_PRECISION,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
 
       IF (iprint .gt. 5) then
-      write (*,*) 'SRDFT_PAR_MASTER has started slaves'
+      write (*,*) 'SRDFT_PAR_MASTER has started slaves, lupri', lupri
       write (lupri,*) 'SRDFT_PAR_MASTER has started slaves'
       write (lupri,*) 'IPRTYP,IPRINT_slaves=',IPRTYP,IPRINT_slaves
       flush(lupri)
@@ -210,7 +210,7 @@ C     variables for SRCPBERI
       real*8   mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 
-      integer(mpi_integer_kind) :: bytesize, ierr
+      integer(mpi_integer_kind) :: bytesize, ierr_mpi
 
       call qenter('SRDFT_PAR_NODE')
       IPRINT = max(SRDFT_PAR_DEBUG,iprint_in)
@@ -235,12 +235,12 @@ C     variables for SRCPBERI
 !        (need at least CHIVAL and ERFEXP(:))
       call getbytespan(GRADML, GNRINFlast, bytesize)
       call mpi_bcast(GRADML, bytesize, mpi_byte,
-     &   MASTER, mpi_comm_world, ierr)
+     &   MASTER, mpi_comm_world, ierr_mpi)
 
 !     3) Make sure dft information in dftcom.h is known to nodes
       call getbytespan(HFXFAC, DFTCOMlast, bytesize)
       call mpi_bcast(HFXFAC, bytesize, mpi_byte,
-     &   MASTER, mpi_comm_world, ierr)
+     &   MASTER, mpi_comm_world, ierr_mpi)
       ! master does not know if the grid file
       ! DALTON.QUAD has been generated for this node or not
       if (first_call .or. NEWGEO .or. NEWBAS) then
@@ -253,21 +253,21 @@ C     variables for SRCPBERI
 !        (need at least DOHFSRDFT and SRHYBR)
       call getbytespan(FLAG(1), LOGINPlast, bytesize)
       call mpi_bcast(FLAG(1), bytesize, mpi_byte,
-     &   MASTER, mpi_comm_world, ierr)
+     &   MASTER, mpi_comm_world, ierr_mpi)
 
 !     5) Transfer input control variables
       CALL MPI_BCAST(DOERG,1,my_MPI_LOGICAL,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
       CALL MPI_BCAST(DO_MOLGRAD,1,my_MPI_LOGICAL,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
       CALL MPI_BCAST(DOATR,1,my_MPI_LOGICAL,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
       CALL MPI_BCAST(TRIPLET,1,my_MPI_LOGICAL,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
       CALL MPI_BCAST(JWOPSY,1,my_MPI_INTEGER,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
       CALL MPI_BCAST(mu_0,1,MPI_DOUBLE_PRECISION,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
 
 !     6) Receive density matrices from master
       IF (DFT_SPINDNS) THEN
@@ -279,7 +279,7 @@ C     variables for SRCPBERI
       END IF
       IF (DOATR) NDMAT = NDMAT + 1
       CALL MPI_BCAST(NDMAT_in,1,my_MPI_INTEGER,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
       IF (NDMAT .NE. NDMAT_in) THEN
          WRITE(LUERR,*) 'ERROR: MYNUM, NDMAT, NDMAT_in:',
      &   MYNUM, NDMAT,NDMAT_in
@@ -295,7 +295,7 @@ C     variables for SRCPBERI
      &     WORK,KFREE,LFREE)
 
       CALL MPI_BCAST(WORK(KDMAT),NDMAT*N2BASX,MPI_DOUBLE_PRECISION,
-     &     MASTER,MPI_COMM_WORLD,IERR)
+     &     MASTER,MPI_COMM_WORLD,ierr_mpi)
 
 !     7) A check
 #if SRDFT_PAR_DEBUG > 1

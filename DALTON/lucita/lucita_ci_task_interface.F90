@@ -22,6 +22,13 @@ module lucita_ci_task_interface
   public CI_task_list_interface
   public create_CI_task_list
 
+  private
+
+#ifdef VAR_MPI
+  integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
+  integer(kind=MPI_INTEGER_KIND) :: ierr_mpi, len_mpi, root_comm=0
+#endif
+
 contains
 
 !**********************************************************************
@@ -253,7 +260,6 @@ contains
 #include "maxorb.h"
 #include "infpar.h"
       integer(MPI_INTEGER_KIND):: my_STATUS(MPI_STATUS_SIZE)
-      integer(MPI_INTEGER_KIND):: ierr
       integer(MPI_OFFSET_KIND) :: offset
       integer                  :: block_length
       integer                  :: isblk
@@ -308,7 +314,7 @@ contains
             if(luci_myproc == iproc)then
               call get_block_length(block_list,isblk,block_length)
               call mpi_file_read_at(file_info%fh_lu(file_info%current_file_nr_diag),&
-                                    offset,cref,block_length,MPI_REAL8,my_STATUS,ierr)
+                                    offset,cref,block_length,my_MPI_REAL8,my_STATUS,ierr_mpi)
               write(luwrt,*) ' # of diagonal elements ==> ',block_length
               call wrtmatmn(cref,1,block_length,1,block_length,luwrt)
               offset = offset + block_length
@@ -456,8 +462,7 @@ contains
       integer                          :: iatp, ibtp
       integer                          :: nbatch_par, nblock_par
       integer                          :: iloop, nbatch_par_max
-      integer(kind=MPI_INTEGER_KIND)   :: ierr
-      integer(kind=MPI_INTEGER_KIND)   :: mynew_comm_mpi
+      integer(kind=MPI_INTEGER_KIND)   :: mynew_comm_mpi, my_luci_master
       integer(kind=MPI_OFFSET_KIND)    :: my_lu4_off_tmp
       integer                          :: my_MPI_COMM_WORLD = MPI_COMM_WORLD
 #endif
@@ -482,6 +487,7 @@ contains
       if(file_info%current_file_fh_seqf(2) > 0) luhc_internal = file_info%current_file_fh_seqf(2)
 
 #ifdef VAR_MPI
+      my_luci_master = luci_master
       if(luci_nmproc > 1)then
 
         if(icsm /= issm) & 
@@ -635,7 +641,7 @@ contains
 !         MPI I/O --> MPI I/O node-master collection file
 !         -----------------------------------------------
           mynew_comm_mpi = mynew_comm
-          call mpi_barrier(mynew_comm_mpi,ierr) ! probably not needed if collection of densities is in action
+          call mpi_barrier(mynew_comm_mpi,ierr_mpi) ! probably not needed if collection of densities is in action
           call izero(file_info%ilublist,file_info%max_list_length_bvec)
 
           call mcci_cp_vcd_batch(file_info%fh_lu(file_info%current_file_nr_active1),       &    
@@ -684,38 +690,44 @@ contains
 !         collect density matrices
 !         ------------------------
           if(luci_myproc == luci_master)then
-            call mpi_reduce(mpi_in_place,work(krho1),nacob**2,mpi_real8,             &
-                            mpi_sum,luci_master,mpi_comm_world,ierr)
+            len_mpi = nacob**2
+            call mpi_reduce(mpi_in_place,work(krho1),len_mpi,my_mpi_real8,           &
+                            mpi_sum,my_luci_master,mpi_comm_world,ierr_mpi)
             if(ispnden > 0)then
-              call mpi_reduce(mpi_in_place,work(ksrho1),nacob**2,mpi_real8,          &
-                              mpi_sum,luci_master,mpi_comm_world,ierr)
-              call mpi_reduce(mpi_in_place,work(ksrho1a),nacob**2,mpi_real8,         &
-                              mpi_sum,luci_master,mpi_comm_world,ierr)
-              call mpi_reduce(mpi_in_place,work(ksrho1b),nacob**2,mpi_real8,         &
-                              mpi_sum,luci_master,mpi_comm_world,ierr)
+              call mpi_reduce(mpi_in_place,work(ksrho1),len_mpi,my_mpi_real8,        &
+                              mpi_sum,my_luci_master,mpi_comm_world,ierr_mpi)
+              call mpi_reduce(mpi_in_place,work(ksrho1a),len_mpi,my_mpi_real8,       &
+                              mpi_sum,my_luci_master,mpi_comm_world,ierr_mpi)
+              call mpi_reduce(mpi_in_place,work(ksrho1b),len_mpi,my_mpi_real8,       &
+                              mpi_sum,my_luci_master,mpi_comm_world,ierr_mpi)
             end if
             if(i12 > 1)then
-              call mpi_reduce(mpi_in_place,work(krho2),nacob**2*(nacob**2+1)/2,      &
-                              mpi_real8,mpi_sum,luci_master,mpi_comm_world,ierr)
-              call mpi_reduce(mpi_in_place,exps2,1,                                  &
-                              mpi_real8,mpi_sum,luci_master,mpi_comm_world,ierr)
+              len_mpi = nacob**2*(nacob**2+1)/2
+              call mpi_reduce(mpi_in_place,work(krho2),len_mpi,                      &
+                              my_mpi_real8,mpi_sum,my_luci_master,mpi_comm_world,ierr_mpi)
+              len_mpi = 1
+              call mpi_reduce(mpi_in_place,exps2,len_mpi,                            &
+                              my_mpi_real8,mpi_sum,my_luci_master,mpi_comm_world,ierr_mpi)
             end if
           else
-            call mpi_reduce(work(krho1),mpi_in_place,nacob**2,mpi_real8,             &
-                            mpi_sum,luci_master,mpi_comm_world,ierr)
+            len_mpi = nacob**2
+            call mpi_reduce(work(krho1),mpi_in_place,len_mpi,my_mpi_real8,           &
+                            mpi_sum,my_luci_master,mpi_comm_world,ierr_mpi)
             if(ispnden > 0)then
-              call mpi_reduce(work(ksrho1),mpi_in_place,nacob**2,mpi_real8,          &
-                              mpi_sum,luci_master,mpi_comm_world,ierr)
-              call mpi_reduce(work(ksrho1a),mpi_in_place,nacob**2,mpi_real8,         &
-                              mpi_sum,luci_master,mpi_comm_world,ierr)
-              call mpi_reduce(work(ksrho1b),mpi_in_place,nacob**2,mpi_real8,         &
-                              mpi_sum,luci_master,mpi_comm_world,ierr)
+              call mpi_reduce(work(ksrho1),mpi_in_place,len_mpi,my_mpi_real8,        &
+                              mpi_sum,my_luci_master,mpi_comm_world,ierr_mpi)
+              call mpi_reduce(work(ksrho1a),mpi_in_place,len_mpi,my_mpi_real8,       &
+                              mpi_sum,my_luci_master,mpi_comm_world,ierr_mpi)
+              call mpi_reduce(work(ksrho1b),mpi_in_place,len_mpi,my_mpi_real8,       &
+                              mpi_sum,my_luci_master,mpi_comm_world,ierr_mpi)
             end if
             if(i12 > 1)then
-              call mpi_reduce(work(krho2),mpi_in_place,nacob**2*(nacob**2+1)/2,      &
-                              mpi_real8,mpi_sum,luci_master,mpi_comm_world,ierr)
-              call mpi_reduce(exps2,mpi_in_place,1,                                  &
-                              mpi_real8,mpi_sum,luci_master,mpi_comm_world,ierr)
+              len_mpi = nacob**2*(nacob**2+1)/2
+              call mpi_reduce(work(krho2),mpi_in_place,len_mpi,                      &
+                              my_mpi_real8,mpi_sum,my_luci_master,mpi_comm_world,ierr_mpi)
+              len_mpi = 1
+              call mpi_reduce(exps2,mpi_in_place,len_mpi,                            &
+                              my_mpi_real8,mpi_sum,my_luci_master,mpi_comm_world,ierr_mpi)
             end if
           end if
 #endif
@@ -888,7 +900,6 @@ contains
       integer                          :: iatp, ibtp
       integer                          :: nbatch_par, nblock_par
       integer(kind=MPI_INTEGER_KIND)   :: mynew_comm_mpi
-      integer(kind=MPI_INTEGER_KIND)   :: ierr
       integer(kind=mpi_offset_kind)    :: my_lu4_off_tmp
       integer                          :: my_MPI_COMM_WORLD = MPI_COMM_WORLD
 #endif
@@ -983,7 +994,7 @@ contains
 !         MPI I/O --> MPI I/O node-master collection file
 !         -----------------------------------------------
           mynew_comm_mpi = mynew_comm
-          call mpi_barrier(mynew_comm_mpi,ierr) 
+          call mpi_barrier(mynew_comm_mpi,ierr_mpi) 
           call izero(file_info%ilublist,file_info%max_list_length_bvec)
 
           call mcci_cp_vcd_batch(file_info%fh_lu(file_info%current_file_nr_active1),       &    
@@ -1114,9 +1125,6 @@ contains
       integer, allocatable   :: block_info_batch(:,:)
       integer, allocatable   :: blocktype(:)
       integer(8)             :: my_lu4_off_tmp
-#ifdef VAR_MPI
-      integer(MPI_INTEGER_KIND):: ierr
-#endif
 !-------------------------------------------------------------------------------
 
 !#define LUCI_DEBUG
@@ -1166,7 +1174,8 @@ contains
       my_lu4_off       = file_info%file_offsets(file_info%current_file_nr_active2)
 
 !     update co-workers with single-orbital transformation matrix
-      call mpi_bcast(mo2mo_mat,nacob**2,mpi_real8,0,mpi_comm_world,ierr)
+      len_mpi = nacob**2
+      call mpi_bcast(mo2mo_mat,len_mpi,my_mpi_real8,root_comm,mpi_comm_world,ierr_mpi)
 
 #else
       my_in_fh   = lusc1

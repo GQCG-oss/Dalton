@@ -1513,7 +1513,7 @@ C**********************************************************************
 #include "infpar.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) :: mynew_comm_mpi
-      integer(kind=MPI_INTEGER_KIND) :: ierr
+      integer(kind=MPI_INTEGER_KIND) :: ierr_mpi
       integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "wrkspc.inc"
@@ -1600,7 +1600,7 @@ C
         END IF
            mynew_comm_mpi = mynew_comm
            CALL MPI_BCAST(ISCLFAC_GROUP,NUM_BLOCKS2,
-     &                    my_MPI_INTEGER,0,MYNEW_COMM_MPI,IERR)
+     &                    my_MPI_INTEGER,0,MYNEW_COMM_MPI,ierr_mpi)
 *
       ELSE
 *
@@ -1790,7 +1790,8 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "wrkspc.inc"
       
@@ -1829,7 +1830,7 @@ C
           END IF
           IF( IBLOCKD(II) .eq. LUCI_MYPROC )THEN 
              CALL MPI_FILE_READ_AT(IDIA,IOFF_SCR,SEGMNT,LBL,
-     &                             MPI_REAL8,my_STATUS,IERR)
+     &                             my_MPI_REAL8,my_STATUS,ierr_mpi)
           ENDIF
           IF(NTEST.GE.100) THEN
             WRITE(LUWRT,*) ' Elements read in '
