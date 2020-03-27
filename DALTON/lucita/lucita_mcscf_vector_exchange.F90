@@ -33,7 +33,6 @@ module lucita_mcscf_vector_exchange
 #ifdef VAR_MPI
    integer(kind=MPI_INTEGER_KIND)         :: my_MPI_REAL8 = MPI_REAL8
    integer(kind=MPI_INTEGER_KIND)         :: ierr_mpi, fh_mpi, len_mpi, my_mpi_sum, root_mpi = 0
-   integer(kind=MPI_INTEGER_KIND)         :: ioffset_mpi
 #endif
 
    integer, parameter, private :: mc_offset = 4 ! offset to mc types in exchange_f... ==> must be equal to max #/2 (1/2 <= lucita; 1/2 >  mcscf)
@@ -405,10 +404,8 @@ contains
       integer                          :: my_STATUS(mpi_status_size)
       integer                          :: current_block
       integer                          :: block_length_rw
-!     integer(kind=mpi_offset_kind)    :: ioffset
-!     integer(kind=mpi_offset_kind)    :: ioffset_scratch
-      integer(kind=mpi_integer_kind)   :: ioffset
-      integer(kind=mpi_integer_kind)   :: ioffset_scratch
+      integer(kind=mpi_offset_kind)    :: ioffset
+      integer(kind=mpi_offset_kind)    :: ioffset_scratch
       integer                          :: ioffset_int
 #include "parluci.h"
 !------------------------------------------------------------------------------
@@ -456,8 +453,7 @@ contains
             if(D%iluxlist(ioffset_int,A%present_vector_type) > 0)then
               fh_mpi  = A%present_fh_par
               len_mpi = block_length_rw
-              ioffset_mpi = ioffset
-              call mpi_file_read_at(fh_mpi,ioffset_mpi,xmat(ioff-block_length_rw),          &
+              call mpi_file_read_at(fh_mpi,ioffset,xmat(ioff-block_length_rw),          &
                                     len_mpi,my_mpi_real8,my_STATUS,ierr_mpi)
             end if
           case(2) ! push block from core memory to file
@@ -467,8 +463,7 @@ contains
             if(checkdot > 0.0d0)then
               fh_mpi  = A%present_fh_par
               len_mpi = block_length_rw
-              ioffset_mpi = ioffset
-              call mpi_file_write_at(fh_mpi,ioffset_mpi,xmat(ioff-block_length_rw),         &
+              call mpi_file_write_at(fh_mpi,ioffset,xmat(ioff-block_length_rw),         &
                                      len_mpi,my_mpi_real8,my_STATUS,ierr_mpi)
               D%iluxlist(ioffset_int,A%present_vector_type) = 1
             end if
