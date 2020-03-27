@@ -161,9 +161,16 @@ execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/test)
 execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest_v1.py        ${CMAKE_BINARY_DIR}/test)
 execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest_dalton.py ${CMAKE_BINARY_DIR}/test)
 
-# this controlls "make install" target
+# copy Dalton manual to build/Doc
+execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/Doc)
+execute_process(COMMAND cp -R ${CMAKE_SOURCE_DIR}/DALTON/Doc ${CMAKE_BINARY_DIR})
+
+# this controls "make install" target
 include(ConfigMakeInstall)
 
 # give information about system, compiler flags, and size of static allocations
 set(STATIC_MEM_INFO_BINARIES dalton)
 include(ConfigInfo)
+
+# this controls "make pdfmanual" and other manual targets
+include(ConfigManual)

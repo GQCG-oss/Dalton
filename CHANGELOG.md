@@ -31,6 +31,8 @@
   - Added support for AMOEBA potential
 
 ### Other new features added
+- Added the possiblitly to create the Dalton pdf manual with "make pdfmanual" in the build directory. (H. J. Aa. Jensen)
+- Added the possiblitly to create the Dalton html manual with "make htmlmanual" in the build directory. (H. J. Aa. Jensen)
 - Added the ability to run SOPPA linear response calculations via the AOSOPPA module (R. Faber et al.)
 - Added possibility to optimize MCSCF singlet wave functions with CSFs when used for triplet properties,
   both in \*\*RESPONS and \*\*PROPERTIES. Previously .DETERMINANTS in wave function optimization was required. (H. J. Aa. Jensen)
