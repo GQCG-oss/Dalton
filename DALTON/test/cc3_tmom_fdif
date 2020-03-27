@@ -49,8 +49,6 @@ cat > cc3_tmom_fdif.dal <<'%EOF%'
 .DIPLEN
 **SIRIUS
 .CC
-*ORBITALS 
-.NOSUPSYM
 *SCF INPUT 
 .THRESH
  1.0d-12

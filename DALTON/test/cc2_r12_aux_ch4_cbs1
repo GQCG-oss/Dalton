@@ -113,7 +113,6 @@ cat > cc2_r12_aux_ch4_cbs1.dal <<'%EOF%'
 **WAVE FUNCTION
 .CC
 *ORBITAL INPUT
-.NOSUPSYM
 .MOSTART
  H1DIAG
 .R12ORB

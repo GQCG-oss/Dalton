@@ -75,7 +75,6 @@ cat > choles_cc2_polar.dal <<'%EOF%'
 *ORBITAL
 .MOSTART
  HUCKEL
-.NOSUPSYM
 *CC INP
 .FREEZE
   6   0

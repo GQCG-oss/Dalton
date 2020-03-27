@@ -53,8 +53,6 @@ cat > cc3_h2o_resid_noddy.dal <<'%EOF%'
 .DIPLEN
 **SIRIUS
 .CC
-*ORBITALS
-.NOSUPSYM
 *HAMILTONIAN
 *SCF INPUT
 .THRESH

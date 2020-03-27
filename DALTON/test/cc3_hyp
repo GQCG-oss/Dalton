@@ -53,8 +53,6 @@ cat > cc3_hyp.dal <<%EOF%
 .THRESH
  1.0D-12
 .NODIIS
-*ORBITAL INPUT
-.NOSUPSYM
 *CC INP
 .CC3
 .PRINT

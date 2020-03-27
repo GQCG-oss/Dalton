@@ -128,7 +128,6 @@ cat > cc2_r12_aux_ch4_a2_tight.dal <<'%EOF%'
 **WAVE FUNCTION
 .CC
 *ORBITAL INPUT
-.NOSUPSYM
 .MOSTART
  H1DIAG
 *SCF INPUT
