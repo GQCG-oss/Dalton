@@ -1660,19 +1660,19 @@ C
 C *** Set up various index arrays etc.
 C     If SUPSYM check if OK in AVECHK
 C
-      IF (IORTO .NE. 1) THEN
-C     ... only SETORB needed for reorthonormalization and
-C         SETORB has already been called.
-         K1 = 1 + NCMOT
-         JWOPSY = 1
-         CALL SIRSET(CMO(K1),LCMO-K1,.FALSE.)
-C        CALL SIRSET(WRK,LWRK,OLDWOP)
-         CALL AVECHK(INPERR)
-      END IF
+      K1 = 1 + NCMOT
+      JWOPSY = 1
+      CALL SIRSET(CMO(K1),LCMO-K1,.FALSE.)
+C     CALL SIRSET(WRK,LWRK,OLDWOP)
+      CALL AVECHK(INPERR)
 
       if (.NOT. SUPSYM_save) then
          SUPSYM = .FALSE.
-         CALL AVESE0() ! reset to super symmetry = input symmetry
+         ! reset to super symmetry = input symmetry
+         CALL AVESE0()
+         ! reset orbital rotations to without super symmetry
+         CALL SIRSET(CMO(K1),LCMO-K1,.FALSE.)
+C        CALL SIRSET(WRK,LWRK,OLDWOP)
       end if
 C
 C  Do we use embedding ?
@@ -5844,7 +5844,7 @@ C
 C
       IF (DOMC) THEN
          WRITE(IWUNIT,1600) MAXMAC,MAXMIC,THRMC,
-     &                      LROOTS,NROOTS
+     &                      LROOTS,MAXCIT,NROOTS
          IF (ISTATE .GT. 1) THEN
             IF (NMCAVER .EQ. 1) THEN
                WRITE(IWUNIT,'(/A,I4,A)')
@@ -5893,6 +5893,7 @@ C
      &       /5X,'Maximum number of micro iterations',I8,
      &       /5X,'Threshold for MCSCF gradient    ',1P,D10.2,
      &       /5X,'Number of initial trial vectors   ',I8,
+     &       /5X,'Number of initial CI iterations   ',I8,
      &       /5X,'Number of simultaneous trial vectors',I6)
  1800 FORMAT(/5X,'Maximum number of CI iterations ',I10,
      &       /5X,'Threshold for CI convergence    ',1P,D10.2,
