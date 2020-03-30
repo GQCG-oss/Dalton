@@ -235,7 +235,7 @@ C
       ! hjaaj Apr 2011: such that Dalton with 8 byte integers can read a
       ! SIRIUS.RST from a Dalton with 4 byte integers, and vice versa.
       INTEGER MBAS(8)
-      LOGICAL ONELOK, SUPSYM_save
+      LOGICAL ONELOK
 
       CALL QENTER('SIRRDI')
 C
@@ -1643,14 +1643,13 @@ C
      &   ' not possible because of input errors.'
          SUPSYM = .FALSE.
       END IF
+      IF (NFIELD .GT. 0) THEN
+         WRITE(LUPRI,'(/A)') ' NOTE: super symmetry analysis'//
+     &   ' not possible because of finite field.'
+         SUPSYM = .FALSE.
+      END IF
 
-! hjaaj march 2020: always check for active space errors,
-!   that is, if not all degenerate orbitals are in same orbital active space
-
-      SUPSYM_save = SUPSYM
-      SUPSYM = .TRUE. ! to check if CAS or RAS spaces break symmetry
-
-      K1 = 1 + NCMOT
+      K1    = 1 + NCMOT
       KFREE = 1
       LFREE = LCMO - K1
       CALL AVESET(CMO,CMO(K1),KFREE,LFREE)
@@ -1660,20 +1659,15 @@ C
 C *** Set up various index arrays etc.
 C     If SUPSYM check if OK in AVECHK
 C
-      K1 = 1 + NCMOT
-      JWOPSY = 1
-      CALL SIRSET(CMO(K1),LCMO-K1,.FALSE.)
-C     CALL SIRSET(WRK,LWRK,OLDWOP)
-      CALL AVECHK(INPERR)
-
-      if (.NOT. SUPSYM_save) then
-         SUPSYM = .FALSE.
-         ! reset to super symmetry = input symmetry
-         CALL AVESE0()
-         ! reset orbital rotations to without super symmetry
+      IF (IORTO .NE. 1) THEN
+C     ... only SETORB needed for reorthonormalization and
+C         SETORB has already been called.
+         K1 = 1 + NCMOT
+         JWOPSY = 1
          CALL SIRSET(CMO(K1),LCMO-K1,.FALSE.)
 C        CALL SIRSET(WRK,LWRK,OLDWOP)
-      end if
+         CALL AVECHK(INPERR)
+      END IF
 C
 C  Do we use embedding ?
 C  (that is, is QM part embedded in environment)
