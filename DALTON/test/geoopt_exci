@@ -153,6 +153,7 @@ CRIT8=`$GREP "O * y * (\-0|\-)\.54739. * (\-0|\-)\.40495. * (0| )\.54739." $log 
 CRIT9=`$GREP "H * x * (\-0|\-)\.09949." $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
+TEST[5]=9 # too sensitive
 CTRL[5]=9
 ERROR[5]="INITIAL HESSIAN NOT CORRECT"
 

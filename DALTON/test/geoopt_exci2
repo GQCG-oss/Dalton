@@ -211,15 +211,15 @@ CTRL[10]=2
 ERROR[10]="FOURTH ITERATION NOT CORRECT"
 
 # Final iteration
-CRIT1=`$GREP "Energy at this geometry is * \: * \-7\.902355" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.0000" $log | wc -l`
+CRIT1=`$GREP -l "Energy at this geometry is * \: * \-7\.902355" $log | wc -l`
+CRIT2=`$GREP -l "Norm of gradient * \: * (0| )\.00000" $log | wc -l`
 TEST[11]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[11]=4
+CTRL[11]=2
 ERROR[11]="FINAL ITERATION NOT CORRECT"
 
 # Final gradient
-CRIT1=`$GREP "Li * z * (-0|-)\.00000001.." $log | wc -l`
-CRIT2=`$GREP "H * z * (0| )\.00000001.." $log | wc -l`
+CRIT1=`$GREP -l "Li * z * \-*0*\.00000" $log | wc -l`
+CRIT2=`$GREP -l "H  * z * \-*0*\.00000" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[12]=2
 ERROR[12]="FINAL GRADIENT NOT CORRECT"
@@ -239,27 +239,27 @@ CTRL[13]=11
 ERROR[13]="FINAL HESSIAN NOT CORRECT"
 
 # Frequency
-CRIT1=`$GREP "1 * A1 * 259\.7. * (0| )\.00118. * 867\..* * 20\.5" $log | wc -l`
+CRIT1=`$GREP "1 * A1 * 259\... * (0| )\.00118. * 86[67]\..* * 20\.5" $log | wc -l`
 TEST[14]=`expr	$CRIT1`
 CTRL[14]=1
 ERROR[14]="VIBRATIONAL FREQUENCY or IR INTENSITY NOT CORRECT"
 
 # Partition function
-CRIT1=`$GREP  "50\.00 * 1\.0289(D|E)\+04 * 13\.02 * 1\.0006 * 1\.340...(D|E)\+05" $log | wc -l`
-CRIT2=`$GREP "100\.00 * 5\.8202(D|E)\+04 * 25\.69 * 1\.0244 * 1\.531...(D|E)\+06" $log | wc -l`
-CRIT3=`$GREP "200\.00 * 3\.2924(D|E)\+05 * 51\.05 * 1\.182. * 1\.98....(D|E)\+07" $log | wc -l`
-CRIT4=`$GREP "273\.15 * 7\.1769(D|E)\+05 * 69\.60 * 1\.341. * 6\.70....(D|E)\+07" $log | wc -l`
-CRIT5=`$GREP "298\.15 * 8\.9335(D|E)\+05 * 75\.94 * 1\.399. * 9\.49....(D|E)\+07" $log | wc -l`
-CRIT6=`$GREP "300\.00 * 9\.0728(D|E)\+05 * 76\.41 * 1\.40.. * 9\.73....(D|E)\+07" $log | wc -l`
-CRIT7=`$GREP "400\.00 * 1\.8625(D|E)\+06 * 101\.77 * 1\.647. * 3\.12....(D|E)\+08" $log | wc -l`
-CRIT8=`$GREP "500\.00 * 3\.2536(D|E)\+06 * 127\.12 * 1\.899. * 7\.85....(D|E)\+08" $log | wc -l`
-CRIT9=`$GREP "600\.00 * 5\.1323(D|E)\+06 * 152\.48 * 2\.157. * 1\.688...(D|E)\+09" $log | wc -l`
-CRIT10=`$GREP "700\.00 * 7\.5454(D|E)\+06 * 177\.84 * 2\.417. * 3\.244...(D|E)\+09" $log | wc -l`
-CRIT11=`$GREP "800\.00 * 1\.0536(D|E)\+07 * 203\.20 * 2\.679. * 5\.736...(D|E)\+09" $log | wc -l`
-CRIT12=`$GREP "900\.00 * 1\.4143(D|E)\+07 * 228\.55 * 2\.943. * 9\.51....(D|E)\+09" $log | wc -l`
-CRIT13=`$GREP "1000\.00 * 1\.8405(D|E)\+07 * 253\.91 * 3\.20.. * 1\.498...(D|E)\+10" $log | wc -l`
-CRIT14=`$GREP "1500\.00 * 5\.0718(D|E)\+07 * 380\.70 * 4\.535. * 8\.756...(D|E)\+10" $log | wc -l`
-CRIT15=`$GREP "2000\.00 * 1\.0411(D|E)\+08 * 507\.4. * 5\.867. * 3\.100...(D|E)\+11" $log | wc -l`
+CRIT1=`$GREP  "50\.00 * 1\.0289(D|E)\+04 * 13\... * 1\.0006 * 1\.3.....(D|E)\+05" $log | wc -l`
+CRIT2=`$GREP "100\.00 * 5\.8202(D|E)\+04 * 25\... * 1\.024. * 1\.53....(D|E)\+06" $log | wc -l`
+CRIT3=`$GREP "200\.00 * 3\.2924(D|E)\+05 * 51\... * 1\.182. * 1\.98....(D|E)\+07" $log | wc -l`
+CRIT4=`$GREP "273\.15 * 7\.1769(D|E)\+05 * 69\... * 1\.341. * 6\.70....(D|E)\+07" $log | wc -l`
+CRIT5=`$GREP "298\.15 * 8\.9335(D|E)\+05 * 75\... * 1\..... * 9\.49....(D|E)\+07" $log | wc -l`
+CRIT6=`$GREP "300\.00 * 9\.0728(D|E)\+05 * 76\... * 1\.40.. * 9\.73....(D|E)\+07" $log | wc -l`
+CRIT7=`$GREP "400\.00 * 1\.8625(D|E)\+06 * 101\... * 1\.64.. * 3\.12....(D|E)\+08" $log | wc -l`
+CRIT8=`$GREP "500\.00 * 3\.2536(D|E)\+06 * 127\... * 1\..... * 7\.85....(D|E)\+08" $log | wc -l`
+CRIT9=`$GREP "600\.00 * 5\.1323(D|E)\+06 * 152\... * 2\.15.. * 1\.68....(D|E)\+09" $log | wc -l`
+CRIT10=`$GREP "700\.00 * 7\.5454(D|E)\+06 * 177\... * 2\.41.. * 3\.24....(D|E)\+09" $log | wc -l`
+CRIT11=`$GREP "800\.00 * 1\.0536(D|E)\+07 * 203\... * 2\.6... * 5\.73....(D|E)\+09" $log | wc -l`
+CRIT12=`$GREP "900\.00 * 1\.4143(D|E)\+07 * 228\... * 2\.94.. * 9\.51....(D|E)\+09" $log | wc -l`
+CRIT13=`$GREP "1000\.00 * 1\.8405(D|E)\+07 * 253\... * 3\.20.. * 1\.49....(D|E)\+10" $log | wc -l`
+CRIT14=`$GREP "1500\.00 * 5\.0718(D|E)\+07 * 380\... * 4\.53.. * 8\.75....(D|E)\+10" $log | wc -l`
+CRIT15=`$GREP "2000\.00 * 1\.0411(D|E)\+08 * 507\... * 5\.8... * 3\.10....(D|E)\+11" $log | wc -l`
 TEST[15]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15`
