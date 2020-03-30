@@ -1,6 +1,6 @@
 # DALTON Change Log -- All notable changes to the DALTON program will be documented in this file.
 
-## [2020.0] (2020-04-15)
+## [2020.0.beta] (scheduled for release 2020-04-??)
 
 ### Major new features added
 - MC-srDFT code (H. J. Aa. Jensen, E. Fromager, S. Knecht, E. R. Kjellgren and others)
