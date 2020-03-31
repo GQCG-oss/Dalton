@@ -69,6 +69,33 @@ gcc-7.3.1:
     - make
     - ctest --output-on-failure -L essential
 
+gcc-7.3.1-int64:
+  image: fedora:27
+  variables:
+    DALTON_LAUNCHER: ""
+    OMP_NUM_THREADS: "1"
+  except:
+    - schedules
+  script:
+    - dnf upgrade -y -q
+    - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack64 lapack64-devel
+                        git make cmake python redhat-rpm-config findutils which procps-ng
+    - alternatives --install /usr/bin/python python /usr/bin/python3 1
+    - uname -a
+    - lscpu
+    - free -h
+    - gfortran --version
+    - gcc --version
+    - g++ --version
+    - python --version
+    - git --version
+    - cmake --version
+    - python setup --int64 --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
+                   -DENABLE_PDE=OFF
+    - cd build
+    - make
+    - ctest --output-on-failure -L essential
+
 gcc-8.3.1:
   image: fedora:29
   variables:
@@ -94,6 +121,97 @@ gcc-8.3.1:
                    -DENABLE_PDE=ON
     - cd build
     - make
+    - ctest --output-on-failure -L essential
+
+gcc-8.3.1-int64:
+  image: fedora:29
+  variables:
+    DALTON_LAUNCHER: ""
+    OMP_NUM_THREADS: "1"
+  except:
+    - schedules
+  script:
+    - dnf upgrade -y -q
+    - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack64 lapack64-devel
+                        git make cmake python redhat-rpm-config findutils which procps-ng
+    - alternatives --install /usr/bin/python python /usr/bin/python3 1
+    - uname -a
+    - lscpu
+    - free -h
+    - gfortran --version
+    - gcc --version
+    - g++ --version
+    - python --version
+    - git --version
+    - cmake --version
+    - python setup --int64 --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
+                   -DENABLE_PDE=OFF
+    - cd build
+    - make
+    - ctest --output-on-failure -L essential
+
+gcc-8.3.1-ompi-2.1.1:
+  image: fedora:29
+  variables:
+    DALTON_LAUNCHER: "mpirun -n 4 --allow-run-as-root"
+    OMP_NUM_THREADS: "1"
+  tags:
+    - parallel
+  except:
+    - schedules
+  script:
+    - dnf upgrade -y -q
+    - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel openmpi openmpi-devel
+                        hdf5 hdf5-devel git make cmake python redhat-rpm-config findutils which procps-ng
+    - . ~/.bash_profile
+    - module load mpi
+    - alternatives --install /usr/bin/python python /usr/bin/python3 1
+    - uname -a
+    - lscpu
+    - free -h
+    - gfortran --version
+    - gcc --version
+    - g++ --version
+    - mpirun --version
+    - python --version
+    - git --version
+    - cmake --version
+    - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
+                   -DENABLE_PDE=ON
+    - cd build
+    - make -j 4
+    - ctest --output-on-failure -L essential
+
+gcc-8.3.1-ompi-2.1.1-int64:
+  image: fedora:29
+  variables:
+    DALTON_LAUNCHER: "mpirun -n 4 --allow-run-as-root"
+    OMP_NUM_THREADS: "1"
+  tags:
+    - parallel
+  except:
+    - schedules
+  script:
+    - dnf upgrade -y -q
+    - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack64 lapack64-devel openmpi openmpi-devel
+                        git make cmake python redhat-rpm-config findutils which procps-ng
+    - . ~/.bash_profile
+    - module load mpi
+    - alternatives --install /usr/bin/python python /usr/bin/python3 1
+    - uname -a
+    - lscpu
+    - free -h
+    - gfortran --version
+    - gcc --version
+    - g++ --version
+    - mpirun --version
+    - python --version
+    - git --version
+    - cmake --version
+    - python setup --int64 --mpi --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
+                   -DENABLE_PELIB=OFF
+    - cd build
+    - make -j 4
     - ctest --output-on-failure -L essential
 
 gcc-9.2.1:
@@ -148,58 +266,6 @@ gcc-9.2.1-debug:
     - make
     - ctest --output-on-failure -L essential
 
-gcc-7.3.1-int64:
-  image: fedora:27
-  variables:
-    DALTON_LAUNCHER: ""
-    OMP_NUM_THREADS: "1"
-  except:
-    - schedules
-  script:
-    - dnf upgrade -y -q
-    - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack64 lapack64-devel
-                        git make cmake python redhat-rpm-config findutils which procps-ng
-    - alternatives --install /usr/bin/python python /usr/bin/python3 1
-    - uname -a
-    - lscpu
-    - free -h
-    - gfortran --version
-    - gcc --version
-    - g++ --version
-    - python --version
-    - git --version
-    - cmake --version
-    - python setup --int64 --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-    - cd build
-    - make
-    - ctest --output-on-failure -L essential
-
-gcc-8.3.1-int64:
-  image: fedora:29
-  variables:
-    DALTON_LAUNCHER: ""
-    OMP_NUM_THREADS: "1"
-  except:
-    - schedules
-  script:
-    - dnf upgrade -y -q
-    - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack64 lapack64-devel
-                        git make cmake python redhat-rpm-config findutils which procps-ng
-    - alternatives --install /usr/bin/python python /usr/bin/python3 1
-    - uname -a
-    - lscpu
-    - free -h
-    - gfortran --version
-    - gcc --version
-    - g++ --version
-    - python --version
-    - git --version
-    - cmake --version
-    - python setup --int64 --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-    - cd build
-    - make
-    - ctest --output-on-failure -L essential
-
 gcc-9.2.1-int64:
   image: fedora:31
   variables:
@@ -221,40 +287,9 @@ gcc-9.2.1-int64:
     - git --version
     - cmake --version
     - python setup --int64 --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
+                   -DENABLE_PDE=OFF
     - cd build
     - make
-    - ctest --output-on-failure -L essential
-
-gcc-8.3.1-ompi-2.1.1:
-  image: fedora:29
-  variables:
-    DALTON_LAUNCHER: "mpirun -n 4 --allow-run-as-root"
-    OMP_NUM_THREADS: "1"
-  tags:
-    - parallel
-  except:
-    - schedules
-  script:
-    - dnf upgrade -y -q
-    - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel openmpi openmpi-devel
-                        hdf5 hdf5-devel git make cmake python redhat-rpm-config findutils which procps-ng
-    - . ~/.bash_profile
-    - module load mpi
-    - alternatives --install /usr/bin/python python /usr/bin/python3 1
-    - uname -a
-    - lscpu
-    - free -h
-    - gfortran --version
-    - gcc --version
-    - g++ --version
-    - mpirun --version
-    - python --version
-    - git --version
-    - cmake --version
-    - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PDE=ON
-    - cd build
-    - make -j 4
     - ctest --output-on-failure -L essential
 
 gcc-9.2.1-ompi-4.0.2:
@@ -319,39 +354,6 @@ gcc-9.2.1-mpich-3.2.2:
     - make -j 4
     - ctest --output-on-failure -L essential
 
-gcc-8.3.1-ompi-2.1.1-int64:
-  image: fedora:29
-  variables:
-    DALTON_LAUNCHER: "mpirun -n 4 --allow-run-as-root"
-    OMP_NUM_THREADS: "1"
-  tags:
-    - parallel
-  except:
-    - schedules
-  allow_failure: true
-  script:
-    - dnf upgrade -y -q
-    - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack64 lapack64-devel openmpi openmpi-devel
-                        git make cmake python redhat-rpm-config findutils which procps-ng
-    - . ~/.bash_profile
-    - module load mpi
-    - alternatives --install /usr/bin/python python /usr/bin/python3 1
-    - uname -a
-    - lscpu
-    - free -h
-    - gfortran --version
-    - gcc --version
-    - g++ --version
-    - mpirun --version
-    - python --version
-    - git --version
-    - cmake --version
-    - python setup --int64 --mpi --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-                   -DENABLE_PELIB=OFF
-    - cd build
-    - make -j 4
-    - ctest --output-on-failure -L essential
-
 gcc-9.2.1-ompi-4.0.2-int64:
   image: fedora:31
   variables:
@@ -361,7 +363,6 @@ gcc-9.2.1-ompi-4.0.2-int64:
     - parallel
   except:
     - schedules
-  allow_failure: true
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack64 lapack64-devel openmpi openmpi-devel
@@ -414,6 +415,62 @@ gcc-9.2.1-mpich-3.2.2-int64:
                    -DENABLE_PELIB=OFF
     - cd build
     - make -j 4
+    - ctest --output-on-failure -L essential
+
+gcc-10.0.1:
+  image: fedora:32
+  variables:
+    DALTON_LAUNCHER: ""
+    OMP_NUM_THREADS: "1"
+  except:
+    - schedules
+  allow_failure: true
+  script:
+    - dnf upgrade -y -q
+    - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel
+                        hdf5 hdf5-devel git make cmake python redhat-rpm-config findutils which procps-ng
+    - uname -a
+    - lscpu
+    - free -h
+    - gfortran --version
+    - gcc --version
+    - g++ --version
+    - python --version
+    - git --version
+    - cmake --version
+    - export FFLAGS="-fallow-argument-mismatch -fallow-invalid-boz"
+    - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
+                   -DENABLE_PELIB=OFF
+    - cd build
+    - make
+    - ctest --output-on-failure -L essential
+
+gcc-10.0.1-int64:
+  image: fedora:32
+  variables:
+    DALTON_LAUNCHER: ""
+    OMP_NUM_THREADS: "1"
+  except:
+    - schedules
+  allow_failure: true
+  script:
+    - dnf upgrade -y -q
+    - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack64 lapack64-devel
+                        git make cmake python redhat-rpm-config findutils which procps-ng
+    - uname -a
+    - lscpu
+    - free -h
+    - gfortran --version
+    - gcc --version
+    - g++ --version
+    - python --version
+    - git --version
+    - cmake --version
+    - export FFLAGS="-fallow-argument-mismatch -fallow-invalid-boz"
+    - python setup --int64 --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
+                   -DENABLE_PELIB=OFF
+    - cd build
+    - make
     - ctest --output-on-failure -L essential
 
 nightly-serial:
