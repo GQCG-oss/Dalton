@@ -424,6 +424,7 @@ gcc-10.0.1:
     OMP_NUM_THREADS: "1"
   except:
     - schedules
+  allow_failure: true
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel
@@ -451,6 +452,7 @@ gcc-10.0.1-int64:
     OMP_NUM_THREADS: "1"
   except:
     - schedules
+  allow_failure: true
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack64 lapack64-devel
