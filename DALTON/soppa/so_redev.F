@@ -65,8 +65,8 @@ C
          WRITE(LUPRI,*)
      &        'SO_REDEV : Dimensions of reduced E[2] and S[2] matrices',
      &        ' LREDE : ',LREDE,' and LREDS : ',LREDS,' are different'
-         CALL QUIT('Incompatible dimensions of reduced matrices in //
-     &             SO_REDEV.1')
+         CALL QUIT('Incompatible dimensions of reduced matrices in '//
+     &             'SO_REDEV.1')
       ENDIF
 C
 C---------------------------------------
@@ -79,8 +79,8 @@ C
          WRITE(LUPRI,*) 'SO_REDEV : Number of trial vectors ',
      &              NTRIAL,' exceeds dimensions of reduced ',
      &              'E[2] and S[2] matrices LREDE/LREDS : ',LREDE
-         CALL QUIT('Dimensions of reduced matrices exceeded in //
-     &             SO_REDEV.2')
+         CALL QUIT('Dimensions of reduced matrices exceeded in '//
+     &             'SO_REDEV.2')
       ENDIF
 C
 C==========================================
@@ -200,10 +200,10 @@ C WORK(KEIVEC) is the output with real and imaginary parts of the eigenvectors.
      &         WORK(KBETA),MATZ,WORK(KEIVEC),IERR)
 C
       IF (IERR.NE.0) THEN
-         WRITE(LUPRI,*) ' SO_REDEV : Reduced eigenvalue problem not ',
-     &              'converged.'
-         CALL QUIT(' Reduced eigenvalue equation not converged in//
-     &               SO_REDEV')
+         WRITE(LUPRI,*) 
+     &      ' SO_REDEV : Reduced eigenvalue problem not converged.'
+         CALL QUIT(' Reduced eigenvalue equation not converged in'//
+     &             ' SO_REDEV')
       END IF
 C
       CALL DCOPY(LREDE*LREDE,WORK(KREDES),1,REDE,1)
