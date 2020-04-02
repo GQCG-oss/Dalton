@@ -439,7 +439,7 @@ gcc-10.0.1:
     - cmake --version
     - export FFLAGS="-fallow-argument-mismatch -fallow-invalid-boz"
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PDE=OFF
+                   -DENABLE_PELIB=OFF
     - cd build
     - make
     - ctest --output-on-failure -L essential
