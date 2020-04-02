@@ -424,7 +424,6 @@ gcc-10.0.1:
     OMP_NUM_THREADS: "1"
   except:
     - schedules
-  allow_failure: true
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel
@@ -440,7 +439,7 @@ gcc-10.0.1:
     - cmake --version
     - export FFLAGS="-fallow-argument-mismatch -fallow-invalid-boz"
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PELIB=OFF
+                   -DENABLE_PDE=OFF
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -452,7 +451,6 @@ gcc-10.0.1-int64:
     OMP_NUM_THREADS: "1"
   except:
     - schedules
-  allow_failure: true
   script:
     - dnf upgrade -y -q
     - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack64 lapack64-devel
