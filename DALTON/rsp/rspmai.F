@@ -381,7 +381,7 @@ C
      &         'is only implemented for singlet reference states,'//
      &         ' but spin multiplicity is ',ISPIN
                CALL QUIT('FATAL ERROR: .PEQM '//
-     &         'is only implemented for singlet reference states.'
+     &         'is only implemented for singlet reference states.')
             END IF
          END IF
       END IF
