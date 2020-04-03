@@ -57,8 +57,6 @@ cat > cc3_LIH_431G_tmom_no2np1.dal <<%EOF%
 .THRESH
  1.0D-12
 .NODIIS
-*ORBITAL INPUT
-.NOSUPSYM
 *CC INP
 .NSIMLE
   1

@@ -154,6 +154,7 @@ C
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
       integer(kind=MPI_INTEGER_KIND) buf_count_mpi,source_mpi,tag_mpi
       integer(kind=MPI_INTEGER_KIND) DATATYPE,ierr_mpi
+      integer(kind=MPI_INTEGER_KIND) my_MPI_ANY_SOURCE
 C
       IF      (TYPE_in .EQ. 'INTEGE') THEN
          DATATYPE = my_MPI_INTEGER
@@ -170,7 +171,8 @@ C
       buf_count_mpi = BUF_COUNT
       tag_mpi       = TAG
       IF (SOURCE.EQ.-1) THEN
-         CALL MPI_RECV(BUFFER,BUF_COUNT_mpi,DATATYPE,MPI_ANY_SOURCE,
+         my_MPI_ANY_SOURCE = MPI_ANY_SOURCE
+         CALL MPI_RECV(BUFFER,BUF_COUNT_mpi,DATATYPE,my_MPI_ANY_SOURCE,
      &                 TAG_mpi,MPI_COMM_WORLD,my_STATUS,ierr_mpi)
          SOURCE = my_STATUS(MPI_SOURCE)
       ELSE

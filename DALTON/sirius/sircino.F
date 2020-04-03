@@ -77,7 +77,12 @@ c     MAERKE 900801-hjaaj: call setsir and getcix ???
       NCMOT4 = MAX(4,NCMOT)
       CALL WRITT(LUIT1,NCMOT4,WRK(KCMO))
 c     MAERKE 900801-hjaaj: Integral transformation sometimes needed !!
-      CALL CICTL(1,LRCINO,MAXCIT,THRGRD,WRK(KCMO),INDXCI,
+      IF (MAXCIT .LE. 0) THEN
+         MAXCITX = 12
+      ELSE
+         MAXCITX = MAXCIT
+      END IF
+      CALL CICTL(1,LRCINO,MAXCITX,THRGRD,WRK(KCMO),INDXCI,
      *           WRK(KECI),ICONV,WRK(KICROO),WRK(KW22),LW22)
 C     CALL CICTL (ICICTL,NCROOT,MAXITC,THRCIX,CMO,INDXCI,
 C    *            ECI,ICONV,ICROOT,WRK,LWRK)
@@ -89,14 +94,14 @@ C have been performed.)  In CINO this is only of interest if this is
 C an excited state calculation (ISTACI .gt. 1).
 C
       IF (ICHECK .NE. 0 .AND. ISTACI .GT. 1) THEN
-         IF (MAXCIT .GT. 0) THEN
+         IF (MAXITCX .GT. 2) THEN
             CALL CICHCK(WRK(KW21),LW21,ICHECK)
          ELSE
             WRITE(LUW4,'(//2A/A/A,I5)')
      *      ' --- WARNING CINO ---  REQUESTED SYMMETRY CHECK OF',
      *      ' CI VECTOR NOT PERFORMED',
      *      ' CURRENT ALGORITHM ONLY WORKS AFTER SEVERAL CI ITERATIONS',
-     *      ' MAXIMUM CI ITERATIONS   MAXCIT:',MAXCIT
+     *      ' MAXIMUM CI ITERATIONS   :',MAXCITX
          END IF
       END IF
 C

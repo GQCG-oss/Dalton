@@ -146,14 +146,14 @@ CTRL[5]=9
 ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Polarizability (ZDIPLEN - Sym 1, State 1 - Sym 1)
-CRIT1=`$GREP "Na T\[4\] Nb Nc Nd * 263\.50.* 263\.50" $log | wc -l`
-CRIT2=`$GREP "Na T\[3\] Nx Nyz * \-185\.58.* 77\.91" $log | wc -l`
-CRIT3=`$GREP "Na X\[3\] Ny Nz * \-33\.53.* 44\.38" $log | wc -l`
-CRIT4=`$GREP "Nx A\[3\] Ny Nz * \-25\.02.* 19\.36" $log | wc -l`
-CRIT5=`$GREP "Na X\[2\] Nyz * \-19\.92.* (\-0|\-)\.56" $log | wc -l`
-CRIT6=`$GREP "Nx A\[2\] Nyz * 15\.39.* 14\.82" $log | wc -l`
+CRIT1=`$GREP "Na T\[4\] Nb Nc Nd * 263\.5.* 263\.5" $log | wc -l`
+CRIT2=`$GREP "Na T\[3\] Nx Nyz * \-185\.5.* 77\.9" $log | wc -l`
+CRIT3=`$GREP "Na X\[3\] Ny Nz * \-33\.53.* 44\.3" $log | wc -l`
+CRIT4=`$GREP "Nx A\[3\] Ny Nz * \-25\.02.* 19\.3" $log | wc -l`
+CRIT5=`$GREP "Na X\[2\] Nyz * \-19\.9.* (\-0|\-)\.5" $log | wc -l`
+CRIT6=`$GREP "Nx A\[2\] Nyz * 15\..* 14\.8" $log | wc -l`
 CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 1 * 0*\.11958" $log | wc -l`
-CRIT8=`$GREP "\@ < e \| AB \| f > * \= * 14\.82" $log | wc -l`
+CRIT8=`$GREP "\@ < e \| AB \| f > * \= * 14\.8" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[6]=13
@@ -181,7 +181,7 @@ CRIT4=`$GREP "Nx A\[3\] Ny Nz * 26\.9.* 119\.1" $log | wc -l`
 CRIT5=`$GREP "Na X\[2\] Nyz * \-44\.5.* 74\.6" $log | wc -l`
 CRIT6=`$GREP "Nx A\[2\] Nyz * \-372\.9.* \-298\.3" $log | wc -l`
 CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 1 * 0*\.11958" $log | wc -l`
-CRIT8=`$GREP "\@ < e \| AB \| f > * \= * \-298\.3[12]" $log | wc -l`
+CRIT8=`$GREP "\@ < e \| AB \| f > * \= * \-298\.3" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[8]=20
@@ -235,7 +235,7 @@ CRIT2=`$GREP "Na T\[3\] Nx Nyz * \-66\.9.* 40\.6" $log | wc -l`
 CRIT3=`$GREP "Na X\[3\] Ny Nz * 1\.0.* 41\.7" $log | wc -l`
 CRIT4=`$GREP "Nx A\[3\] Ny Nz * 10\.1.* 51\.9" $log | wc -l`
 CRIT5=`$GREP "Na X\[2\] Nyz * \-29\.1.* 22\.7" $log | wc -l`
-CRIT6=`$GREP "Nx A\[2\] Nyz * \-8\.9.* 13\.8" $log | wc -l`
+CRIT6=`$GREP "Nx A\[2\] Nyz * \-8\.[89].* 13\.8" $log | wc -l`
 CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 2 * 0*\.15776" $log | wc -l`
 CRIT8=`$GREP "\@ < e \| AB \| f > * \= * 13\.8" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
@@ -249,9 +249,9 @@ CRIT2=`$GREP "Na T\[3\] Nx Nyz * \-225\.1.* 14\.3" $log | wc -l`
 CRIT3=`$GREP "Na X\[3\] Ny Nz * 90\.8.* 105\.1" $log | wc -l`
 CRIT4=`$GREP "Nx A\[3\] Ny Nz * 112\.1.* 217\.2" $log | wc -l`
 CRIT5=`$GREP "Na X\[2\] Nyz * \-57\.2.* 159\.9" $log | wc -l`
-CRIT6=`$GREP "Nx A\[2\] Nyz * 174\.6.* 334\.6" $log | wc -l`
+CRIT6=`$GREP "Nx A\[2\] Nyz * 174\..* 334\." $log | wc -l`
 CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 2 * 0*\.15776" $log | wc -l`
-CRIT8=`$GREP "\@ < e \| AB \| f > * \= * 334\.6" $log | wc -l`
+CRIT8=`$GREP "\@ < e \| AB \| f > * \= * 334\." $log | wc -l`
 TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[13]=13

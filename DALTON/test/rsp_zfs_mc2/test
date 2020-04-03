@@ -1,25 +1,32 @@
 #!/usr/bin/env python
 
-
 import os
 import sys
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest_dalton import Filter, TestRun
 
-test = TestRun(__file__, sys.argv)
+from runtest import version_info, get_filter, cli, run
+from runtest_config import configure
 
-f = Filter()
+assert version_info.major == 2
 
-# enemc
-f.add(string = 'Final MCSCF',
-      rel_tolerance = 1.0e-8)
+f = [
+    get_filter(string='Final MCSCF',
+               rel_tolerance=1.0e-8),
+    get_filter(string='ZFS parameter',
+               # Should be [1] but for some reason that does not detect anything
+               # but this does check the first value.
+               mask=[2],
+               abs_tolerance=1.0e-4),
+]
 
-# zfs
-f.add(string = 'ZFS parameter',
-      rel_tolerance = 4.0e-4)
+options = cli()
 
-test.run(['rsp_zfs_mc2.dal'], ['C6H6_DZP-Dunning.mol'], f={'out': f},
-         accepted_errors=['not implemented for parallel calculations.'])
+ierr = 0
+for inp in ['rsp_zfs_mc2.dal']:
+    for mol in ['C6H6_DZP-Dunning.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    filters={'out': f})
 
-sys.exit(test.return_code)
+sys.exit(ierr)

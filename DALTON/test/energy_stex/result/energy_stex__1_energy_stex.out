@@ -172,8 +172,6 @@ Compilation information
 **WAVE FUNCTIONS                                  
 .HF                                               
 .INTERFACE                                        
-*ORBITAL                                          
-.NOSUPSYM                                         
 **RESPONSE                                        
 .PROPAV                                           
 XDIPLEN                                           

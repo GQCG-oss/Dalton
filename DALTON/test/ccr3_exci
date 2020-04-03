@@ -71,8 +71,6 @@ cat > ccr3_exci.dal <<'%EOF%'
  3 1 1 0 2 0 0 0
 .THRESH
 1.0D-11
-*ORBITALS
-.NOSUPSY
 *CC INP
 !.RESTART
 .PRINT

@@ -146,7 +146,6 @@ cat > ccsdr12_bh.dal <<'%EOF%'
 **WAVE FUNCTION
 .CC
 *ORBITAL INPUT
-.NOSUPSYM
 .MOSTART
  H1DIAG
 *SCF IN  

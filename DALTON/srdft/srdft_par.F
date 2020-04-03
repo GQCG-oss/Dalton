@@ -81,7 +81,7 @@ C     variables for SRCPBERI
       integer KFREE, LFREE
       integer NDMAT, NEXCMAT
 
-      integer(mpi_integer_kind) :: bytesize, ierr_mpi
+      integer(mpi_integer_kind) :: bytesize_mpi, ierr_mpi
 
       call qenter('SRDFT_PAR_MASTER')
 
@@ -108,19 +108,19 @@ C     variables for SRCPBERI
 
 !     2) Make sure general information in gnrinf.h is known to nodes
 !        (need at least CHIVAL and ERFEXP(:))
-      call getbytespan(GRADML, GNRINFlast, bytesize)
-      call mpi_bcast(GRADML, bytesize, mpi_byte,
+      call getbytespan(GRADML, GNRINFlast, bytesize_mpi)
+      call mpi_bcast(GRADML, bytesize_mpi, mpi_byte,
      &   MASTER, mpi_comm_world, ierr_mpi)
 
 !     3) Make sure dft information in dftcom.h is known to nodes
-      call getbytespan(HFXFAC, DFTCOMlast, bytesize)
-      call mpi_bcast(HFXFAC, bytesize, mpi_byte,
+      call getbytespan(HFXFAC, DFTCOMlast, bytesize_mpi)
+      call mpi_bcast(HFXFAC, bytesize_mpi, mpi_byte,
      &   MASTER, mpi_comm_world, ierr_mpi)
 
 !     4) Make sure /LOGINP/ in infinp.h is known to nodes
 !        (need at least DOHFSRDFT and SRHYBR)
-      call getbytespan(FLAG(1), LOGINPlast, bytesize)
-      call mpi_bcast(FLAG(1), bytesize, mpi_byte,
+      call getbytespan(FLAG(1), LOGINPlast, bytesize_mpi)
+      call mpi_bcast(FLAG(1), bytesize_mpi, mpi_byte,
      &   MASTER, mpi_comm_world, ierr_mpi)
 
 !     5) Transfer input control variables
@@ -210,7 +210,7 @@ C     variables for SRCPBERI
       real*8   mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 
-      integer(mpi_integer_kind) :: bytesize, ierr_mpi
+      integer(mpi_integer_kind) :: bytesize_mpi, ierr_mpi
 
       call qenter('SRDFT_PAR_NODE')
       IPRINT = max(SRDFT_PAR_DEBUG,iprint_in)
@@ -233,13 +233,13 @@ C     variables for SRCPBERI
 
 !     2) Make sure general information in gnrinf.h is known to nodes
 !        (need at least CHIVAL and ERFEXP(:))
-      call getbytespan(GRADML, GNRINFlast, bytesize)
-      call mpi_bcast(GRADML, bytesize, mpi_byte,
+      call getbytespan(GRADML, GNRINFlast, bytesize_mpi)
+      call mpi_bcast(GRADML, bytesize_mpi, mpi_byte,
      &   MASTER, mpi_comm_world, ierr_mpi)
 
 !     3) Make sure dft information in dftcom.h is known to nodes
-      call getbytespan(HFXFAC, DFTCOMlast, bytesize)
-      call mpi_bcast(HFXFAC, bytesize, mpi_byte,
+      call getbytespan(HFXFAC, DFTCOMlast, bytesize_mpi)
+      call mpi_bcast(HFXFAC, bytesize_mpi, mpi_byte,
      &   MASTER, mpi_comm_world, ierr_mpi)
       ! master does not know if the grid file
       ! DALTON.QUAD has been generated for this node or not
@@ -251,8 +251,8 @@ C     variables for SRCPBERI
 
 !     4) Make sure /LOGINP/ in infinp.h is known to nodes
 !        (need at least DOHFSRDFT and SRHYBR)
-      call getbytespan(FLAG(1), LOGINPlast, bytesize)
-      call mpi_bcast(FLAG(1), bytesize, mpi_byte,
+      call getbytespan(FLAG(1), LOGINPlast, bytesize_mpi)
+      call mpi_bcast(FLAG(1), bytesize_mpi, mpi_byte,
      &   MASTER, mpi_comm_world, ierr_mpi)
 
 !     5) Transfer input control variables

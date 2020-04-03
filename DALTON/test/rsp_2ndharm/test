@@ -34,11 +34,11 @@ f.add(string = 'Number of orbitals in each symmetry',
 
 # Energies
 f.add(string = 'Hartree-Fock total energy',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-6)
 f.add(string = 'MP2 second order energy',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-6)
 f.add(string = 'Final MCSCF energy',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-6)
 
 # Response setup
 f.add(from_string = 'Quadratic Response calculation',
@@ -47,7 +47,7 @@ f.add(from_string = 'Quadratic Response calculation',
 
 # Quadratic response
 f.add(re = 'beta\([XYZ];[XYZ],[XYZ]\)',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-4)
 
 test.run(['rsp_2ndharm.dal'], ['LiH_4-31G.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])

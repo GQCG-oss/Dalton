@@ -133,7 +133,7 @@ CTRL[3]=1
 ERROR[3]="MP2 ENERGY NOT CORRECT"
 
 # MCSCF energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-224\.510751246[23]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-224\.510751246" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="MCSCF ENERGY NOT CORRECT"
@@ -146,8 +146,8 @@ CTRL[5]=2
 ERROR[5]="RESPONSE CALCULATION NOT CORRECT"
 
 # Gamma values
-CRIT1=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 207\.462(8|9)" $log | wc -l`
-CRIT2=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 214\.8152" $log | wc -l`
+CRIT1=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 207\.46" $log | wc -l`
+CRIT2=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 214\.81" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[6]=4
 ERROR[6]="GAMMA VALUES NOT CORRECT"

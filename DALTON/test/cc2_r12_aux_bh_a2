@@ -57,7 +57,6 @@ cat > cc2_r12_aux_bh_a2.dal <<'%EOF%'
 **WAVE FUNCTION
 .CC
 *ORBITAL INPUT
-.NOSUPSYM
 *SCF INPUT
 .THRESH
  1.0D-12

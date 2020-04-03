@@ -47,7 +47,7 @@ f.add(from_string = 'Cubic Response single residue calculation',
 
 f.add(string = "@ < 0 | ABC | f >  =",
       ignore_sign = True,
-      abs_tolerance = 1.0e-0)
+      rel_tolerance = 2.0e-4)
 
 
 test.run(['rsp_3rdmom.dal'], ['LiH_4-31G.mol'], f={'out': f},

@@ -1204,7 +1204,7 @@ C
 C        CALL DSCAL(N2ASHX,DM1,WRK(KURYAC),1)
          DO 18 ICSIM = 1,NCSIM
             IF (USE_PELIB() .AND. TRPLET) THEN
-               ! do nothing
+               ! do nothing because no contributions in this case
             ELSE 
                CALL DSPTSI(NASHT,RXAC(1,ICSIM),WRK(KURXAC))
 C              CALL DSCAL(N2ASHX,DM1,WRK(KURXAC),1)
@@ -1343,7 +1343,7 @@ C                 CALL DAXPY(KZCONF,FAC,BCVECS(1,ICSIM),1,SVECS(1,ICSIM),1)
          LW1    = LWRK + 1 - KW1
          DO 22 IOSIM = 1,NOSIM
             IF (USE_PELIB() .AND. TRPLET) THEN
-               ! do nothing 
+               ! do nothing because no contributions in this case
             ELSE
                IF (IPRRSP.GT.100) THEN
                   WRITE(LUPRI,*)' Z PART,RXAC MATRIX,
@@ -1416,7 +1416,7 @@ C
 C Y PART OF LINEAR TRANSFORMATION
 C
             IF (USE_PELIB() .AND. TRPLET) THEN
-               ! do nothing
+               ! do nothing because no contributions in this case
             ELSE            
                CALL DGETRN(RXAC(1,IOSIM),NASHT,NASHT)
                CALL DSCAL(N2ASHX,DM1,RXAC(1,IOSIM),1)

@@ -64,7 +64,7 @@ C
       EQUIVALENCE(ITAB,LTAB(1))
 C
       INTEGER IB1, IW1, IW2, IT1, L, I, OFF, MBYTE
-      INTEGER*4 MASK1, MASK2, HBITS, ISIGN, ITMP
+      INTEGER*4 M1, MASK1, MASK2, HBITS, ISIGN, ITMP
 C
 #ifdef LITTLEENDIAN
       PARAMETER (IT1 = 1) 
@@ -77,7 +77,9 @@ C
 #endif
 C
 #if defined (VAR_GFORTRAN)
-      PARAMETER (MASK1 = -z'40000000')
+      ! special code to avoid gfortran out of range error
+      PARAMETER (M1 = z'40000000')
+      PARAMETER (MASK1 = -M1)
 #else
       PARAMETER (MASK1 = z'C0000000')
 #endif
@@ -204,7 +206,7 @@ C
       EQUIVALENCE(ITAB,LTAB(1))
 C
       INTEGER IB1, IB4, IW1, IW2, IT1, L, OFF, KBYTE, MBYTE, MDATA
-      INTEGER*4 MASK1, MASK3, MASK4, MASK5, HBITS, ISIGN, ITMP
+      INTEGER*4 M1, M4, MASK1, MASK3, MASK4, MASK5, HBITS, ISIGN, ITMP
 C
 #ifdef LITTLEENDIAN
       PARAMETER (IT1 = 1) 
@@ -217,9 +219,12 @@ C
 #endif
 C
 #if defined (VAR_GFORTRAN)
-      PARAMETER (MASK1 = -z'40000000')
+      ! special code to avoid gfortran out of range error
+      PARAMETER (M1    = z'40000000')
+      PARAMETER (MASK1 = -M1)
       PARAMETER (MASK3 = z'3C000000')
-      PARAMETER (MASK4 = -z'3C000001')
+      PARAMETER (M4    = z'3C000001')
+      PARAMETER (MASK4 = -M4)
       PARAMETER (MASK5 = z'0000000F')
 #else
       PARAMETER (MASK1 = z'C0000000')
@@ -358,8 +363,10 @@ C
       PARAMETER (JMASK = z'3C000000')
 C
 #if defined (VAR_GFORTRAN)
-      INTEGER*4 F0000000
-      PARAMETER ( F0000000 = -z'10000000' )
+      ! special code to avoid gfortran out of range error
+      INTEGER*4 Ftmp, F0000000
+      PARAMETER ( Ftmp     = z'10000000' )
+      PARAMETER ( F0000000 = -Ftmp)
       DATA IMASK / z'00000000', z'000FF000',
      &             z'00000000', z'00000FF0',
      &               F0000000 , z'0000000F',

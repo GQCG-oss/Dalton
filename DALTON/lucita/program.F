@@ -5402,18 +5402,21 @@ C
 #include "implicit.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_MPI_ANY_SOURCE
+      integer(kind=MPI_INTEGER_KIND) ierr_mpi, IREQ_mpi
 #include "maxorb.h"
 #include "infpar.h"
 #include "parluci.h"
 !
 !     Find the co-workers and release them
+      my_MPI_ANY_SOURCE = MPI_ANY_SOURCE
       NTEST = -1
       DO I = 1,LUCI_NMPROC-1
-         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                  MPI_COMM_WORLD,IREQ,IERR)
-         CALL MPI_WAIT(IREQ,my_STATUS,IERR)
+         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,my_MPI_ANY_SOURCE,20,
+     &                  MPI_COMM_WORLD,IREQ_mpi,ierr_mpi)
+         CALL MPI_WAIT(IREQ_mpi,my_STATUS,ierr_mpi)
          CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
-     &                  MPI_COMM_WORLD,IERR)
+     &                  MPI_COMM_WORLD,ierr_mpi)
       ENDDO
  
       END
@@ -5439,10 +5442,10 @@ C
       integer(kind=MPI_INTEGER_KIND) my_luci_master
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
-      dimension work_dalton(lwork_dalton)
+      real*8    work_dalton(lwork_dalton)
       character lucitabasf*20, lucifiln*24
       logical   luend
-      integer outfile_node
+      integer   outfile_node
 
       call qenter('lucita_coworker_main')
 *
@@ -5480,8 +5483,8 @@ C
          WRITE (LUCIFILN,'(A20,A1,I3)') LUCITABASF,'.',LUCI_MYPROC
          LUFIL=24
       ELSE
-         call quit("luci_nmproc.gt.1000! 
-     &              extend the lucita_coworker_main module")
+         call quit("luci_nmproc.gt.1000! "//
+     &             "Extend the lucita_coworker_main module")
       ENDIF
 *
 *     open the local input file and the node specific output file.

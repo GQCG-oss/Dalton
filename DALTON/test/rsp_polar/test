@@ -17,7 +17,7 @@ f.add(string = 'MP2 second order energy',
 f.add(string = 'Final MCSCF energy',
       rel_tolerance = 1.0e-7)
 f.add(string = 'DIPLEN  >>',
-      rel_tolerance = 1.0e-7)
+      rel_tolerance = 5.0e-5)
 
 test.run(['rsp_polar.dal'], ['lih.mol'], f={'out': f})
 

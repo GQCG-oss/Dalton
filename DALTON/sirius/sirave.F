@@ -19,47 +19,19 @@ C
 !===========================================================================
 ! look for HJMAERKE; (1) symort of UMAT should be done
 !
-!Revision 1.2  2001/01/17 10:41:32  vebjornb
-!Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-!
-!Revision 1.4  2000/05/18 13:46:43  hjj
-!Bugfix in AVERSS, it is strange if this bug hasn't caused errors before!
-! KLWOP was referenced out of bounds for inactive orbitals (a check was
-! missing), this could lead to any value and in a test today it lead to
-! bus error.
-!
-!Revision 1.3  2000/05/01 13:13:37  hjj
-!(1) removed AVEOLD, AVECMO, AVECHO connected with old KAVER option
-!    (now removed)
-!(2) dynamically allocate KLWOP in AVERSS
-!
-!revision 1.2 dec 1999 hjj
-!improved error messages for super symmetry errors
-!
 !961213-hjaaj:
 !AVESET: disable SUPSYM if no supersymmetry found
 !        HJMAERKE: this means that debug SUPSYM for abelian group
 !        cannot be performed without commenting new code in AVESET!
-!941215-hjaaj:
-!renamed ICKDIA to NOFDIA; moved NOFDIA to gp
-!940823-hjaaj:
-!AVESE1: print if IPHCHA .gt. 0 and IPRAVE .ge. 4
-!940818-hjaaj:
-!AVERSS,AVEPHA,AVEDEG: more print before certain STOPs to aid user
 !940815-hjaaj:
 !AVESE1,AVEDEG,AVEGTU,AVEPHA: use THRSSY from INFINP (new in INFINP)
 !   instead of THREQL parameter; include INFINP
 !AVESE1: Check and reset THRSSY if needed; more print if disentangling
 !940427-hjaaj: SCALAR directives for Cray (as SCALSUB does not work
 !  for Cray because directive has to be after SUBROUTINE statement)
-!931028-hjaaj
-!AVEPRT: rettet print
 !930715-hjaaj
 !AVESE0: define MXDGSS and NINFSS(*,3)
 !AVEDEG: define MXDGSS
-!AVESET: removed call to AVEPRT (moved to PRTINP)
-!930625-hjaaj
-!  inserted some more print before two stop statements.
 !===========================================================================
 C  /* Deck averag */
       SUBROUTINE AVERAG (VECS,NVDIM,NVSIM)
@@ -214,7 +186,7 @@ Chjaaj         ... this is an inactive orbital
                IF (NERR .GT. 0) THEN
                   CALL QTRACE(LUPRI)
                   CALL QUIT(
-     &            'AVERSS error: not all deg. rotations included')
+     &            'AVERSS error: not all degenerate rotations included')
                END IF
                DO 460 IVSIM = 1,NVSIM
                   XKAPIJ = VECS(IDEGV(1),IVSIM)
@@ -244,7 +216,7 @@ C
 C 2-Jul-1992 hjaaj : core allocation for AVESE1
 C
 #include "implicit.h"
-      DIMENSION CMO(*), WRK(*)
+      REAL*8  CMO(*), WRK(*)
 C
 C Used from common blocks:
 C  INFINP: SUPSYM
@@ -344,9 +316,8 @@ C
 C Output:
 C
 #include "implicit.h"
-      DIMENSION CMO(NCMOT), TKMO(NORBT,NORBT), WRK(*)
-      DIMENSION NDEGSS(*)
-C     DIMENSION NDEGSS(MXSSYM)
+      REAL*8    CMO(NCMOT), TKMO(NORBT,NORBT), WRK(*)
+      INTEGER   NDEGSS(*) ! DIMENSION NDEGSS(MXSSYM)
 C
 #include "threql.h"
       PARAMETER (TMXSSY = 1.0D-4)
@@ -1068,6 +1039,10 @@ C
                   WRITE (LUPRI,'(/A,2I5)')
      &               ' AVEPHA error: different ordering'//
      &               ' of degenerate orbitals in supsyms:',ISSYMR,JSSYM
+                  WRITE(LUPRI,'(/A,2I5/A,D20.10/A,D20.10)')
+     &            ' IMO, JMO       =',IMO,JMO,
+     &            ' TKMO(IMO,IMO)  =',TKMO(IMO,IMO),
+     &            ' TKMO(JMO,JMO)  =',TKMO(JMO,JMO)
                   CALL QUIT(
      &            'AVEPHA error: different ordering of deg. orb.s')
                END IF
@@ -1106,8 +1081,9 @@ C
       CALL QEXIT('AVEPHA')
       RETURN
       END
-C  /* Deck aveudv */
 #if defined (VAR_NOTUSED  )
+ AVEUDV is not used
+C  /* Deck aveudv */
       SUBROUTINE AVEUDV(UDV)
 C
 C     09-Jul-1992 Hinne Hettema
@@ -1233,8 +1209,8 @@ C
 C
       RETURN
       END
-#endif
 C  /* Deck aveh1 */
+ AVEH1 is not used
       SUBROUTINE AVEH1(H1)
 C
 C     12-Jul-1992 Hinne Hettema
@@ -1358,6 +1334,7 @@ C
 C
       RETURN
       END
+#endif
 C  /* Deck avedv */
       SUBROUTINE AVEDV(DV)
 C
@@ -1489,8 +1466,8 @@ C
 C
       RETURN
       END
-C  /* Deck aveh1p */
 #if defined (VAR_NOTUSED  )
+C  /* Deck aveh1p */
       SUBROUTINE AVEH1P(H1P)
 C
 C     12-Jul-1992 Hinne Hettema
