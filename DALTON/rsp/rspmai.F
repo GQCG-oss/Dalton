@@ -68,8 +68,8 @@ C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
 C Used from common blocks:
-C INFTRA : USEDRC
-C infinp.h : ISPIN, ?
+C inftra.h : USEDRC
+C infinp.h : ?
 C dftcom.h : DFT_SPINDNS
 C
 #include "maxorb.h"
@@ -376,7 +376,13 @@ C
          WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &      ' the polarizable embedding scheme (PE library)'
          IF (TRPFLG) THEN
-         ! edh: Insert quit of CREF have MULTIPLICITY NEQ 0!
+            IF (ISPIN .NE. 1) THEN
+               write(lupri,'(/A,I0)') '@ FATAL ERROR: .PEQM '//
+     &         'is only implemented for singlet reference states,'//
+     &         ' but spin multiplicity is ',ISPIN
+               CALL QUIT('FATAL ERROR: .PEQM '//
+     &         'is only implemented for singlet reference states.'
+            END IF
          END IF
       END IF
 C
