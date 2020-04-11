@@ -3263,6 +3263,17 @@ C     ... AUTOCC may have been set true by .AUTOCC
       END IF
       NRHFEL = 0
       INIOCC = 1
+      NASHT  = ISUM(NSYM,NROHF,1)
+      IF (NASHT .LT. 0) THEN
+         INPERR = INPERR + 1
+         WRITE (LUPRI,*)
+     &' Input error: negative occupation for .SINGLY :',NROHF(1:NSYM)
+      ELSE IF (NASHT .EQ. 0) THEN
+         HSROHF = .FALSE.
+         WRITE (LUPRI,*)
+     &' INFO: .SINGLY specified with zero occupations;'//
+     &' calculation type changed to closed-shell SCF'
+      END IF
       GO TO 100
 C *** Option 25 >SHIFT < Shift level
  125  READ(LUCMD,*) DEFLVL
