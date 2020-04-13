@@ -1222,8 +1222,8 @@ C
 C
 !     release memory used in PElib and deactivate it
       IF (USE_PELIB()) THEN
-        CALL PELIB_IFC_FINALIZE()
         CALL PELIB_IFC_DEACTIVATE()
+        CALL PELIB_IFC_FINALIZE()
       END IF
 
       CALL GETTIM(CEND,WEND)
