@@ -55,8 +55,9 @@ gcc-5:
     - schedules
   script:
     - alternatives --install /usr/bin/python python /usr/bin/python3 1
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PDE=OFF
+                   -DENABLE_PDE=ON
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -71,8 +72,8 @@ gcc-5-int64:
   script:
     - dnf install -y -q lapack64 lapack64-devel
     - alternatives --install /usr/bin/python python /usr/bin/python3 1
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --int64 --blas=none --lapack=builtin --explicit-libs="-lopenblas64" --type=release
-                   -DENABLE_PDE=OFF
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -103,7 +104,6 @@ gcc-6-int64:
     - dnf install -y -q lapack64 lapack64-devel
     - alternatives --install /usr/bin/python python /usr/bin/python3 1
     - python setup --int64 --blas=none --lapack=builtin --explicit-libs="-lopenblas64" --type=release
-                   -DENABLE_PDE=OFF
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -142,7 +142,6 @@ gcc-6-ompi-1.10-int64:
     - mpirun --version
     - alternatives --install /usr/bin/python python /usr/bin/python3 1
     - python setup --int64 --mpi --blas=none --lapack=builtin --explicit-libs="-lopenblas64" --type=release
-                   -DENABLE_PELIB=OFF
     - cd build
     - make -j 4
     - ctest --output-on-failure -L essential -LE serial
@@ -173,7 +172,6 @@ gcc-7-int64:
     - dnf install -y -q lapack64 lapack64-devel
     - alternatives --install /usr/bin/python python /usr/bin/python3 1
     - python setup --int64 --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-                   -DENABLE_PDE=OFF
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -204,7 +202,6 @@ gcc-8-int64:
     - dnf install -y -q lapack64 lapack64-devel
     - alternatives --install /usr/bin/python python /usr/bin/python3 1
     - python setup --int64 --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-                   -DENABLE_PDE=OFF
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -243,7 +240,6 @@ gcc-8-ompi-2.1-int64:
     - mpirun --version
     - alternatives --install /usr/bin/python python /usr/bin/python3 1
     - python setup --int64 --mpi --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-                   -DENABLE_PELIB=OFF
     - cd build
     - make -j 4
     - ctest --output-on-failure -L essential -LE serial
@@ -256,8 +252,9 @@ gcc-9:
   except:
     - schedules
   script:
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PDE=OFF
+                   -DENABLE_PDE=ON
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -270,8 +267,9 @@ gcc-9-debug:
   except:
     - schedules
   script:
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=debug
-                   -DENABLE_PDE=OFF
+                   -DENABLE_PDE=ON
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -285,8 +283,8 @@ gcc-9-int64:
     - schedules
   script:
     - dnf install -y -q lapack64 lapack64-devel
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --int64 --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-                   -DENABLE_PDE=OFF
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -303,8 +301,9 @@ gcc-9-ompi-4.0:
   script:
     - module load mpi/openmpi-x86_64
     - mpirun --version
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PDE=OFF
+                   -DENABLE_PDE=ON
     - cd build
     - make -j 4
     - ctest --output-on-failure -L essential -LE serial
@@ -321,6 +320,7 @@ gcc-9-mpich-3.3:
   script:
     - module load mpi/mpich-x86_64
     - mpirun --version
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
                    -DENABLE_PDE=ON
     - cd build
@@ -340,8 +340,8 @@ gcc-9-ompi-4.0-int64:
     - dnf install -y -q lapack64 lapack64-devel
     - module load mpi/openmpi-x86_64
     - mpirun --version
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --int64 --mpi --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-                   -DENABLE_PELIB=OFF
     - cd build
     - make -j 4
     - ctest --output-on-failure -L essential -LE serial
@@ -360,8 +360,8 @@ gcc-9-mpich-3.3-int64:
     - dnf install -y -q lapack64 lapack64-devel
     - module load mpi/mpich-x86_64
     - mpirun --version
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --int64 --mpi --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-                   -DENABLE_PELIB=OFF
     - cd build
     - make -j 4
     - ctest --output-on-failure -L essential -LE serial --timeout 30
@@ -374,9 +374,9 @@ gcc-10:
   except:
     - schedules
   script:
-    - export FFLAGS="-fallow-argument-mismatch -fallow-invalid-boz"
+    - export FFLAGS="-I/usr/lib64/gfortran/modules -fallow-argument-mismatch -fallow-invalid-boz"
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PELIB=OFF
+                   -DENABLE_PDE=ON
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -390,9 +390,8 @@ gcc-10-int64:
     - schedules
   script:
     - dnf install -y -q lapack64 lapack64-devel
-    - export FFLAGS="-fallow-argument-mismatch -fallow-invalid-boz"
+    - export FFLAGS="-I/usr/lib64/gfortran/modules -fallow-argument-mismatch -fallow-invalid-boz"
     - python setup --int64 --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-                   -DENABLE_PELIB=OFF
     - cd build
     - make
     - ctest --output-on-failure -L essential
@@ -409,8 +408,9 @@ nightly-serial:
     - dalton/dalton
   allow_failure: true
   script:
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PDE=OFF -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-serial
+                   -DENABLE_PDE=ON -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-serial
     - cd build
     - export CTEST_MAKE_NUM_PROCS=4
     - ctest -j 4 --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit
@@ -429,6 +429,7 @@ nightly-mpi:
   script:
     - module load mpi/openmpi-x86_64
     - mpirun --version
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
                    -DENABLE_PDE=ON -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-mpi
     - cd build
@@ -451,7 +452,7 @@ nightly-mpi-int64:
     - module load mpi/openmpi-x86_64
     - mpirun --version
     - python setup --int64 --mpi --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-                   -DENABLE_PELIB=OFF -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-mpi-int64
+                   -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-mpi-int64
     - cd build
     - export CTEST_MAKE_NUM_PROCS=4
     - ctest --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit

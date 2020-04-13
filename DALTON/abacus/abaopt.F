@@ -1511,8 +1511,7 @@ C  /* Deck runopt */
       SUBROUTINE RUNOPT(WRKDLM,MXRCRD,EGRAD,CSTEP,SCLVEC,GRDOLD,
      &     GRDMAT,STPMAT,HESOLD,GRDARR,STPARR,GEINFO,WILBMT,
      &     BMTRAN,HESINT,VECMOD,WORK,LWORK)
-      use pelib_interface, only: use_pelib, pelib_ifc_infld,
-     &                           pelib_ifc_do_infld
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "dummy.h"
 #include "codata.h"
@@ -2229,12 +2228,6 @@ C
      &          '@ single point energy was calculated: ',ENERGY,' a.u.'
          END IF
          WRITE(LUPRI,*)
-
-         IF (USE_PELIB()) THEN
-            IF (PELIB_IFC_DO_INFLD()) THEN
-                CALL PELIB_IFC_INFLD()
-            END IF
-         END IF
 C
 C     We check to see if there is any properties to be calculated
 C

@@ -445,7 +445,7 @@ if(ENABLE_PELIB)
     add_dalton_runtest(pehf_molgrad                  "dalton;pelib;runtest;short;essential")
     add_dalton_runtest(pehf_geoopt                   "dalton;pelib;runtest;short")
     if(ENABLE_PDE)
-        add_dalton_runtest(pdehf_energy                  "dalton;pelib;runtest;short;essential")
+        add_dalton_runtest(pdehf_energy              "dalton;pelib;runtest;short;essential")
     endif()
 endif()
 

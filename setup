@@ -60,7 +60,7 @@ def parse_input():
     group.add_argument('--int64',
             action='store_true',
             default=False,
-            help='enable 64bit integers [default: %(default)s]')
+            help='use 64-bit integers (rarely needed, do not use if in doubt) [default: %(default)s]')
     group.add_argument('--prefix',
             action='store',
             default=None,
