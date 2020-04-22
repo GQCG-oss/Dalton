@@ -55,6 +55,7 @@
 - Dalton script: fix for using input files located in subfolders
 - Fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
 - Fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
+- Fixed implementation of RPBEx functional with functional derivatives generated with the Python SymPy library
 
 ### Fixes in enclosed basis set files
 - Error in diffuse d-orbital exponents for Aluminum and Silicon (factor 10 too big) in aug-cc-pV(D+d)Z basis sets (H. J. Aa. Jensen)
