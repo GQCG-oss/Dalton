@@ -54,6 +54,7 @@
 - Dalton script: fix for using input files located in subfolders
 - Fixed error from March 2015 which meant that double-hybrid DFT was not working correctly (MP2 part was ignored).
 - Fixed error for MC-TDA excitation energies for RASSCF (CASSCF was OK).
+- Fixed implementation of RPBEx functional with functional derivatives generated with the Python SymPy library
 
 ### Additions and fixes in enclosed basis set files
 - Added pcH-n and aug-pcH-n basis sets levels 1-4 to Dalton basis set library.

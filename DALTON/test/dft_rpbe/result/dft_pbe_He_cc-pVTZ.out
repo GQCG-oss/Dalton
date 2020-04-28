@@ -1,0 +1,382 @@
+  
+     ******************************************************************    
+     **********  LSDalton - An electronic structure program  **********    
+     ******************************************************************    
+  
+  
+    This is output from LSDalton v2018.0
+  
+  
+     IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,
+     THE FOLLOWING PAPER SHOULD BE CITED:
+     
+     K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+     L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+     P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+     J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+     L. Ferrighi, H. Fliegl, L. Frediani, K. Hald,
+     A. Halkier, C. Haettig, H. Heiberg,
+     T. Helgaker, A. C. Hennum, H. Hettema,
+     E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+     M. F. Iozzi, B. Jansik, H. J. Aa. Jensen,
+     D. Jonsson, P. Joergensen, J. Kauczor,
+     S. Kirpekar, T. Kjaergaard, W. Klopper,
+     S. Knecht, R. Kobayashi, H. Koch, J. Kongsted,
+     A. Krapp, K. Kristensen, A. Ligabue,
+     O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+     C. Neiss, C. B. Nielsen, P. Norman,
+     J. Olsen, J. M. H. Olsen, A. Osted,
+     M. J. Packer, F. Pawlowski, T. B. Pedersen,
+     P. F. Provasi, S. Reine, Z. Rinkevicius,
+     T. A. Ruden, K. Ruud, V. Rybkin,
+     P. Salek, C. C. M. Samson, A. Sanchez de Meras,
+     T. Saue, S. P. A. Sauer, B. Schimmelpfennig,
+     K. Sneskov, A. H. Steindal, K. O. Sylvester-Hvid,
+     P. R. Taylor, A. M. Teale, E. I. Tellgren,
+     D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+     O. Vahtras, M. A. Watson, D. J. D. Wilson,
+     M. Ziolkowski, and H. AAgren,
+     "The Dalton quantum chemistry program system",
+     WIREs Comput. Mol. Sci. (doi: 10.1002/wcms.1172)
+  
+  
+                                               
+    LSDalton authors in alphabetical order (main contribution(s) in parenthesis)
+    ----------------------------------------------------------------------------
+    Vebjoern Bakken,        University of Oslo,                    Norway   (Geometry optimizer)
+    Ashleigh Barnes,        Oak Ridge National Laboratory,         USA      (ML-DEC)
+    Radovan Bast,           UiT The Arctic University of Norway,   Norway   (CMake, Testing)
+    Pablo Baudin,           Aarhus University,                     Denmark  (DEC,CCSD)
+    Dmytro Bykov,           Oak Ridge National Laboratory,         USA      (ML-DEC)
+    Sonia Coriani,          Technical University of Denmark,       Denmark  (Response)
+    Roberto Di Remigio,     UiT The Arctic University of Norway,   Norway   (PCM)
+    Karen Dundas,           UiT The Arctic University of Norway,   Norway   (OpenRSP)
+    Patrick Ettenhuber,     Aarhus University,                     Denmark  (CCSD)
+    Janus Juul Eriksen,     Aarhus University,                     Denmark  (CCSD(T), DEC)
+    Luca Frediani,          UiT The Arctic University of Norway,   Norway   (PCM, Supervision)
+    Daniel Henrik Friese,   Heinrich-Heine-Universitat Dusseldorf, Germany  (OpenRSP)
+    Bin Gao,                UiT The Arctic University of Norway,   Norway   (OpenRSP, QcMatrix)
+    Trygve Helgaker,        University of Oslo,                    Norway   (Supervision)
+    Stinne Hoest,           Aarhus University,                     Denmark  (SCF optimization)
+    Ida-Marie Hoeyvik,      Aarhus University,                     Denmark  (Orbital localization, SCF opt)
+    Robert Izsak,           University of Oslo,                    Norway   (ADMM)
+    Branislav Jansik,       Aarhus University,                     Denmark  (Trilevel, orbital localization)
+    Frank Jensen,           Aarhus University,                     Denmark  (ADMM basis sets)
+    Poul Joergensen,        Aarhus University,                     Denmark  (Supervision)
+    Joanna Kauczor,         Aarhus University,                     Denmark  (Response solver)
+    Thomas Kjaergaard,      Aarhus University,                     Denmark  (RSP, INT, DEC, SCF, Input, MPI, 
+                                                                             MAT)
+    Andreas Krapp,          University of Oslo,                    Norway   (FMM, dispersion-corrected DFT)
+    Kasper Kristensen,      Aarhus University,                     Denmark  (Response, DEC)
+    Chandan Kumar,          University of Oslo,                    Norway   (Nuclei-selected NMR shielding)
+    Patrick Merlot,         University of Oslo,                    Norway   (ADMM)
+    Cecilie Nygaard,        Aarhus University,                     Denmark  (SOEO)
+    Jeppe Olsen,            Aarhus University,                     Denmark  (Supervision)
+    Elisa Rebolini,         University of Oslo,                    Norway   (MO-PARI-K)
+    Simen Reine,            University of Oslo,                    Norway   (Integrals and approximations, 
+                                                                             XC, MPI, OpenMP, geo.opt.)
+    Magnus Ringholm,        UiT The Arctic University of Norway,   Norway   (OpenRSP)
+    Kenneth Ruud,           UiT The Arctic University of Norway,   Norway   (OpenRSP, Supervision)
+    Vladimir Rybkin,        University of Oslo,                    Norway   (Geometry optimizer, dynamics)
+    Pawel Salek,            KTH Stockholm,                         Sweden   (FMM, DFT functionals)
+    Andrew M. Teale,        University of Nottingham               England  (E-coefficients)
+    Erik Tellgren,          University of Oslo,                    Norway   (Density fitting, E-coefficients)
+    Andreas J. Thorvaldsen, University of Tromsoe,                 Norway   (Response)
+    Lea Thoegersen,         Aarhus University,                     Denmark  (SCF optimization)
+    Mark Watson,            University of Oslo,                    Norway   (FMM)
+    Lukas Wirz,             University of Oslo,                    Norway   (NR-PARI)
+    Marcin Ziolkowski,      Aarhus University,                     Denmark  (DEC)
+  
+  
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     energies and properties using various electronic structure models.
+     The authors accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://daltonprogram.org"
+     for further information.
+  
+  
+   This is an MPI run using       1 processes.
+ 
+     Who compiled             | olav
+     Host                     | work
+     System                   | Linux-5.0.0-31-generic
+     CMake generator          | Unix Makefiles
+     Processor                | x86_64
+     64-bit integers          | OFF
+     MPI                      | ON
+     Fortran compiler         | /usr/bin/mpif90
+     Fortran compiler version | GNU Fortran (Ubuntu 7.4.0-1ubuntu1~18.04.1) 7.4.0
+     C compiler               | /usr/bin/mpicc
+     C compiler version       | gcc (Ubuntu 7.4.0-1ubuntu1~18.04.1) 7.4.0
+     C++ compiler             | /usr/bin/mpicxx
+     C++ compiler version     | unknown
+     BLAS                     | /usr/lib/x86_64-linux-gnu/libblas.so
+     LAPACK                   | /usr/lib/x86_64-linux-gnu/liblapack.so
+     Static linking           | OFF
+     Last Git revision        | 662cbe6ea9c5e04962267f9eabaf92710963c00c
+     Git branch               | master
+     Configuration time       | 2019-12-03 16:39:10.170140
+  
+    The Functional chosen is a GGA type functional
+    The Functional chosen contains no exact exchange contribution
+
+         Start simulation
+     Date and time (Linux)  : Wed Apr 22 10:49:52 2020
+     Host name              : work                                    
+                      
+    ---------------------------------------------------
+             PRINTING THE MOLECULE.INP FILE 
+    ---------------------------------------------------
+                      
+    BASIS                                   
+    cc-pVTZ                                 
+    LSint test, He                          
+    cc-pVTZ                                 
+    Atomtypes=1 Nosymmetry                                                                                                  
+    Charge=2.0 Atoms=1                                                                                                      
+    He     0.000000000  0.000000000   0.00000000                                                                            
+                      
+    ---------------------------------------------------
+             PRINTING THE LSDALTON.INP FILE 
+    ---------------------------------------------------
+                      
+    **WAVE FUNCTIONS
+    .DFT
+     PBE
+    *DFT INPUT
+    .GRID TYPE
+     BECKEORIG LMG
+    .RADINT
+    1.0D-11
+    .ANGINT
+    31
+    *DENSOPT
+    .RH
+    .DIIS
+    **RESPONS
+    .NEXCIT
+     1
+    *END OF INPUT
+ 
+ 
+                      
+    Atoms and basis sets
+      Total number of atoms        :      1
+      THE  REGULAR   is on R =   1
+    ---------------------------------------------------------------------
+      atom label  charge basisset                prim     cont   basis
+    ---------------------------------------------------------------------
+          1 He     2.000 cc-pVTZ                   17       14 [6s2p1d|3s2p1d]                              
+    ---------------------------------------------------------------------
+    total          2                               17       14
+    ---------------------------------------------------------------------
+                      
+                      
+    Basic Molecule/Basis information
+    --------------------------------------------------------------------
+      Molecular Charge                   :    0.0000
+      Regular basisfunctions             :       14
+      Primitive Regular basisfunctions   :       17
+    --------------------------------------------------------------------
+                      
+    Configuration:
+    ==============
+    This is a Single core calculation. (no OpenMP)
+    This is an MPI calculation using   1 processes
+    The Functional chosen is a GGA type functional
+    The Functional chosen contains no exact exchange contribution
+     
+    The Exchange-Correlation Grid specifications:
+    Radial Quadrature : LMG scheme
+                        Radial grid as proposed by R. Lindh, P.A. Malmqvist
+                        and L. Gagliardi. Theor. Chem. Acc. (2001) 106, 178
+    Space partitioning: Becke partitioning scheme without atomic size correction
+                        J. Chem. Phys. (1988) vol 88 page 2547
+
+    We use grid pruning according to Mol. Phys. (1993) vol 78 page 997
+
+     DFT LSint Radial integration threshold:   0.1000D-10
+     DFT LSint integration order range     :   [  5:  31]
+     Hardness of the partioning function   :   3
+     DFT LSint screening thresholds        :   0.10D-08   0.20D-09   0.20D-11
+     Threshold for number of electrons     :   0.10D-02
+     The Exact Exchange Factor             : 0.0000D+00
+
+    Density subspace min. method    : DIIS                    
+    Density optimization            : Diagonalization                    
+
+    Maximum size of Fock/density queue in averaging:    7
+
+    Convergence threshold for gradient        :   0.10E-03
+    We have detected a Dunnings Basis set so we deactivate the
+    use of the Grand Canonical basis, which is normally default.
+    The use of Grand Canonical basis can be enforced using the FORCEGCBASIS keyword
+    We perform the calculation in the standard input basis
+     
+    The Overall Screening threshold is set to              :  1.0000E-08
+    The Screening threshold used for Coulomb               :  1.0000E-10
+    The Screening threshold used for Exchange              :  1.0000E-08
+    The Screening threshold used for One-electron operators:  1.0000E-15
+    The SCF Convergence Criteria is applied to the gradnorm in AO basis
+
+    End of configuration!
+
+ ndim =          14
+
+    First density: Atoms in molecule guess
+
+    Total Number of grid points:       10730
+
+    Max allocated memory, Grid                  720.637 kB
+
+    Iteration 0 energy:       -2.890925274678
+ 
+    Diagonalize the Atoms in Molecule Fock Matrix to obtain Initial Density
+    Preparing to do S^1/2 decomposition...
+  
+    Relative convergence threshold for solver:  1.00000000E-02
+    SCF Convergence criteria for gradient norm:  9.99999975E-05
+    *********************************************************************************** ###
+     it            E(SCF)          dE(SCF)    exit        alpha RHshift       RHinfo  AO gradient ###
+    *********************************************************************************** ###
+      1     -2.8921104142    0.00000000000    0.00      0.00000    0.00    0.0000000    1.952E-02 ###
+      2     -2.8921318178   -0.00002140361    0.00      0.00000    0.00    0.0000000    8.321E-03 ###
+      3     -2.8921365355   -0.00000471770   -1.00      0.00000    0.00    0.0000000    8.144E-06 ###
+    SCF converged in      3 iterations
+    >>>  CPU Time used in SCF iterations is   0.10 seconds
+    >>> wall Time used in SCF iterations is   0.10 seconds
+
+    Total no. of matmuls in SCF optimization:         16
+ Postponing calculation of HOMO-LUMO gap to response part...
+
+    ********************************************************
+     it       dE(HF)          exit   RHshift    RHinfo 
+    ********************************************************
+      1    0.00000000000    0.0000    0.0000    0.0000000
+      2   -0.00002140361    0.0000    0.0000    0.0000000
+      3   -0.00000471770   -1.0000    0.0000    0.0000000
+
+    ======================================================================
+                       LINSCF ITERATIONS:
+      It.nr.               Energy                 AO Gradient norm
+    ======================================================================
+        1            -2.89211041418987058194      0.195165006093851D-01
+        2            -2.89213181780239425578      0.832069947356039D-02
+        3            -2.89213653550448057672      0.814416897818489D-05
+
+          SCF converged !!!! 
+             >>> Final SCF results from LSDALTON <<<
+
+
+          Final DFT energy:                       -2.892136535504
+          Nuclear repulsion:                       0.000000000000
+          Electronic energy:                      -2.892136535504
+
+
+
+
+                       Permanent dipole moment
+                       -----------------------
+               au              Debye           10**-30 C m
+           0.327909E-16      0.833462E-16      0.278012E-15
+
+
+                       Dipole moment components
+                       ------------------------
+               au              Debye           10**-30 C m
+ x        -0.280096E-16     -0.711935E-16     -0.237476E-15
+ y        -0.169678E-16     -0.431279E-16     -0.143859E-15
+ z         0.167161E-17      0.424882E-17      0.141725E-16
+
+
+
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (LSTDHF) >>>
+
+
+ Use MO orbital energy differences to find  first guess for eigenvectors/values
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Response convergence threshold is   1.0000000000000000E-004
+Residual norm for vector   1 is:   0.919623E-01    and eigenvalue =   1.19352086   It =   1 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+Residual norm for vector   1 is:   0.553053E-15    and eigenvalue =   1.18173604   It =   2 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+Write     1 excitation vectors to disk
+
+ The following excitation energies are used for the response calculation:
+
+           1   1.1817360358492364     
+ Starting linear response function calculation for: << EL  ; EXCI>>
+
+
+
+
+
+  ******************************************************************************
+  *                   ONE-PHOTON ABSORPTION RESULTS (in a.u.)                  *
+  ******************************************************************************
+
+
+
+      Excitation              Transition Dipole Moments               Oscillator
+       Energies            x               y               z           Strengths
+ ===============================================================================
+      1.18173604      0.00000000     -0.00000000      0.00000000      0.00000000
+@ Excitation energy :      1.18173604
+
+
+
+
+  End of excitation energy calculation
+    >>>  CPU Time used in LSDALTON RSP is   0.24 seconds
+    >>> wall Time used in LSDALTON RSP is   0.24 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON RESPONSE:   0.24436100000000002         **
+ *****************************************************
+    Total no. of matmuls used:                        92
+    Total no. of Fock/KS matrix evaluations:           4
+    *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                      Memory statistics          
+    *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+      Allocated memory (TOTAL):         0 byte Should be zero, otherwise a leakage is present
+ 
+      Max allocated memory, TOTAL                          7.236 MB
+      Max allocated memory, type(matrix)                  45.032 kB
+      Max allocated memory, real(realk)                    7.198 MB
+      Max allocated memory, integer                       78.628 kB
+      Max allocated memory, logical                        2.668 kB
+      Max allocated memory, character                     25.760 kB
+      Max allocated memory, AOBATCH                       20.800 kB
+      Max allocated memory, ODBATCH                        2.288 kB
+      Max allocated memory, LSAOTENSOR                     1.248 kB
+      Max allocated memory, SLSAOTENSOR                    1.104 kB
+      Max allocated memory, ATOMTYPEITEM                  38.264 kB
+      Max allocated memory, ATOMITEM                       0.592 kB
+      Max allocated memory, LSMATRIX                       3.864 kB
+      Max allocated memory, OverlapT                      42.624 kB
+      Max allocated memory, integrand                    258.048 kB
+      Max allocated memory, integralitem                 460.800 kB
+      Max allocated memory, IntWork                       76.608 kB
+      Max allocated memory, Overlap                        6.343 MB
+      Max allocated memory, ODitem                         1.664 kB
+      Max allocated memory, LStensor                      10.190 kB
+    *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+    >>>  CPU Time used in LSDALTON is   0.38 seconds
+    >>> wall Time used in LSDALTON is   0.38 seconds
+
+    End simulation
+     Date and time (Linux)  : Wed Apr 22 10:49:53 2020
+     Host name              : work                                    
