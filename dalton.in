@@ -7,9 +7,7 @@
 # Version 1.0 Feb. 1997 by T. Enevoldsen, Odense University                    #
 # Version 1.1 spring 2000 by K.Ruud and H.J.Aa.Jensen                          #
 # Version 2.1 Feb. 2005 by K.Ruud, H.J.Aa.Jensen, and P. Salek                 #
-# Version 2011 May 2011 by H.J.Aa.Jensen, with help from others                #
-# Version 2014 Aug 2014 by H.J.Aa.Jensen, with help from others                #
-# Version 2016 Aug 2015 by H.J.Aa.Jensen, with help from others                #
+# Version 2011, 2014, 2016, 2020 by H.J.Aa.Jensen, with help from others       #
 #                                                                              #
 ################################################################################
 
@@ -49,11 +47,6 @@ else
    MPIEXEC=mpiexec
 fi
 INSTALL_BASDIR=$SCRIPT_DIR/basis
-
-WRKDIR=`pwd` ; export WRKDIR
-# always search for basis sets in job work directory
-# (before standard dalton basis library in INSTALL_BASDIR, appended below)
-BASDIR=$WRKDIR
 #
 paramlist="$*"
 # default extensions
@@ -89,6 +82,7 @@ opt_nobackup=0
 opt_noarch=0
 opt_noappend=0
 optx=0
+WRKDIR=`pwd`
 #
 # Define usage message
 #
@@ -97,7 +91,7 @@ usage (){
         echo "Usage: $0 [options] dalinp{.$DALEXT} [molinp{.$MOLEXT} [potinp{.$POTEXT}] [pcmsolver{.$PCMEXT}]]"
         echo
         echo 'Options:'
-        echo ' -w dir           : change job directory to dir (default:' $WRKDIR')'
+        echo ' -w dir           : change job directory to dir (default:' `pwd` ')'
         echo ' -b dir           : prepend dir to directory list for basis set searches'
         echo '                    (job directory and dalton basis library are included automatically)'
         echo ' -o file          : redirect output from program to job directory with "file" as file name'
@@ -106,7 +100,7 @@ usage (){
         echo ' -mol file        : the molecule input file'
         echo ' -pot file        : the potential input file (for .QM3, .QMMM and .PEQM)'
         echo ' -pcm file        : the pcm input file'
-        echo ' -ext log         : change output extension from ".out" to ".log"'
+        echo ' -ext log         : change default output extension from ".out" to ".log"'
         echo ' -nobackup        : do not backup files, simply overwrite outputs'
         echo ' -f dal_mol[_pot] : extract dal_mol[_pot].tar.gz archive from WRKDIR into'
         echo '                    DALTON_TMPDIR before calculation starts'
@@ -152,7 +146,11 @@ usage (){
         echo '    DALTON_NODELIST           : list of nodes, '$dalton'.x will be copied to DALTON_TMPDIR on each node'
         echo '                                unless DALTON_USE_GLOBAL_SCRATCH is defined'
      fi
+     if [ $mpi_enabled = "ON" ] ; then  # MPI parallel version
         echo '    DALTON_LAUNCHER           : launcher for the '$dalton'.x binary (if defined, -N flag not allowed)'
+     else
+        echo '    DALTON_LAUNCHER           : launcher for the '$dalton'.x binary'
+     fi
          }
 #
 # Define backup function
@@ -200,8 +198,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -N|-np ) optn=$2; shift;;
       -omp ) export OMP_NUM_THREADS=$2; shift;;
       -ow ) opto=2;;
-      -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
-#          OUTFIL and WRKDIR are read from environment inside (ls)dalton.x
+      -o ) OUTFIL=$2; opto=1; shift;;
       -t ) DALTON_TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
       -exe ) DALTON_EXECUTABLE=$2; shift;;
@@ -215,12 +212,20 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
          -nw ) NODE_WRKMEM=$2; export NODE_WRKMEM; shift;;
        -nb|-nmb ) NODE_WRKMEM=`expr $2 "*" 128000`; export NODE_WRKMEM; shift;;
          -ngb ) WRKMEM=`expr $2 \* 128000 \* 1024`; export WRKMEM; shift;;
+       -v|--version ) echo "version: @DALTON_VERSION@"; exit 0;;
       -x ) optx=1; gs=$2; ch=$3; shift;shift;;
-      * ) usage; exit 1;;
+      * ) echo "Unrecognized option: $1"; usage; exit 1;;
    esac
    shift
 done
 
+#          OUTFIL and WRKDIR are read from environment inside dalton.x
+export OUTFIL
+export WRKDIR
+
+# always search for basis sets in job work directory
+# (before standard dalton basis library in INSTALL_BASDIR, appended below)
+BASDIR=$WRKDIR
 # append default basis set directory
 len_INSTALL_BASDIR=`echo $INSTALL_BASDIR | wc -c`
 if [ $len_INSTALL_BASDIR -gt 1 ]; then
@@ -228,28 +233,6 @@ if [ $len_INSTALL_BASDIR -gt 1 ]; then
    BASDIR="$BASDIR:$INSTALL_BASDIR"
 fi
 export BASDIR
-
-if [ -z "$DALTON_TMPDIR" ]; then  # not set as environment variable and not set with "-t dir" option
-    scratch_dir_candidates="$SCRATCH /global/work/$USER /scratch/$USER /work /scratch /scr /temp /tmp"
-    for dir in $scratch_dir_candidates; do
-        if [ -d "$dir" ]; then
-            DALTON_TMPDIR=$dir
-            echo "INFO: DALTON_TMPDIR not defined by user."
-            echo "INFO: Guessing $dir is an appropriate scratch directory, and DALTON_TMPDIR is set to this directory"
-            break
-        fi
-    done
-
-    if [ -z "$DALTON_TMPDIR" ]; then
-        # DALTON_TMPDIR is still not set, better stop here
-        echo "ERROR: searched for suitable scratch directories among"
-        echo "       $scratch_dir_candidates"
-        echo "       but none of them exists."
-        echo "       Please either set the DALTON_TMPDIR environment variable"
-        echo "       or use -t to set the scratch directory."
-        exit 1
-    fi
-fi
 
 # -- identify input files and construct output file name
 
@@ -340,6 +323,31 @@ if [ -n "$OUTFIL" ]; then
 if [ -s  $OUTFIL -a -r $OUTFIL ]; then
    backup -v $OUTFIL
 fi
+fi
+
+# -- check if DALTON_TMPDIR defined; if not provide a guess
+
+
+if [ -z "$DALTON_TMPDIR" ]; then  # not set as environment variable and not set with "-t dir" option
+    scratch_dir_candidates="$SCRATCH /global/work/$USER /scratch/$USER /work /scratch /scr /temp /tmp"
+    for dir in $scratch_dir_candidates; do
+        if [ -d "$dir" ]; then
+            DALTON_TMPDIR=$dir
+            echo "INFO: DALTON_TMPDIR not defined by user."
+            echo "INFO: Guessing $dir is an appropriate scratch directory, and DALTON_TMPDIR is set to this directory"
+            break
+        fi
+    done
+
+    if [ -z "$DALTON_TMPDIR" ]; then
+        # DALTON_TMPDIR is still not set, better stop here
+        echo "ERROR: searched for suitable scratch directories among"
+        echo "       $scratch_dir_candidates"
+        echo "       but none of them exists."
+        echo "       Please either set the DALTON_TMPDIR environment variable"
+        echo "       or use -t to set the scratch directory."
+        exit 1
+    fi
 fi
 
 if [ $opt_noappend -eq 0 ]; then
