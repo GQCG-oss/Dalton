@@ -61,7 +61,6 @@ cat > cc2_r12_aux_nh3_sym_lhtr.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .CC
 *ORBITAL INPUT
-.NOSUPSYM
 .MOSTART
  H1DIAG
 *SCF INPUT

@@ -417,7 +417,8 @@ subroutine qfitlib_ifc_results
 end subroutine qfitlib_ifc_results
 
 #if defined(VAR_MPI)
-subroutine qfitlib_ifc_slave
+subroutine qfitlib_ifc_slave(lupri, iprint)
+  integer :: lupri, iprint
   call qenter('qfitlib_ifc_slave')
   call quit('QFITLIB not enabled - using QFITLIB dummy routines.')
   call qexit('qfitlib_ifc_slave')

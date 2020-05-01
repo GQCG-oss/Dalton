@@ -68,8 +68,9 @@
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) ITEST_OFF
+      integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND)  :: ITEST_OFF
       integer                                   :: file_offset_off
       integer,                      allocatable :: file_offset_fac_i4(:)
       integer(KIND=MPI_OFFSET_KIND),allocatable :: file_offset_fac(:)
@@ -588,7 +589,7 @@ C     debug printing
             IF( LUCI_MYPROC .eq. IPROC ) THEN
               CALL GET_BLOCK_LENGTH(block_list,IIBLK,ILEN)
               CALL MPI_FILE_READ_AT(IDIA,ITEST_OFF,WORK(KVEC1),ILEN,
-     &                              MPI_REAL8,my_STATUS,IERR)
+     &                              my_MPI_REAL8,my_STATUS,IERR)
               WRITE(LUWRT,*) ' Diagonal elements',ILEN
               CALL WRTMATMN(WORK(KVEC1),1,ILEN,1,ILEN,LUWRT)
               ITEST_OFF = ITEST_OFF + ILEN
@@ -5401,18 +5402,21 @@ C
 #include "implicit.h"
 #include "mpif.h"
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) my_MPI_ANY_SOURCE
+      integer(kind=MPI_INTEGER_KIND) ierr_mpi, IREQ_mpi
 #include "maxorb.h"
 #include "infpar.h"
 #include "parluci.h"
 !
 !     Find the co-workers and release them
+      my_MPI_ANY_SOURCE = MPI_ANY_SOURCE
       NTEST = -1
       DO I = 1,LUCI_NMPROC-1
-         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                  MPI_COMM_WORLD,IREQ,IERR)
-         CALL MPI_WAIT(IREQ,my_STATUS,IERR)
+         CALL MPI_IRECV(NODE,1,my_MPI_INTEGER,my_MPI_ANY_SOURCE,20,
+     &                  MPI_COMM_WORLD,IREQ_mpi,ierr_mpi)
+         CALL MPI_WAIT(IREQ_mpi,my_STATUS,ierr_mpi)
          CALL MPI_SEND(NTEST,1,my_MPI_INTEGER,NODE,30,
-     &                  MPI_COMM_WORLD,IERR)
+     &                  MPI_COMM_WORLD,ierr_mpi)
       ENDDO
  
       END
@@ -5435,12 +5439,13 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
+      integer(kind=MPI_INTEGER_KIND) my_luci_master
       integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
 #include "parluci.h"
-      dimension work_dalton(lwork_dalton)
+      real*8    work_dalton(lwork_dalton)
       character lucitabasf*20, lucifiln*24
       logical   luend
-      integer outfile_node
+      integer   outfile_node
 
       call qenter('lucita_coworker_main')
 *
@@ -5449,6 +5454,7 @@ C
 *     to the total number of running invocations.
 *
       LUCI_MASTER = MASTER
+      my_luci_master = luci_master ! make sure right kind in mpi calls
       LUCI_MYPROC = MYNUM
 C     Add the master node, NODTOT = number of co-workers
       LUCI_NMPROC = NODTOT + 1
@@ -5477,8 +5483,8 @@ C
          WRITE (LUCIFILN,'(A20,A1,I3)') LUCITABASF,'.',LUCI_MYPROC
          LUFIL=24
       ELSE
-         call quit("luci_nmproc.gt.1000! 
-     &              extend the lucita_coworker_main module")
+         call quit("luci_nmproc.gt.1000! "//
+     &             "Extend the lucita_coworker_main module")
       ENDIF
 *
 *     open the local input file and the node specific output file.
@@ -5509,15 +5515,15 @@ C
 
 !     the co-workers have finished, waiting for the master
       LUEND = .FALSE.
-      CALL MPI_ISEND(LUCI_MYPROC,1,my_MPI_INTEGER,LUCI_MASTER,20,
+      CALL MPI_ISEND(LUCI_MYPROC,1,my_MPI_INTEGER,my_LUCI_MASTER,20,
      &              MPI_COMM_WORLD,IREQ,IERR)
     1    CONTINUE
          CALL SLEEP(1)
-         CALL MPI_IPROBE(LUCI_MASTER,30,MPI_COMM_WORLD,
+         CALL MPI_IPROBE(my_LUCI_MASTER,30,MPI_COMM_WORLD,
      &                   LUEND,my_STATUS,IERR)
          IF (.NOT.LUEND) GOTO 1
 
-      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,LUCI_MASTER,30,
+      CALL MPI_RECV(NTEST,1,my_MPI_INTEGER,my_LUCI_MASTER,30,
      &               MPI_COMM_WORLD,my_STATUS,IERR)
 C
       call qexit('lucita_coworker_main')

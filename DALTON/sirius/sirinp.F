@@ -19,27 +19,11 @@ C
 !===========================================================================
 !Revision 1.9  2000/05/24 12:39:05  hjj
 !only MAXCIT=3 as default if MC combination with DOSCF or DOMP2
-!
-!Revision 1.7  2000/05/01 14:11:43  hjj
-!removed obsolete KAVER, KSYM(4); removed .AVERAG from input
-!
-!revision 1.5 2000/04/14 08:32:47 hjj
-!1) CALL QUIT if VAR_NONAMELIST and .FLAGS specified
-!   (removed special do nothing for T3D, seemed inconsistent ???)
-!2) removed old not used format statements in input routines
-!----------------------------
-!revision 1.4 2000/04/14 08:27:22 hjj
 !/hjaaj dec 1999 - apr 2000:
 !1) removed obsolete RNALL references
 !2) do not activate QCSCF (flag(21)) for solvent or writing interface
 !   if MXDIIS.gt.0; solvent and CALL WR_SIRIFC are now also implemented
 !   in the DIIS module.
-!3) removed absolete input tests on NACTEL and ISPIN
-!4) if not QCSCF then zero iteration limits, for consistent output in PRTINP
-!5) BUG FIX: hucdrv was not called for start orbitals when
-!   not automatic occupation (when HF OCC specified in input)
-!6) fix: corrected output error in max # of QCSCF iteration
-!7) polishing ...
 !----------------------------
 !revision 1.3 2000/04/14 08:23:47 hjj
 !removed "OLDINP", old obsolete input for SIRIUS /hjaaj apr 2000
@@ -49,24 +33,15 @@ C
 !   (before GPOPEN this was done with LUSUPM=17 in SIRINI)
 !2) changed many LUERR to LUPRI in SIRRDI
 !=============================================================================
-!960905-hjaaj
-!SCFINP : new '.GRAM-S', old '.GRAM S' kept for compatibility
 !951017 C*FM
 !PRTINP : FM change format nb of determinantsi and CSF  info
-!Til Hans fra Hans Joergen, MANDAG 29. okt. har jeg aendret:
-!PRIINP : + .NOSUMM og .CANONI (for hvor egen skyld)
-!SIR_GENINP : namlist til NMLSIR i stedet for INPUT (saa det er
-!         i overensstemmelse med manualen).
 !901026-hjaaj:
 !-- indfoert common block SCBRHF options i SIRRDI, SCFINP
 !-- OPTINP: FLAG(66) = .TRUE. when .DETERMINANTS
 !-- indsat MOTECC-90 in-line documentation
 !-- SIRRDI: check CORHOL calculations
 !-- PRTINP: tell if core hole calculation or open shell HF
-!900924-hjaaj: SIR_GENINP: + .INTERFACE
-!-- WAVINP: rettet trykfejl s/NHLMN1/NHL1MN/ og s/NHLMX1/NHL1MX/
-!900920-hjaaj: ORBINP: s/READ M/MOSTAR/
-!-- OPTINP: space before LEVEL n
+!900920-hjaaj:
 !-- OPTINP: .COREHOLE keyword + .CORERELAX keyword
 !-- SIRRDI: CORHOL and CORRLX implemented, no check if calc. ok yet!
 !===========================================================================
@@ -220,6 +195,7 @@ C   INFTRA : THRP,USEDRC,IPRTRA
 C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN, MAXCK, MXDIIS, THRRHF
 C   INFMP2 : NFRMP2(*), SRMP2_SELFCONSISTENT
 C   INFPOP : IPOPTYP; depends on mxcent.h
+C   INFLOC : BOYSEL
 C   PCMLOG : PCM
 C   HUCKEL : DOHUCKEL
 C   CBIHRS : RUNSUP
@@ -244,6 +220,7 @@ C
 #include "scbrhf.h"
 #include "infmp2.h"
 #include "infpop.h"
+#include "infloc.h"
 #include "pcmlog.h"
 #include "huckel.h"
 #include "cbihrs.h"
@@ -828,11 +805,20 @@ C        ... write SIRIFC and CI info for WESTA program
          FLAG(25) = .TRUE.
          FLAG(26) = .TRUE.
       END IF
-      IF (RNABAC .AND. SUPSYM) THEN
+      IF (BOYORB .OR. PIPORB .OR. BOYSEL) THEN
+         IF (SUPSYM) THEN
+            WRITE(LUPRI,'(/A)')
+     &      'WARNING: .SUPSYM ignored because incompatible with .LOCALI'
+            SUPSYM = .FALSE.
+            NWARN = NWARN + 1
+         END IF
+      END IF
+      IF (RNABAC .AND. SUPSYM .AND. ISPIN .NE. 1) THEN
+      ! .SUPSYM does not work ABACUS if not closed shell
          SUPSYM = .FALSE.
          NWARN = NWARN + 1
          WRITE (LUPRI,'(/A)') ' WARNING: .SUPSYM disabled'//
-     &      ' because SUPSYM not implemented in ABACUS'
+     &      ' because SUPSYM not implemented in **PROPERTIES (ABACUS)'
 C...     the orbital gradient may be non-zero without SUPSYM
 C        and the WF is then not variational in abacus
       END IF
@@ -1098,16 +1084,7 @@ C     (only set IPRTRA if not set explicitly in input)
 C
       IF (IPRTRA .EQ. -1) IPRTRA = IPRSIR
 C
-C     If MAXCIT, MAXMAC, MAXJT, MAXMIC not specified in input:
-      IF (MAXCIT .LT. 0) THEN
-         IF (DOSCF .OR. DOMP2 .OR. DOCINO .OR. .NOT.FLAG(13)) THEN
-            MAXCIT = 3
-         ELSE
-C           ... only MC and reading orbitals from file:
-C               these may be converged orbitals thus MAXCIT = 20
-            MAXCIT = 20
-         END IF
-      END IF
+C     If MAXMAC, MAXJT, MAXMIC not specified in input:
       IF (MAXMAC .LT. 0) THEN
          IF (ISTATE .EQ. 1) THEN
             MAXMAC = 25
@@ -1657,8 +1634,8 @@ C
       ISPIN = MULTS
 C     .. ISPIN in infinp.h, MULTS in spinfo.h for CI module
 C
-C     Call AVESET to set up supersymmetry information
-C     (If SUPSYM false, then supersymmetry information
+C     Call AVESET to set up super symmetry information
+C     (If SUPSYM false, then super symmetry information
 C      will be a copy of the symmetry information)
 C
       IF (INPERR .GT. 0 .AND. SUPSYM) THEN
@@ -1666,7 +1643,13 @@ C
      &   ' not possible because of input errors.'
          SUPSYM = .FALSE.
       END IF
-      K1 = 1 + NCMOT
+      IF (NFIELD .GT. 0) THEN
+         WRITE(LUPRI,'(/A)') ' NOTE: super symmetry analysis'//
+     &   ' not possible because of finite field.'
+         SUPSYM = .FALSE.
+      END IF
+
+      K1    = 1 + NCMOT
       KFREE = 1
       LFREE = LCMO - K1
       CALL AVESET(CMO,CMO(K1),KFREE,LFREE)
@@ -1684,12 +1667,6 @@ C         SETORB has already been called.
          CALL SIRSET(CMO(K1),LCMO-K1,.FALSE.)
 C        CALL SIRSET(WRK,LWRK,OLDWOP)
          CALL AVECHK(INPERR)
-      END IF
-C
-      IF (LUSUPM.NE.-1 .AND. NBAST .GT. 255) THEN
-         WRITE(LUPRI,'(/A)')
-     &   'INFO: no P-SUPMAT because more than 255 basis functions'
-         LUSUPM = -1
       END IF
 C
 C  Do we use embedding ?
@@ -1999,7 +1976,7 @@ C 13 various CALL READMO for initial orbitals              ORB : vario
 C 14 various Integral transformation not needed.           TRA : OLD TR
 C 15 SIRSAV  transformation to NO's each macro iteration.  OPT : TRACI
 C 16 SIROPT  Spherical cavity solvent calculation          SOL : genera
-C 17 various SUPSYM : find and use 'super symmetry'        ORB : NOSUPS
+C 17 various SUPSYM : find and use 'super symmetry'        OPT : SUPSYM
 C 18 SIROUT  Punch MO:s (canonical if flag 3) to LUPNCH    ORB : PUNCHO
 C 19 SIROPT  Use UPDATE from the beginning /990821-hjaaj test option/
 C 20 SIROPT  No MC optimization, just calculate energy and GEN : STOP
@@ -3286,6 +3263,17 @@ C     ... AUTOCC may have been set true by .AUTOCC
       END IF
       NRHFEL = 0
       INIOCC = 1
+      NASHT  = ISUM(NSYM,NROHF,1)
+      IF (NASHT .LT. 0) THEN
+         INPERR = INPERR + 1
+         WRITE (LUPRI,*)
+     &' Input error: negative occupation for .SINGLY :',NROHF(1:NSYM)
+      ELSE IF (NASHT .EQ. 0) THEN
+         HSROHF = .FALSE.
+         WRITE (LUPRI,*)
+     &' INFO: .SINGLY specified with zero occupations;'//
+     &' calculation type changed to closed-shell SCF'
+      END IF
       GO TO 100
 C *** Option 25 >SHIFT < Shift level
  125  READ(LUCMD,*) DEFLVL
@@ -3333,7 +3321,7 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 35)
+      PARAMETER (NTABLE = 36)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
       LOGICAL ALLOPT
@@ -3341,7 +3329,7 @@ C
 C Used from common:
 C
 C GNRINF : THR_REDFAC
-C INFINP : FLAG(*),ICHECK,*ROOT,ISTATE,MAX*,THR*
+C INFINP : FLAG(*),ICHECK,*ROOT,ISTATE,MAX*,THR*,SUPSYM,THRSSY
 C INFVAR : NWOPT, JWOP(*)
 C INFDIM : MAXPHP
 C INFOPT : RAT*
@@ -3364,7 +3352,8 @@ C
      *            '.NEO AL','.PHPRES','.NO ABS','.NR ALW','.OPTIMA',
      *            '.ORB_TR','.MCAVER','.SIMULT','.THRESH','.OLSEN ',
      *            '.TRACI ','.FOCKDI','.NOTRAC','.CI PHP','.NO ACT',
-     *            '.DETERM','.NATONL','.FOCKON','.CI PRO','.xxxxxx'/
+     *            '.DETERM','.NATONL','.FOCKON','.CI PRO','.SUPSYM',
+     &            '.THRSSY'/
 C
 C Internal flags
       IFNSIM = 0
@@ -3384,7 +3373,7 @@ C
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      *                   111,112,113,114,115,116,117,118,119,120,
      *                   121,122,123,124,125,126,127,128,129,130,
-     *                   131,132,133,134,135), II
+     *                   131,132,133,134,135,136), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3677,20 +3666,28 @@ C *** Option 34 >CI PRO< set CI program to be used as MCSCF backbone
         ci_program = '         '
         READ (LUCMD,*) ci_program(1:9)
       GO TO 100
-      !> xxxxxx
- 135  CONTINUE
+C
+C *** Option 35 >SUPSYM< activate super symmetry detection and use
+ 135  SUPSYM = .TRUE.
+      GO TO 100
+C
+C *** Option 36 >THRSSY< threshold for degeneracy when SUPSYM
+ 136  READ(LUCMD,*) THRSSY
       GO TO 100
 C
  9000 CONTINUE
 
 !     set default CI program
+      CALL UPCASE(ci_program)
       if(ci_program .eq. 'SIRIUS-CI' .or. 
      &   ci_program .eq. 'LUCITA   ')then
         write(lupri,'(/a,a9)') ' CI program in use: ',
      &                           ci_program
       else   
-        write(lupri,'(/a)') ' wrong CI program entered!'
-        WRITE (LUPRI,9010) ci_program(1:9),'SIRIUS-CI'
+        write(lupri,'(/3a)')
+     &  ' WARNING: Non-valid CI program entered:', ci_program,
+     &  ', will use SIRIUS-CI.'
+        NWARN = NWARN + 1
         ci_program = 'SIRIUS-CI'
       end if
 
@@ -3727,8 +3724,6 @@ C     Fill out rest of IROOT /hjaaj nov 2006
  9009 FORMAT(/' OPTINP WARNING: number of simultaneous vectors,',I3,
      *  ', is greater than maximum,',I3,
      *  T11,'The number is reduced to the maximum.')
- 9010 FORMAT(/' Input error: .CI PROG has an unknown input value: ',
-     &       a9,'. default value is used instead: ',a9)
       RETURN
 C
       END
@@ -3892,7 +3887,7 @@ C
 C
 C Used from common:
 C
-C INFINP : FLAG,IMOORD,CMAXMO,SUPSYM,THRSSY
+C INFINP : FLAG,IMOORD,CMAXMO
 C INFORB : NBAS
 C HUCKEL : DOHUCKEL
 C
@@ -3905,8 +3900,8 @@ C
 C
       DATA TABLE /'XXXXXXX','.5D7F9G','.DELETE','.MOSTAR','.FREEZE',
      *            '.GRAM-S','.SYMMET','.PUNCHI','.PUNCHO','.REORDE',
-     *            '.FROZEN','.AO DEL','.CMOMAX','.NOSUPS','.SUPSYM',
-     *            '.THRSSY','.LOCALI','.R12ORB'/
+     *            '.FROZEN','.AO DEL','.CMOMAX','xxxxxxx','xxxxxxx',
+     *            'xxxxxxx','.LOCALI','.R12ORB'/
 C
       INLOC = 0
       INDEL = 0
@@ -4151,16 +4146,16 @@ C *** Option 13 >CMOMAX< max allowed absolute value in CMO
       READ (LUCMD,*) CMAXMO
       GO TO 100
 C
-C *** Option 14 >NOSUPS< do not use super symmetry
-  114 SUPSYM = .FALSE.
+C *** Option 14 >
+  114 CONTINUE
       GO TO 100
 C
-C *** Option 15 >SUPSYM< do use super symmetry
-  115 SUPSYM = .TRUE.
+C *** Option 15 >
+  115 CONTINUE
       GO TO 100
 C
-C *** Option 16 >THRSSY< read super symmetry threshold
-  116 READ(LUCMD,*) THRSSY
+C *** Option 16 >
+  116 CONTINUE
       GO TO 100
 C
 *** Option 17 >LOCALI< localize molecular orbitals
@@ -4201,14 +4196,6 @@ C
 C ---
 C
  9000 CONTINUE
-      IF (BOYORB .OR. PIPORB .OR. BOYSEL) THEN
-         IF (SUPSYM) THEN
-            WRITE(LUPRI,'(/A)')
-     &      'WARNING: .SUPSYM ignored because incompatible with .LOCALI'
-            SUPSYM = .FALSE.
-            NWARN = NWARN + 1
-         END IF
-      END IF
       RETURN
       END
 C  /* Deck civinp */

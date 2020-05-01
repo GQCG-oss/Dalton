@@ -299,8 +299,7 @@ C
 #endif
       use pelib_interface, only: use_pelib, pelib_ifc_fock,
      &                           pelib_ifc_energy, pelib_ifc_mep,
-     &                           pelib_ifc_do_mep, pelib_ifc_do_infld,
-     &                           pelib_ifc_infld, pelib_ifc_do_savden,
+     &                           pelib_ifc_do_mep, pelib_ifc_do_savden,
      &                           pelib_ifc_save_density
 #include "implicit.h"
 #include "dummy.h"
@@ -1717,9 +1716,6 @@ C
             PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
         END IF
         CALL PELIB_IFC_ENERGY(PE_DENMAT)
-        IF (PELIB_IFC_DO_INFLD()) THEN
-            CALL PELIB_IFC_INFLD()
-        END IF
         DEALLOCATE(PE_DENMAT)
       END IF
       IF (PELIB_IFC_DO_MEP()) THEN

@@ -168,13 +168,13 @@ C
          GO TO 9999
       END IF
       IF (MCTYPE .EQ. 2) THEN
-         NWARN = NWARN + 1
+         NINFO = NINFO + 1
          WRITE (LUPRI,'(/A/A/A)')
-     &       ' WARNING, population analysis for RAS wave functions'//
+     &       ' INFO, population analysis for RAS wave functions'//
      &       ' uses pseudo-natural orbitals,',
-     &       '          that is, the off-diagonal elements of the'//
+     &       '          that is, all off-diagonal elements of the'//
      &       ' one-electron density matrix which',
-     &       '          couple the different RAS spaces are ignored.'
+     &       '          couple different RAS spaces are ignored.'
       END IF
 C
 C     *****     Perform energy analysis

@@ -38,57 +38,62 @@ if(MPI_FOUND)
 
    add_definitions(-DVAR_MPI)
 
-   # test whether we can use an mpi module
+   # test whether we can use an mpi module ("use mpi")
    file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-f90-mod-i4.F90" _source)
    check_fortran_source_compiles(${_source} MPI_F90_I4)
    file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-f90-mod-i8.F90" _source)
    check_fortran_source_compiles(${_source} MPI_F90_I8)
 
-   if(MPI_F90_I4 OR MPI_F90_I8)
-      message("-- found mpi mod, setting -DUSE_MPI_MOD_F90")
-      add_definitions(-DUSE_MPI_MOD_F90)
-   else()
-      message("-- WARNING: mpi module not found, will use mpif.h instead")
-   endif()
-
    if(MPI_F90_I8)
 
-      message("-- found 64bit integer mpi module")
+      if(ENABLE_64BIT_INTEGERS)
+
+         message("-- found 64bit integer mpi module, setting -DUSE_MPI_MOD_F90")
+         add_definitions(-DUSE_MPI_MOD_F90)
+
+         if(FORCE_32BIT_MPI_INTERFACE)
+            message(FATAL_ERROR "32-bit integer MPI interface forced by the user, but check showed MPI is with 64-bit integers")
+         endif()
+
+      else()
+
+         message("INFO -- found 64bit integer mpi module for 32bit integer code, will not set -DUSE_MPI_MOD_F90")
+         message("   (i.e. use mpif.h, because 'use mpi' then gives problems for some mpi calls)")
+
+      endif()
 
    elseif(MPI_F90_I4)
 
 
       if(ENABLE_64BIT_INTEGERS)
 
-         message("-- found 32bit integer mpi module, setting -DVAR_MPI_32BIT_INT")
+         message("INFO -- found 32bit integer mpi module, setting -DVAR_MPI_32BIT_INT and not -DUSE_MPI_MOD_F90")
+         message("   (i.e. use mpif.h, because 'use mpi' then gives problems for some mpi calls)")
+
+         # hjaaj March 2020
          add_definitions(-DVAR_MPI_32BIT_INT)
          set(USE_32BIT_MPI_INTERFACE TRUE)
 
       else()
 
-         message("-- found 32bit integer mpi module")
+         message("-- found 32bit integer mpi module, setting -DUSE_MPI_MOD_F90")
+         add_definitions(-DUSE_MPI_MOD_F90)
 
       endif()
 
-   else()
+   else() # any found mpi.mod is not compatible with current fortran compiler
 
-      if(NOT FORCE_32BIT_MPI_INTERFACE)
+      message("-- WARNING: compatible Fortran mpi module not found, will use mpif.h instead")
+      message("   (mpif.h should work also if mpi and code are not using same default integer - 32bit vs. 64bit)")
 
-         if(ENABLE_64BIT_INTEGERS)
-            message("-- WARNING: integer check not successful, assuming a 64bit mpif.h instead (if this is not true, please specify -DFORCE_32BIT_MPI_INTERFACE=ON) ")
-         else()
-            message("-- WARNING: integer check not successful, assuming a 32bit mpif.h")
-         endif()
+      if(ENABLE_64BIT_INTEGERS AND FORCE_32BIT_MPI_INTERFACE)
+
+         message("-- 32-bit integer MPI interface activated by the user")
+         add_definitions(-DVAR_MPI_32BIT_INT)
+         set(USE_32BIT_MPI_INTERFACE TRUE)
 
       endif()
 
-   endif()
-
-
-   if(ENABLE_64BIT_INTEGERS AND FORCE_32BIT_MPI_INTERFACE)
-      message("-- 32-bit integer MPI interface activated by the user")
-      add_definitions(-DVAR_MPI_32BIT_INT)
-      set(USE_32BIT_MPI_INTERFACE TRUE)
    endif()
 
    # test current setup and check mpi 3 features

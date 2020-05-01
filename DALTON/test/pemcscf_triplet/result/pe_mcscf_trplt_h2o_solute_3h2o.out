@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON release Dalton2019.alpha (2019)
+    This is output from DALTON release Dalton2020.0.beta (2020)
          ( Web site: http://daltonprogram.org )
 
    ----------------------------------------------------------------------------
@@ -53,7 +53,7 @@
     and
      
        Dalton, a molecular electronic structure program,
-       Release Dalton2019.alpha (2019), see http://daltonprogram.org
+       Release Dalton2020.0.beta (2020), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -133,6 +133,7 @@
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Andre S. P. Gomes,        CNRS/Universite de Lille,     France      (Frozen density embedding model)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Anna K. Schnack-Petersen, University of Copenhagen,     Denmark     (RPA(D) and HRPA(D) properties in AOSOPPA)
   Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
   Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
   Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
@@ -146,40 +147,39 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Darwin) : Thu May 16 10:38:44 2019
-     Host name              : adm-106152.pc.sdu.dk                    
+     Date and time (Linux)  : Fri Apr  3 12:51:04 2020
+     Host name              : localhost.localdomain                   
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/test/pemcscf_triplet
-   2) /Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/basis
+   1) /home/foeroyingur/Projects/dalton_devel/dalton/build_test/test/pemcscf_triplet
+   2) /home/foeroyingur/Projects/dalton_devel/dalton/build_test/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | hjj
- Host                     | adm-106152.local
- System                   | Darwin-15.6.0
+ Who compiled             | foeroyingur
+ Host                     | localhost.localdomain
+ System                   | Linux-5.6.0-0.rc7.git0.2.fc32.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /opt/local/bin/mpif90
- Fortran compiler version | GNU Fortran (MacPorts gcc7 7.4.0_0) 7.4.0
- C compiler               | /opt/local/bin/mpicc
- C compiler version       | gcc-mp-7 (MacPorts gcc7 7.4.0_0) 7.4.0
- C++ compiler             | /opt/local/bin/mpicxx
- C++ compiler version     | unknown
- BLAS                     | /opt/local/lib/libopenblas.dylib
- LAPACK                   | /usr/lib/liblapack.dylib
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 10.0.1 20200311 (Red Hat 10.0.1-
+                          | 0.9)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 10.0.1 20200311 (Red Hat 10.0.1-0.9)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 10.0.1 20200311 (Red Hat 10.0.1-0.9)
+ BLAS                     | /lib64/libopenblas.so
+ LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | f1c5783e03fbd3364f432e0407e614f4d4aec2ca
- Git branch               | master
- Configuration time       | 2019-05-16 10:24:58.109179
-
- * Sequential calculation.
+ Last Git revision        | 4ac790d5fa49c8e3deae30befc62d312c6d6287a
+ Git branch               | dal18-improvements
+ Configuration time       | 2020-04-03 12:41:05.947725
 
 
    Content of the .dal input file
@@ -223,7 +223,7 @@ Compilation information
  ----------------------------
 
 BASIS
-6-31++G**
+6-31G*
 H2O Close to Eq. Bond length
 using the cc-pVDZ basis
 Atomtypes=2 Angstrom NoSymmetry
@@ -270,10 +270,10 @@ H       0.7567991384    0.000000000     0.5860071813
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/basis/6-31++G**"
+     "/home/foeroyingur/Projects/dalton_devel/dalton/build_test/basis/6-31G*"
 
   Info about the basis set file: your basis has no documentation.
-  Basis set: 6-31++G**                                                                       
+  Basis set: 6-31G*                                                                          
 
   Atomic type no.    2
   --------------------
@@ -281,10 +281,10 @@ H       0.7567991384    0.000000000     0.5860071813
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/Users/hjj/progs/gitDalton-hjaaj-srdft/build_master_mpi/basis/6-31++G**"
+     "/home/foeroyingur/Projects/dalton_devel/dalton/build_test/basis/6-31G*"
 
   Info about the basis set file: your basis has no documentation.
-  Basis set: 6-31++G**                                                                       
+  Basis set: 6-31G*                                                                          
 
 
                          SYMGRP: Point group information
@@ -304,6 +304,7 @@ H       0.7567991384    0.000000000     0.5860071813
                        Natural abundance:  99.730 %
 
  Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.123934
+ Center-of-mass coordinates (Angs):    0.000000    0.000000    0.065583
 
 
   Atoms and basis sets
@@ -312,14 +313,14 @@ H       0.7567991384    0.000000000     0.5860071813
   Number of atom types :    2
   Total number of atoms:    3
 
-  Basis set used is "6-31++G**" from the basis set library.
+  Basis set used is "6-31G*" from the basis set library.
 
   label    atoms   charge   prim   cont     basis
   ----------------------------------------------------------------------
-  O           1    8.0000    31    18      [11s5p1d|4s3p1d]                                   
-  H           2    1.0000     8     6      [5s1p|3s1p]                                        
+  O           1    8.0000    27    14      [10s4p1d|3s2p1d]                                   
+  H           2    1.0000     4     2      [4s|2s]                                            
   ----------------------------------------------------------------------
-  total:      3   10.0000    47    30
+  total:      3   10.0000    35    18
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
@@ -450,11 +451,11 @@ H       0.7567991384    0.000000000     0.5860071813
 
 
  Threshold for neglecting two-electron integrals:  1.00D-12
- HERMIT - Number of two-electron integrals written:       52492 ( 48.4% )
- HERMIT - Megabytes written:                              0.605
+ HERMIT - Number of two-electron integrals written:        6023 ( 41.0% )
+ HERMIT - Megabytes written:                              0.076
 
-  Total CPU  time used in HERMIT:   0.03 seconds
-  Total wall time used in HERMIT:   0.05 seconds
+  Total CPU  time used in HERMIT:   0.01 seconds
+  Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -467,6 +468,8 @@ H       0.7567991384    0.000000000     0.5860071813
                    | Starting in Wave Function Section (SIRIUS) |
                    `--------------------------------------------'
 
+
+ CI program in use: SIRIUS-CI
 
  *** Output from Huckel module :
 
@@ -482,13 +485,24 @@ H       0.7567991384    0.000000000     0.5860071813
           -20.684969      -1.611746      -0.778215      -0.688403      -0.616200
            -0.232246      -0.168120
 
+ SETCI, core memory needed for CI:
+ LCINDX =         122
+ LACIMX =         422
+ LBCIMX =           0
+
+ Number of determinants:            36
+
+ Number of configurations:          36
+
+ Time used in SETCI :      0.02s
+
  **********************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program       *
  **********************************************************************
 
  
-     Date and time (Darwin) : Thu May 16 10:38:44 2019
-     Host name              : adm-106152.pc.sdu.dk                    
+     Date and time (Linux)  : Fri Apr  3 12:51:04 2020
+     Host name              : localhost.localdomain                   
 
  Title lines from ".mol" input file:
      H2O Close to Eq. Bond length                                            
@@ -535,9 +549,9 @@ H       0.7567991384    0.000000000     0.5860071813
                                        --- |  ---
 @    Inactive orbitals                   3 |    3
 @    Active orbitals                     4 |    4
-@    Secondary orbitals                 23 |   23
-@    Total number of orbitals           30 |   30
-@    Number of basis functions          30 |   30
+@    Secondary orbitals                 11 |   11
+@    Total number of orbitals           18 |   18
+@    Number of basis functions          18 |   18
 
       -- Initial occupation of symmetries is determined from total charge (only one symmetry!)
       -- Initial occupation of symmetries is :
@@ -546,15 +560,15 @@ H       0.7567991384    0.000000000     0.5860071813
      Optimization information
      ========================
 @    Number of determinants                  36
-@    Number of orbital rotations            173
+@    Number of orbital rotations             89
      ------------------------------------------
-@    Total number of variables              209
+@    Total number of variables              125
 
      Maximum number of macro iterations      25
      Maximum number of micro iterations     600
      Threshold for MCSCF gradient      1.00D-10
      Number of initial trial vectors          1
-     Number of initial CI iterations          3
+     Number of initial CI iterations         -1
      Number of simultaneous trial vectors     1
 
 @    This calculation converges to the lowest state for the specified symmetry and spin species.
@@ -574,46 +588,45 @@ H       0.7567991384    0.000000000     0.5860071813
 Calculating AOSUPINT
      (Precalculated AO two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-@  1  -75.8943436461     -4.423320470871E-02    1.63235D+00   -7.59D+01
-      Virial theorem: -V/T =      1.998688
-@    MULPOP   O      -0.70; H       0.35; H       0.35; 
+@  1  -75.8905443351     -4.511876891071E-02    1.45423D+00   -7.59D+01
+      Virial theorem: -V/T =      2.000780
+@    MULPOP   O      -0.60; H       0.30; H       0.30; 
    1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-@  2  -76.0629299468     -4.319692020483E-02    3.60399D-01   -1.69D-01
-      Virial theorem: -V/T =      2.003484
-@    MULPOP   O      -0.78; H       0.38; H       0.40; 
+@  2  -76.0429047292     -4.392436163440E-02    3.47528D-01   -1.52D-01
+      Virial theorem: -V/T =      2.001019
+@    MULPOP   O      -0.90; H       0.44; H       0.46; 
    2  Level shift: doubly occupied orbital energies shifted by -5.00D-02
  -----------------------------------------------------------------------------
-@  3  -76.0754807114     -4.981843343199E-02    1.00008D-01   -1.26D-02
-      Virial theorem: -V/T =      2.002227
-@    MULPOP   O      -0.84; H       0.41; H       0.44; 
-   3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
+@  3  -76.0544855150     -4.966488225414E-02    8.48792D-02   -1.16D-02
+      Virial theorem: -V/T =      2.001165
+@    MULPOP   O      -1.00; H       0.49; H       0.51; 
+   3  Level shift: doubly occupied orbital energies shifted by -1.25D-02
  -----------------------------------------------------------------------------
-@  4  -76.0767913120     -5.195124351041E-02    3.40290D-02   -1.31D-03
-      Virial theorem: -V/T =      2.003368
-@    MULPOP   O      -0.86; H       0.41; H       0.45; 
-   4  Level shift: doubly occupied orbital energies shifted by -1.25D-02
+@  4  -76.0553903777     -5.213566377970E-02    1.62246D-02   -9.05D-04
+      Virial theorem: -V/T =      2.000833
+@    MULPOP   O      -1.03; H       0.50; H       0.53; 
  -----------------------------------------------------------------------------
-@  5  -76.0768854242     -5.259494197417E-02    1.05622D-02   -9.41D-05
-      Virial theorem: -V/T =      2.002786
-@    MULPOP   O      -0.87; H       0.42; H       0.45; 
+@  5  -76.0554211124     -5.247539171440E-02    6.32803D-03   -3.07D-05
+      Virial theorem: -V/T =      2.001137
+@    MULPOP   O      -1.03; H       0.50; H       0.53; 
  -----------------------------------------------------------------------------
-@  6  -76.0769029781     -5.284262006170E-02    1.82348D-03   -1.76D-05
-      Virial theorem: -V/T =      2.002940
-@    MULPOP   O      -0.87; H       0.42; H       0.45; 
+@  6  -76.0554249527     -5.263654314071E-02    1.54310D-03   -3.84D-06
+      Virial theorem: -V/T =      2.001043
+@    MULPOP   O      -1.04; H       0.51; H       0.53; 
  -----------------------------------------------------------------------------
-@  7  -76.0769035407     -5.287927988583E-02    2.72380D-04   -5.63D-07
-      Virial theorem: -V/T =      2.002954
-@    MULPOP   O      -0.87; H       0.42; H       0.45; 
+@  7  -76.0554251672     -5.265146886199E-02    1.79047D-04   -2.14D-07
+      Virial theorem: -V/T =      2.001070
+@    MULPOP   O      -1.04; H       0.51; H       0.53; 
  -----------------------------------------------------------------------------
-@  8  -76.0769035523     -5.287950936299E-02    4.73560D-05   -1.15D-08
-      Virial theorem: -V/T =      2.002954
-@    MULPOP   O      -0.87; H       0.42; H       0.45; 
+@  8  -76.0554251710     -5.265124148507E-02    3.31116D-05   -3.85D-09
+      Virial theorem: -V/T =      2.001069
+@    MULPOP   O      -1.04; H       0.51; H       0.53; 
  -----------------------------------------------------------------------------
-@  9  -76.0769035526     -5.287894005550E-02    9.15476D-06   -3.63D-10
+@  9  -76.0554251712     -5.265097080423E-02    6.04848D-06   -1.49D-10
 
 @ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -76.076903552619    9.15D-06
+@     Converged SCF energy, gradient:    -76.055425171164    6.05D-06
     - total time used in SIRFCK :              0.00 seconds
 
     .--------------------------------------------------.
@@ -624,23 +637,29 @@ Calculating AOSUPINT
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                 0.017376129696
+            Electronic                 0.017908374014
             Nuclear                   -0.060977881979
             Multipole                 -0.002160732232
-            Total                     -0.045762484515
+            Total                     -0.045230240197
 
        Polarization contributions:
-            Electronic                -0.058912634398
-            Nuclear                    0.050542732204
-            Multipole                 -0.000907285575
-            Total                     -0.009277187769
+            Electronic                -0.067121343245
+            Nuclear                    0.058473743059
+            Multipole                 -0.000933862653
+            Total                     -0.009581462839
 
-       Total PE energy:               -0.052878940052
+       Total PE energy:               -0.052650970804
             (excl. multipole-multipole interaction energy)
 
  --- Writing SIRIFC interface file
 
- CPU and wall time for SCF :       0.175       0.210
+
+                           +---------------------------+
+                           ! Writing FOCKMAT in siropt !
+                           +---------------------------+
+
+
+ CPU and wall time for SCF :       0.072       0.072
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -653,61 +672,63 @@ Calculating AOSUPINT
 
 
 
- 2-el. integral transformation level 0: Total CPU and WALL times (sec)       0.010       0.011
+ 2-el. integral transformation level 0: Total CPU and WALL times (sec)       0.001       0.001
 
  (CIST1) 6 lowest diagonal elements:
 
  Element no. Config.no.    Active energy      Total energy
 
-         1 :          1     -6.0812318427    -76.0240246126
-         2 :          2     -5.7231267101    -75.6659194800
-         3 :          7     -5.7231267101    -75.6659194800
-         4 :          4     -5.6808644285    -75.6236571984
-         5 :         19     -5.6808644285    -75.6236571984
-         6 :          3     -5.6505246028    -75.5933173727
+         1 :          1     -6.1019025770    -76.0027742004
+         2 :          2     -5.7606492275    -75.6615208508
+         3 :          7     -5.7606492275    -75.6615208508
+         4 :          4     -5.6835803023    -75.5844519257
+         5 :         19     -5.6835803023    -75.5844519257
+         6 :          3     -5.6737299477    -75.5746015711
 
 
- Convergence threshold for CI optimization :     0.00000000
+ Convergence threshold for CI optimization :     0.01000000
 
 
+ The requested root number is now converged.
 
- *** Reached maximum number of CI iterations:    3
-              1 CI roots are not converged.
+
+ *** CI converged in  2 iterations.
+
 
 
 @ Final CI energies and residuals in symmetry 1 (irrep A  )
-@    1      -76.024234709588313       3.24D-05
+@    1      -76.005528028355172       3.24D-03
 
-   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
+   --- OUTPUT FROM SIRCNO     Keyword = ONLYFD
 
-
- Occupations of CAS natural orbitals:
-
- Symmetry  1 ( irrep A   in C1  )
-
-   1.999990027   1.999995386   0.000014391   0.000000196
 
 
  --- MACRO ITERATION  1 ---
  --------------------------
 
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.018       0.019
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.002
 
- Total MCSCF energy       :           -76.076687201747262  (MACRO    1)
+ Total MCSCF energy       :           -76.054288886189838  (MACRO    1)
 
  - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -79.138225652178534
- - Active energy          :            -6.081441939691310
- - Embedding energy       :            -0.052452492158981
+ - Inactive energy        :           -79.096304505619770
+ - Active energy          :            -6.104656405016957
+ - Embedding energy       :            -0.048760857834662
 
- Norm of total gradient   :             0.021030119802
- -    of CI gradient      :             0.020407780171
- -    of orbital gradient :             0.005078232701
-      Virial theorem: -V/T =      2.002997
-@    MULPOP   O      -0.87; H       0.42; H       0.45; 
+ Norm of total gradient   :             0.077392795825
+ -    of CI gradient      :             0.063884831765
+ -    of orbital gradient :             0.043684930078
+
+
+ *** Label "NATOCC  " not found on SIRIUS.RST in SIRPOP
+
+ WARNING, occupation of active orbitals not available
+          population analysis aborted.
+          Use ".TRACI" option.
+
 
  (SIRNEO) iteration (  1,  2)
- Micro iteration termination criterion met, EVAL(ISTATE+1) = -2.98D-04
+ Micro iteration termination criterion met, EVAL(ISTATE+1) = -1.19D-02
 
    --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
@@ -716,29 +737,29 @@ Calculating AOSUPINT
 
  Symmetry  1 ( irrep A   in C1  )
 
-   1.999990409   1.999996031   0.000013390   0.000000170
+   1.990013850   1.998609092   0.009592526   0.001784532
 
 
  --- MACRO ITERATION  2 ---
  --------------------------
 
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.018       0.017
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.002
 
- Total MCSCF energy       :           -76.076952723591688  (MACRO    2)
+ Total MCSCF energy       :           -76.062758567317914  (MACRO    2)
 
  - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -79.133083181447887
- - Active energy          :            -6.087165763244159
- - Embedding energy       :            -0.052136661181196
+ - Inactive energy        :           -79.037487589446044
+ - Active energy          :            -6.169630083152206
+ - Embedding energy       :            -0.051073777001225
 
- Norm of total gradient   :             0.110762673702
- -    of CI gradient      :             0.099246841231
- -    of orbital gradient :             0.049177580170
-      Virial theorem: -V/T =      2.003158
-@    MULPOP   O      -0.87; H       0.42; H       0.45; 
+ Norm of total gradient   :             0.126303220648
+ -    of CI gradient      :             0.037365681576
+ -    of orbital gradient :             0.120649531232
+      Virial theorem: -V/T =      1.998827
+@    MULPOP   O      -1.03; H       0.50; H       0.53; 
 
  (SIRNEO) iteration (  2,  4)
- Micro iteration termination criterion met, EVAL(ISTATE+1) = -4.46D-04
+ Micro iteration termination criterion met, EVAL(ISTATE+1) = -5.78D-03
 
    --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
@@ -747,29 +768,32 @@ Calculating AOSUPINT
 
  Symmetry  1 ( irrep A   in C1  )
 
-   1.978654994   1.998843599   0.022494002   0.000007405
+   1.968156673   1.995703311   0.031950558   0.004189458
 
 
  --- MACRO ITERATION  3 ---
  --------------------------
 
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.018       0.018
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.002
 
- Total MCSCF energy       :           -76.083584342036502  (MACRO    3)
+ Total MCSCF energy       :           -76.068454307360128  (MACRO    3)
 
  - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -78.824843316425628
- - Active energy          :            -6.402220383560733
- - Embedding energy       :            -0.051953524331688
+ - Inactive energy        :           -78.639748273833646
+ - Active energy          :            -6.573893418630613
+ - Embedding energy       :            -0.050245497177421
 
- Norm of total gradient   :             0.203944126823
- -    of CI gradient      :             0.196933468361
- -    of orbital gradient :             0.053013355910
-      Virial theorem: -V/T =      2.002687
-@    MULPOP   O      -0.86; H       0.41; H       0.44; 
+ Norm of total gradient   :             0.249670547773
+ -    of CI gradient      :             0.240269159992
+ -    of orbital gradient :             0.067868351844
+      Virial theorem: -V/T =      2.000314
+@    MULPOP   O      -0.98; H       0.49; H       0.49; 
 
- (SIRNEO) iteration (  3,  5)
- Micro iteration termination criterion met, EVAL(ISTATE+1) = -3.52D-02
+ Residual norm when dim(red L) =   6
+ NEO root     CSF        orbital          total
+    1     0.02494353     0.01196504     0.02766482 converged
+
+ (NEONEX) NEO vector is converged.
 
    --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
@@ -778,32 +802,29 @@ Calculating AOSUPINT
 
  Symmetry  1 ( irrep A   in C1  )
 
-   1.986587373   1.997512203   0.013531790   0.002368634
+   1.980567286   1.983087373   0.019540797   0.016804545
 
 
  --- MACRO ITERATION  4 ---
  --------------------------
 
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.018       0.018
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.002
 
- Total MCSCF energy       :           -76.093684891290167  (MACRO    4)
+ Total MCSCF energy       :           -76.089650989918809  (MACRO    4)
 
  - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -78.660901120241618
- - Active energy          :            -6.575627261552873
- - Embedding energy       :            -0.052589391777239
+ - Inactive energy        :           -78.607751080351321
+ - Active energy          :            -6.626854920349563
+ - Embedding energy       :            -0.050477871499482
 
- Norm of total gradient   :             0.086697997449
- -    of CI gradient      :             0.075285168742
- -    of orbital gradient :             0.042996350184
-      Virial theorem: -V/T =      2.002167
-@    MULPOP   O      -0.86; H       0.42; H       0.45; 
+ Norm of total gradient   :             0.084491986477
+ -    of CI gradient      :             0.071530704068
+ -    of orbital gradient :             0.044969480255
+      Virial theorem: -V/T =      2.000933
+@    MULPOP   O      -0.99; H       0.48; H       0.51; 
 
- Residual norm when dim(red L) =   9
- NEO root     CSF        orbital          total
-    1     0.01290763     0.00170597     0.01301988 converged
-
- (NEONEX) NEO vector is converged.
+ (SIRNEO) iteration (  4,  6)
+ Micro iteration termination criterion met, EVAL(ISTATE+1) = -1.55D-03
 
    --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
@@ -812,30 +833,30 @@ Calculating AOSUPINT
 
  Symmetry  1 ( irrep A   in C1  )
 
-   1.980377529   1.981338271   0.019850141   0.018434060
+   1.981037033   1.976852046   0.019438256   0.022672665
 
 
  --- MACRO ITERATION  5 ---
  --------------------------
 
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.018       0.018
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.002
 
- Total MCSCF energy       :           -76.107112931625466  (MACRO    5)
+ Total MCSCF energy       :           -76.099448828810239  (MACRO    5)
 
  - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -78.683901070242769
- - Active energy          :            -6.566800510813728
- - Embedding energy       :            -0.051844232850521
+ - Inactive energy        :           -78.458056978168003
+ - Active energy          :            -6.785919112799323
+ - Embedding energy       :            -0.050905620124467
 
- Norm of total gradient   :             0.162261139590
- -    of CI gradient      :             0.144689347896
- -    of orbital gradient :             0.073441609640
-      Virial theorem: -V/T =      2.003927
-@    MULPOP   O      -0.85; H       0.41; H       0.44; 
+ Norm of total gradient   :             0.085866985099
+ -    of CI gradient      :             0.084922731293
+ -    of orbital gradient :             0.012699166893
+      Virial theorem: -V/T =      2.000372
+@    MULPOP   O      -0.99; H       0.49; H       0.50; 
 
  Residual norm when dim(red L) =   7
  NEO root     CSF        orbital          total
-    1     0.01669908     0.01022161     0.01957909 converged
+    1     0.00865625     0.00648856     0.01081814 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -846,30 +867,30 @@ Calculating AOSUPINT
 
  Symmetry  1 ( irrep A   in C1  )
 
-   1.984448684   1.980654371   0.015826195   0.019070750
+   1.980794810   1.978247362   0.019523546   0.021434282
 
 
  --- MACRO ITERATION  6 ---
  --------------------------
 
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.018       0.018
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.003
 
- Total MCSCF energy       :           -76.117498963176260  (MACRO    6)
+ Total MCSCF energy       :           -76.103993314218769  (MACRO    6)
 
  - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -78.712553487546529
- - Active energy          :            -6.548560714401316
- - Embedding energy       :            -0.051817643509967
+ - Inactive energy        :           -78.223874099284870
+ - Active energy          :            -7.024819169177810
+ - Embedding energy       :            -0.050732928037629
 
- Norm of total gradient   :             0.075139371823
- -    of CI gradient      :             0.067562879130
- -    of orbital gradient :             0.032881340631
-      Virial theorem: -V/T =      2.002130
-@    MULPOP   O      -0.87; H       0.42; H       0.45; 
+ Norm of total gradient   :             0.024375287972
+ -    of CI gradient      :             0.019835162650
+ -    of orbital gradient :             0.014167603409
+      Virial theorem: -V/T =      2.000220
+@    MULPOP   O      -0.97; H       0.48; H       0.50; 
 
- Residual norm when dim(red L) =   5
+ Residual norm when dim(red L) =  13
  NEO root     CSF        orbital          total
-    1     0.00737806     0.00429538     0.00853733 converged
+    1     0.00154492     0.00031422     0.00157655 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -880,29 +901,32 @@ Calculating AOSUPINT
 
  Symmetry  1 ( irrep A   in C1  )
 
-   1.984247484   1.983508080   0.015945224   0.016299212
+   1.980823719   1.976721238   0.022728998   0.019726045
 
 
  --- MACRO ITERATION  7 ---
  --------------------------
 
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.018       0.019
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.003
 
- Total MCSCF energy       :           -76.118227094397284  (MACRO    7)
+ Total MCSCF energy       :           -76.104542495218780  (MACRO    7)
 
  - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -78.733106653886026
- - Active energy          :            -6.528486865196396
- - Embedding energy       :            -0.052066457596406
+ - Inactive energy        :           -78.192448747149285
+ - Active energy          :            -7.057184751869223
+ - Embedding energy       :            -0.050341878481819
 
- Norm of total gradient   :             0.008374831159
- -    of CI gradient      :             0.007033865457
- -    of orbital gradient :             0.004545605974
-      Virial theorem: -V/T =      2.002898
-@    MULPOP   O      -0.87; H       0.42; H       0.45; 
+ Norm of total gradient   :             0.037320337946
+ -    of CI gradient      :             0.033883028125
+ -    of orbital gradient :             0.015644424869
+      Virial theorem: -V/T =      2.000210
+@    MULPOP   O      -0.97; H       0.47; H       0.50; 
 
- (SIRNEO) iteration (  7,  5)
- Micro iteration termination criterion met, EVAL(ISTATE+1) = -4.48D-04
+ Residual norm when dim(red L) =   8
+ NEO root     CSF        orbital          total
+    1     0.00213585     0.00108211     0.00239433 converged
+
+ (NEONEX) NEO vector is converged.
 
    --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
@@ -911,30 +935,30 @@ Calculating AOSUPINT
 
  Symmetry  1 ( irrep A   in C1  )
 
-   1.984234021   1.983774620   0.015681236   0.016310122
+   1.980972746   1.978386977   0.020849267   0.019791010
 
 
  --- MACRO ITERATION  8 ---
  --------------------------
 
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.019       0.020
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.003
 
- Total MCSCF energy       :           -76.120268294754368  (MACRO    8)
+ Total MCSCF energy       :           -76.105108450175251  (MACRO    8)
 
  - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -78.715041174209389
- - Active energy          :            -6.548657205641888
- - Embedding energy       :            -0.052002797184640
+ - Inactive energy        :           -78.176278302754540
+ - Active energy          :            -7.073857454540963
+ - Embedding energy       :            -0.050405575161290
 
- Norm of total gradient   :             0.048094037868
- -    of CI gradient      :             0.038848346617
- -    of orbital gradient :             0.028352115328
-      Virial theorem: -V/T =      2.002761
-@    MULPOP   O      -0.86; H       0.42; H       0.44; 
+ Norm of total gradient   :             0.005770196664
+ -    of CI gradient      :             0.005460029465
+ -    of orbital gradient :             0.001866346106
+      Virial theorem: -V/T =      2.000293
+@    MULPOP   O      -0.97; H       0.47; H       0.50; 
 
- Residual norm when dim(red L) =  11
+ Residual norm when dim(red L) =  16
  NEO root     CSF        orbital          total
-    1     0.00487278     0.00381969     0.00619145 converged
+    1     0.00001318     0.00000518     0.00001417 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -945,30 +969,30 @@ Calculating AOSUPINT
 
  Symmetry  1 ( irrep A   in C1  )
 
-   1.977214901   1.984463947   0.015298191   0.023022961
+   1.981029823   1.978735364   0.020414370   0.019820443
 
 
  --- MACRO ITERATION  9 ---
  --------------------------
 
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.018       0.018
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.002
 
- Total MCSCF energy       :           -76.121897588930651  (MACRO    9)
+ Total MCSCF energy       :           -76.105118425157400  (MACRO    9)
 
  - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -78.692370272961895
- - Active energy          :            -6.573499201003558
- - Embedding energy       :            -0.051460997246756
+ - Inactive energy        :           -78.175687769073875
+ - Active energy          :            -7.074419123363941
+ - Embedding energy       :            -0.050444415001134
 
- Norm of total gradient   :             0.042884750568
- -    of CI gradient      :             0.036168289734
- -    of orbital gradient :             0.023042496587
-      Virial theorem: -V/T =      2.002618
-@    MULPOP   O      -0.85; H       0.42; H       0.42; 
+ Norm of total gradient   :             0.000071988444
+ -    of CI gradient      :             0.000063613480
+ -    of orbital gradient :             0.000033699575
+      Virial theorem: -V/T =      2.000308
+@    MULPOP   O      -0.97; H       0.47; H       0.50; 
 
- Residual norm when dim(red L) =   8
+ Residual norm when dim(red L) =  21
  NEO root     CSF        orbital          total
-    1     0.00508513     0.00266548     0.00574137 converged
+    1     0.00000002     0.00000001     0.00000002 converged
 
  (NEONEX) NEO vector is converged.
 
@@ -979,128 +1003,32 @@ Calculating AOSUPINT
 
  Symmetry  1 ( irrep A   in C1  )
 
-   1.979417256   1.984290371   0.015474413   0.020817960
+   1.981031569   1.978739185   0.020409562   0.019819685
 
 
  --- MACRO ITERATION 10 ---
  --------------------------
 
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.019       0.019
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.002
 
- Total MCSCF energy       :           -76.122504959115972  (MACRO   10)
-
- - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -78.660183702158520
- - Active energy          :            -6.606167703581804
- - Embedding energy       :            -0.051586435657203
-
- Norm of total gradient   :             0.006934034053
- -    of CI gradient      :             0.006117376570
- -    of orbital gradient :             0.003264740747
-      Virial theorem: -V/T =      2.002737
-@    MULPOP   O      -0.85; H       0.42; H       0.43; 
-
- Residual norm when dim(red L) =  22
- NEO root     CSF        orbital          total
-    1     0.00005837     0.00002527     0.00006360 converged
-
- (NEONEX) NEO vector is converged.
-
-   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
-
-
- Occupations of CAS natural orbitals:
-
- Symmetry  1 ( irrep A   in C1  )
-
-   1.979825126   1.984188708   0.015558164   0.020428002
-
-
- --- MACRO ITERATION 11 ---
- --------------------------
-
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.025       0.026
-
- Total MCSCF energy       :           -76.122525858277243  (MACRO   11)
+ Total MCSCF energy       :           -76.105118429237763  (MACRO   10)
 
  - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -78.656621700353469
- - Active energy          :            -6.609677036551063
- - Embedding energy       :            -0.051660003654263
+ - Inactive energy        :           -78.175728637190161
+ - Active energy          :            -7.074377972086100
+ - Embedding energy       :            -0.050444702243058
 
- Norm of total gradient   :             0.000257964627
- -    of CI gradient      :             0.000213025522
- -    of orbital gradient :             0.000145484967
-      Virial theorem: -V/T =      2.002748
-@    MULPOP   O      -0.85; H       0.42; H       0.43; 
-
- (SIRNEO) iteration ( 11, 24)
- maximum number of microiterations reached
-
-   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
-
-
- Occupations of CAS natural orbitals:
-
- Symmetry  1 ( irrep A   in C1  )
-
-   1.979832346   1.984197190   0.015550601   0.020419863
-
-
- --- MACRO ITERATION 12 ---
- --------------------------
-
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.018       0.020
-
- Total MCSCF energy       :           -76.122525881652194  (MACRO   12)
-
- - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -78.657439636212644
- - Active energy          :            -6.608859920005509
- - Embedding energy       :            -0.051659207715594
-
- Norm of total gradient   :             0.000000526690
- -    of CI gradient      :             0.000000490817
- -    of orbital gradient :             0.000000191052
-      Virial theorem: -V/T =      2.002748
-@    MULPOP   O      -0.85; H       0.42; H       0.43; 
-
- (SIRNEO) iteration ( 12, 24)
- maximum number of microiterations reached
-
-   --- OUTPUT FROM SIRCNO     Keyword = FD+NO 
-
-
- Occupations of CAS natural orbitals:
-
- Symmetry  1 ( irrep A   in C1  )
-
-   1.979832352   1.984197205   0.015550585   0.020419857
-
-
- --- MACRO ITERATION 13 ---
- --------------------------
-
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.019       0.021
-
- Total MCSCF energy       :           -76.122525881654312  (MACRO   13)
-
- - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -78.657441839218407
- - Active energy          :            -6.608857726858449
- - Embedding energy       :            -0.051659197859013
-
- Norm of total gradient   :             0.000000000436
- -    of CI gradient      :             0.000000000205
- -    of orbital gradient :             0.000000000384
-      Virial theorem: -V/T =      2.002748
-@    MULPOP   O      -0.85; H       0.42; H       0.43; 
+ Norm of total gradient   :             0.000000051836
+ -    of CI gradient      :             0.000000048616
+ -    of orbital gradient :             0.000000017985
+      Virial theorem: -V/T =      2.000308
+@    MULPOP   O      -0.97; H       0.47; H       0.50; 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.000000000002117  -0.000000000000171   12.351504
+ actual, predicted and ratio:  -0.000000004080363  -0.000000004079696    1.000163
  Close to convergence, ratio set to one.
 
- Residual norm when dim(red L) =   5
+ Residual norm when dim(red L) =  17
  NEO root     CSF        orbital          total
     1     0.00000000     0.00000000     0.00000000 converged
 
@@ -1113,35 +1041,36 @@ Calculating AOSUPINT
 
  Symmetry  1 ( irrep A   in C1  )
 
-   1.979832352   1.984197205   0.015550585   0.020419857
+   1.981031570   1.978739188   0.020409558   0.019819684
 
 
- --- MACRO ITERATION 14 ---
+ --- MACRO ITERATION 11 ---
  --------------------------
 
- 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.019       0.020
+ 2-el. integral transformation level 3: Total CPU and WALL times (sec)       0.002       0.002
 
- Total MCSCF energy       :           -76.122525881651953  (MACRO   14)
+ Total MCSCF energy       :           -76.105118429239880  (MACRO   11)
 
  - Nuclear repulsion      :             9.195432882281551
- - Inactive energy        :           -78.657441839222429
- - Active energy          :            -6.608857726854357
- - Embedding energy       :            -0.051659197856729
+ - Inactive energy        :           -78.175728673501155
+ - Active energy          :            -7.074377935959340
+ - Embedding energy       :            -0.050444702060950
 
- Norm of total gradient   :             0.000000000085
- -    of CI gradient      :             0.000000000045
- -    of orbital gradient :             0.000000000072
-      Virial theorem: -V/T =      2.002748
-@    MULPOP   O      -0.85; H       0.42; H       0.43; 
+ Norm of total gradient   :             0.000000000095
+ -    of CI gradient      :             0.000000000066
+ -    of orbital gradient :             0.000000000067
+      Virial theorem: -V/T =      2.000308
+@    MULPOP   O      -0.97; H       0.47; H       0.50; 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:   0.000000000002359  -0.000000000000000************
+ actual, predicted and ratio:  -0.000000000002117  -0.000000000000001 1724.242723
  Close to convergence, ratio set to one.
 
  *** Optimization control: MCSCF converged ***
-     Number of macro iterations used           14
-     Number of micro iterations used          117
-     Total number of CPU seconds used         3.72
+     Number of macro iterations used           11
+     Number of micro iterations used           86
+     Total number of CPU seconds used         1.02
+     Total WALL time used (seconds)           1.02
 
     .--------------------------------------------------.
     | Final results from polarizable embedding library |
@@ -1151,21 +1080,27 @@ Calculating AOSUPINT
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                 0.018194901699
+            Electronic                 0.019522270769
             Nuclear                   -0.060977881979
             Multipole                 -0.002160732232
-            Total                     -0.044943712513
+            Total                     -0.043616343442
 
        Polarization contributions:
-            Electronic                -0.057722629742
-            Nuclear                    0.049737189658
-            Multipole                 -0.000890777492
-            Total                     -0.008876217576
+            Electronic                -0.065573323494
+            Nuclear                    0.057492797024
+            Multipole                 -0.000908564380
+            Total                     -0.008989090850
 
-       Total PE energy:               -0.051659197857
+       Total PE energy:               -0.050444702060
             (excl. multipole-multipole interaction energy)
 
- CPU and wall time for MCSCF :       3.769       4.060
+
+                           +---------------------------+
+                           ! Writing FOCKMAT in siropt !
+                           +---------------------------+
+
+
+ CPU and wall time for MCSCF :       1.038       1.041
 
 
                      .----------------------------------------.
@@ -1174,136 +1109,115 @@ Calculating AOSUPINT
 
 
  
-     Date and time (Darwin) : Thu May 16 10:38:48 2019
-     Host name              : adm-106152.pc.sdu.dk                    
+     Date and time (Linux)  : Fri Apr  3 12:51:05 2020
+     Host name              : localhost.localdomain                   
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    2    -76.076687201747   0.0210301198  0.000000   0.6980726290
-    2    4    -76.076952723592   0.1107626737  0.701506   0.7648991625
-    3    5    -76.083584342037   0.2039441268  0.364863   0.5057137871
-    4    7    -76.093684891290   0.0866979974  0.943692   0.5955964364
-    5    5    -76.107112931625   0.1622611396  0.638912   0.5943444322
-    6    3    -76.117498963176   0.0751393718  0.786639   0.0849974625
-    7    5    -76.118227094397   0.0083748312  1.017867   0.6989569381
-    8    9    -76.120268294754   0.0480940379  0.616872   0.7587855938
-    9    6    -76.121897588931   0.0428847506  0.391427   0.1936003969
-   10   20    -76.122504959116   0.0069340341  1.041166   0.0725427764
-   11   24    -76.122525858277   0.0002579646  1.001969   0.0014958704
-   12   24    -76.122525881652   0.0000005267  1.000939   0.0000069821
-   13    3    -76.122525881654   0.0000000004  1.000000   0.0000000000
-   14    0    -76.122525881652   0.0000000001  1.000000   0.0000000000
+    1    2    -76.054288886190   0.0773927958  0.000000   0.6976190030
+    2    4    -76.062758567318   0.1263032206  0.843589   0.7456547694
+    3    4    -76.068454307360   0.2496705478  0.276573   0.4653691782
+    4    6    -76.089650989919   0.0844919865  0.868498   0.5771642823
+    5    5    -76.099448828810   0.0858669851  0.757648   0.5866886916
+    6   11    -76.103993314219   0.0243752880  0.816102   0.5795771445
+    7    6    -76.104542495219   0.0373203379  0.343168   0.1793222690
+    8   14    -76.105108450175   0.0057701967  1.054381   0.0197469284
+    9   19    -76.105118425157   0.0000719884  1.011271   0.0005122568
+   10   15    -76.105118429238   0.0000000518  1.000000   0.0000000000
+   11    0    -76.105118429240   0.0000000001  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
-    1     13    0.013710    0.020408     84    0.003132    0.005078    0.021030
-    2     15    0.091806    0.099247     88    0.025641    0.049178    0.110763
-    3     15    0.190052    0.196933    103    0.029952    0.053013    0.203944
-    4     22   -0.046419    0.075285      7    0.018056    0.042996    0.086698
-    5     22   -0.052602    0.144689    111    0.043283    0.073442    0.162261
-    6     22   -0.039333    0.067563    111   -0.022734    0.032881    0.075139
-    7     36   -0.005146    0.007034     49   -0.001412    0.004546    0.008375
-    8     29   -0.020842    0.038848    126   -0.008474    0.028352    0.048094
-    9     29    0.035365    0.036168     90   -0.009989    0.023042    0.042885
-   10     29    0.004343    0.006117     12    0.001394    0.003265    0.006934
-   11     29    0.000071    0.000213    111   -0.000072    0.000145    0.000258
-   12     26    0.000000    0.000000    121    0.000000    0.000000    0.000001
-   13     33    0.000000    0.000000     88   -0.000000    0.000000    0.000000
-   14     12    0.000000    0.000000    126   -0.000000    0.000000    0.000000
+    1      3    0.043834    0.063885     59    0.023418    0.043685    0.077393
+    2     29    0.021591    0.037366     47   -0.059823    0.120650    0.126303
+    3     15    0.213139    0.240269     29    0.020151    0.067868    0.249671
+    4     21    0.031171    0.071531     80    0.020609    0.044969    0.084492
+    5     22    0.060711    0.084923     10   -0.004998    0.012699    0.085867
+    6     22    0.014292    0.019835     58    0.005656    0.014168    0.024375
+    7      8    0.029114    0.033883     11   -0.008380    0.015644    0.037320
+    8      8    0.003989    0.005460     35    0.000758    0.001866    0.005770
+    9      8    0.000033    0.000064     11   -0.000014    0.000034    0.000072
+   10      8    0.000000    0.000000     60   -0.000000    0.000000    0.000000
+   11     25   -0.000000    0.000000     50    0.000000    0.000000    0.000000
 
 
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     2     1     2      0.11      0.02      0.08      0.07      0.04
-    2     4     2     3      0.16      0.02      0.13      0.13      0.03
-    3     5     2     4      0.18      0.02      0.15      0.15      0.03
-    4     7     4     4      0.23      0.02      0.20      0.20      0.03
-    5     5     3     3      0.18      0.02      0.15      0.15      0.03
-    6     3     2     2      0.13      0.02      0.10      0.09      0.03
-    7     5     1     5      0.18      0.02      0.15      0.15      0.03
-    8     9     3     7      0.28      0.02      0.25      0.25      0.03
-    9     6     2     5      0.20      0.02      0.17      0.17      0.03
-   10    20     6    15      0.56      0.02      0.52      0.52      0.03
-   11    24     8    17      0.67      0.03      0.63      0.62      0.03
-   12    24     9    16      0.66      0.02      0.63      0.62      0.03
-   13     3     2     2      0.13      0.02      0.10      0.09      0.03
-   14     0     0     0      0.03      0.02      0.00      0.00
+    1     2     2     1      0.04      0.00      0.03      0.03      0.01
+    2     4     2     2      0.05      0.00      0.04      0.04      0.01
+    3     4     3     2      0.06      0.00      0.05      0.05      0.01
+    4     6     3     4      0.08      0.00      0.07      0.07      0.01
+    5     5     3     3      0.07      0.00      0.06      0.06      0.01
+    6    11     4     8      0.13      0.00      0.12      0.12      0.01
+    7     6     2     5      0.08      0.00      0.07      0.07      0.01
+    8    14     5    10      0.15      0.00      0.15      0.15      0.01
+    9    19     7    13      0.20      0.00      0.20      0.19      0.01
+   10    15     6    10      0.16      0.00      0.16      0.15      0.01
+   11     0     0     0      0.01      0.00      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1    -79.138225652179     -6.081441939691    -76.076687201747
-    2    -79.133083181448     -6.087165763244    -76.076952723592
-    3    -78.824843316426     -6.402220383561    -76.083584342037
-    4    -78.660901120242     -6.575627261553    -76.093684891290
-    5    -78.683901070243     -6.566800510814    -76.107112931625
-    6    -78.712553487547     -6.548560714401    -76.117498963176
-    7    -78.733106653886     -6.528486865196    -76.118227094397
-    8    -78.715041174209     -6.548657205642    -76.120268294754
-    9    -78.692370272962     -6.573499201004    -76.121897588931
-   10    -78.660183702159     -6.606167703582    -76.122504959116
-   11    -78.656621700353     -6.609677036551    -76.122525858277
-   12    -78.657439636213     -6.608859920006    -76.122525881652
-   13    -78.657441839218     -6.608857726858    -76.122525881654
-   14    -78.657441839222     -6.608857726854    -76.122525881652
+    1    -79.096304505620     -6.104656405017    -76.054288886190
+    2    -79.037487589446     -6.169630083152    -76.062758567318
+    3    -78.639748273834     -6.573893418631    -76.068454307360
+    4    -78.607751080351     -6.626854920350    -76.089650989919
+    5    -78.458056978168     -6.785919112799    -76.099448828810
+    6    -78.223874099285     -7.024819169178    -76.103993314219
+    7    -78.192448747149     -7.057184751869    -76.104542495219
+    8    -78.176278302755     -7.073857454541    -76.105108450175
+    9    -78.175687769074     -7.074419123364    -76.105118425157
+   10    -78.175728637190     -7.074377972086    -76.105118429238
+   11    -78.175728673501     -7.074377935959    -76.105118429240
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000378502365     -0.000265521844      0.701506434334
-    3     -0.018175631596     -0.006631618445      0.364863163608
-    4     -0.010703225645     -0.010100549254      0.943692078328
-    5     -0.021017041588     -0.013428040335      0.638912012393
-    6     -0.013203051518     -0.010386031551      0.786638720358
-    7     -0.000715350294     -0.000728131221      1.017866668544
-    8     -0.003308955365     -0.002041200357      0.616871529508
-    9     -0.004162444754     -0.001629294176      0.391427219490
-   10     -0.000583355569     -0.000607370185      1.041166343861
-   11     -0.000020858082     -0.000020899161      1.001969449324
-   12     -0.000000023353     -0.000000023375      1.000938592707
-   13     -0.000000000000     -0.000000000002      1.000000000000
-   14     -0.000000000000      0.000000000002      1.000000000000
+    2     -0.010040057871     -0.008469681128      0.843588875355
+    3     -0.020593997500     -0.005695740042      0.276572823817
+    4     -0.024406144195     -0.021196682559      0.868497800755
+    5     -0.012931912351     -0.009797838891      0.757648105385
+    6     -0.005568528494     -0.004544485409      0.816101670862
+    7     -0.001600325471     -0.000549181000      0.343168317866
+    8     -0.000536765260     -0.000565954956      1.054380747336
+    9     -0.000009863811     -0.000009974982      1.011270563056
+   10     -0.000000004080     -0.000000004080      1.000000000000
+   11     -0.000000000000     -0.000000000002      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.98858514  1.00000000      0.698072628996      0.700000000000
-    2      1.97717028  1.00000000      0.764899162482      0.700000000000
-    3      1.96856059  1.00000000      0.505713787074      0.469000000000
-    4      2.15520063  1.00000000      0.595596436373      0.562800000000
-    5      0.92988068  1.00000000      0.594344432197      0.562800000000
-    6      0.20000000  1.00000000      0.084997462494      0.562800000000
-    7      5.26546457  1.00000000      0.698956938092      0.700000000000
-    8      1.10748807  1.00000000      0.758785593772      0.700000000000
-    9      0.20000000  1.00000000      0.193600396878      0.469000000000
-   10      0.20000000  1.00000000      0.072542776386      0.675360000000
-   11      0.20000000  1.00000000      0.001495870404      0.700000000000
-   12      0.20000000  1.00000000      0.000006982112      0.700000000000
-   13      0.20000000  1.00000000      0.000000000000      0.700000000000
-   14      0.00000000  0.00000000      0.000000000000      0.700000000000
+    1      2.11647224  1.00000000      0.697619002953      0.700000000000
+    2      1.87319712  1.00000000      0.745654769375      0.700000000000
+    3      2.01660014  1.00000000      0.465369178184      0.469000000000
+    4      1.33927634  1.00000000      0.577164282335      0.562800000000
+    5      1.58872628  1.00000000      0.586688691592      0.562800000000
+    6      0.20000000  1.00000000      0.579577144465      0.675360000000
+    7      0.20000000  1.00000000      0.179322269028      0.452491200000
+    8      0.20000000  1.00000000      0.019746928379      0.651587328000
+    9      0.20000000  1.00000000      0.000512256830      0.700000000000
+   10      0.20000000  1.00000000      0.000000000000      0.700000000000
+   11      0.00000000  0.00000000      0.000000000000      0.700000000000
 
 
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.000501151056    0.823040013974   -0.015078021398   -0.550526801639
-    2   -0.043230158830   -0.551555967877    0.112726064778    0.818567159733
-    3   -0.041663361931    0.708689554373   -0.045549859532   -0.337539650945
-    4   -0.073740709411   -0.614561233716    0.082832355931    0.764978654707
-    5   -0.017490438247    0.875227520017   -0.015612170120   -0.475165537596
-    6   -0.000057211490    0.999855539936   -0.002558663030   -0.016133321367
-    7   -0.012614935067   -0.262207652555    0.002594318666    0.632281169033
-    8   -0.005984548513    0.765574394948   -0.019730136143   -0.511490113539
-    9   -0.000046598583    0.999251219575   -0.001230574402   -0.031007498482
-   10   -0.000001668295    0.999894767525   -0.000312521504   -0.007412186049
-   11   -0.000000001868    0.999999955247   -0.000008403632   -0.000144456684
-   12   -0.000000000000    0.999999999999   -0.000000036011   -0.000001102667
-   13   -0.000000000000    1.000000000000   -0.000000000014   -0.000000000098
-   14    0.000000000000    0.000000000000    0.000000000000    0.000000000000
+    1   -0.028285290042   -0.560769824292    0.037869497659    0.824920992817
+    2   -0.048975415368    0.582130368673   -0.479847348224   -0.090107909047
+    3   -0.105547034485    0.729186534619   -0.049566493383   -0.656596324630
+    4   -0.029039675461    0.791187303120    0.004929544561   -0.484826921049
+    5   -0.015042106746    0.731509604934   -0.009717279579   -0.659122117057
+    6   -0.000126328637    0.993348758611   -0.000205170874   -0.102002916042
+    7   -0.000042886058    0.999357490236   -0.001141589553   -0.029235886200
+    8   -0.000000789093    0.999992201268   -0.000283171709   -0.003042830455
+    9   -0.000000000326    0.999999994752   -0.000003152709   -0.000080093538
+   10   -0.000000000000    1.000000000000   -0.000000002511   -0.000000044629
+   11    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
                        .-----------------------------------.
@@ -1316,26 +1230,26 @@ Calculating AOSUPINT
 @    Total charge of molecule:    0
 @    State number:                1
 
-@    Final MCSCF energy:          -76.122525881652                 
+@    Final MCSCF energy:          -76.105118429240                 
 @    Nuclear repulsion:             9.195432882282
-@    Electronic energy:           -85.266299566077
-@    Embedding energy:             -0.051659197857
+@    Electronic energy:           -85.250106609460
+@    Embedding energy:             -0.050444702061
 
-@    Final gradient norm:           0.000000000085
+@    Final gradient norm:           0.000000000095
 
  
-     Date and time (Darwin) : Thu May 16 10:38:48 2019
-     Host name              : adm-106152.pc.sdu.dk                    
+     Date and time (Linux)  : Fri Apr  3 12:51:05 2020
+     Host name              : localhost.localdomain                   
 
  Occupancies of natural orbitals
  -------------------------------
 
  Symmetry 1  ( A  ) -- Total occupation in this symmetry is  10.000000000
 
-   2.000000000   2.000000000   2.000000000   1.979832352   1.984197205
-   0.015550585   0.020419857
+   2.000000000   2.000000000   2.000000000   1.981031570   1.978739188
+   0.020409558   0.019819684
 
-File label for MO orbitals:  16May19   (CNOORB)
+File label for MO orbitals:   3Apr20   (CNOORB)
 
  (Only coefficients > 0.0100 are printed.)
 
@@ -1343,93 +1257,59 @@ File label for MO orbitals:  16May19   (CNOORB)
  ------------------------------------------------
 
     Orbital         1        2        3        4        5        6        7
-   1 O   :1s    -0.9958   0.2022   0.0656   0.0514   0.0393  -0.0245   0.0646
-   2 O   :1s    -0.0224  -0.4500  -0.1549  -0.1073  -0.0872   0.2618  -0.4036
-   3 O   :1s     0.0073  -0.4478  -0.2313  -0.0493  -0.1020  -0.2136  -0.0163
-   4 O   :1s    -0.0040  -0.0082  -0.0337   0.0055  -0.0547  -0.2228  -0.0271
-   5 O   :2px   -0.0001   0.1901  -0.2933  -0.3891   0.0116  -0.0619  -0.6613
-   6 O   :2py   -0.0011  -0.1146  -0.0843   0.0231   0.6129  -0.8871   0.0583
-   7 O   :2pz   -0.0020   0.0122   0.4460  -0.3407   0.0631  -0.1288  -0.5503
-   8 O   :2px   -0.0001   0.1083  -0.1763  -0.2155  -0.0003  -0.0034   0.1032
-   9 O   :2py   -0.0009  -0.0760  -0.0489   0.0124   0.4427   0.7446  -0.0511
-  10 O   :2pz   -0.0000   0.0330   0.3121  -0.2169   0.0575   0.0813   0.1632
-  11 O   :2px    0.0000  -0.0017  -0.0065   0.0041  -0.0074  -0.0210  -0.0351
-  12 O   :2py   -0.0002  -0.0171  -0.0102   0.0020   0.0998   0.2383  -0.0107
-  13 O   :2pz   -0.0003   0.0005   0.0411  -0.0376   0.0005   0.0015   0.0269
-  14 O   :3d2-  -0.0000  -0.0002   0.0026   0.0018   0.0016   0.0339   0.0176
-  15 O   :3d1-  -0.0000  -0.0069  -0.0100   0.0039   0.0161   0.0351   0.0122
-  16 O   :3d0   -0.0001  -0.0013   0.0145  -0.0122   0.0021  -0.0192   0.0028
-  17 O   :3d1+  -0.0000   0.0122  -0.0153  -0.0234   0.0017   0.0031  -0.0382
-  18 O   :3d2+  -0.0005  -0.0019   0.0045  -0.0045   0.0052  -0.0406   0.0026
-  19 H   :1s     0.0004  -0.1930   0.2357   0.0400  -0.0100  -0.0234  -0.0375
-  20 H   :1s     0.0001  -0.0204   0.0905   0.0478   0.0125   0.0359  -0.0694
-  21 H   :1s     0.0008  -0.0120   0.0081   0.0153   0.0011   0.0117  -0.0233
-  22 H   :2px    0.0009  -0.0221   0.0201  -0.0086  -0.0017   0.0023  -0.0062
-  23 H   :2py   -0.0000  -0.0040  -0.0027   0.0010   0.0193   0.0140  -0.0009
-  24 H   :2pz   -0.0007   0.0203  -0.0071  -0.0105   0.0028   0.0019   0.0064
-  25 H   :1s     0.0003  -0.0208  -0.0262  -0.3059   0.0024   0.0392   0.6236
-  26 H   :1s    -0.0000   0.0475   0.0073  -0.0904   0.0325   0.1326   0.3021
-  27 H   :1s     0.0008   0.0038  -0.0066  -0.0180   0.0065   0.0266   0.0195
-  28 H   :2px   -0.0009   0.0128  -0.0045   0.0268   0.0013  -0.0026  -0.0444
-  29 H   :2py   -0.0000  -0.0038  -0.0034   0.0008   0.0194   0.0671  -0.0077
-  30 H   :2pz   -0.0007   0.0061   0.0136   0.0149   0.0015   0.0054  -0.0114
+   1 O   :1s    -0.9959   0.2078   0.0024   0.0820   0.0071   0.0339   0.0889
+   2 O   :1s    -0.0218  -0.4576   0.0022  -0.1779  -0.0176  -0.2016  -0.5486
+   3 O   :1s     0.0084  -0.5540  -0.0149  -0.1042  -0.0022  -0.0179  -0.0072
+   4 O   :2px   -0.0000  -0.0026  -0.0040  -0.0418   0.5228   0.8453  -0.3088
+   5 O   :2py    0.0000  -0.0233   0.6326   0.0185   0.0077   0.0120   0.0138
+   6 O   :2pz   -0.0006   0.2749   0.0130  -0.4907  -0.0318  -0.2615  -0.7314
+   7 O   :2px   -0.0000  -0.0072  -0.0080  -0.0229   0.3158  -0.0845   0.0400
+   8 O   :2py   -0.0001  -0.0074   0.5184   0.0073   0.0041  -0.0106  -0.0136
+   9 O   :2pz    0.0023   0.2319   0.0254  -0.3625  -0.0228   0.0736   0.2474
+  11 O   :3d1-  -0.0000  -0.0089   0.0239   0.0059   0.0013   0.0010   0.0022
+  12 O   :3d0    0.0001   0.0096   0.0006  -0.0247  -0.0011   0.0023   0.0067
+  13 O   :3d1+  -0.0000   0.0017   0.0005  -0.0049   0.0474   0.0538  -0.0172
+  14 O   :3d2+   0.0003  -0.0055   0.0051  -0.0169  -0.0012  -0.0111  -0.0238
+  15 H   :1s     0.0001  -0.0152   0.0033  -0.1704  -0.2432   0.5964   0.2319
+  16 H   :1s    -0.0019   0.0404  -0.0058  -0.0329  -0.0924   0.2764   0.0585
+  17 H   :1s     0.0000  -0.0153   0.0029  -0.2035   0.2089  -0.2981   0.5604
+  18 H   :1s    -0.0019   0.0432  -0.0019  -0.0422   0.0776  -0.1622   0.2076
 
     Orbital         8        9       10       11       12       13       14
-   1 O   :1s     0.0173  -0.0039   0.0217   0.0778  -0.0144   0.0147   0.0115
-   2 O   :1s    -0.0626  -0.0009  -0.0429  -0.0850   0.0145  -0.0066   0.0960
-   3 O   :1s     0.0418   0.1420  -0.2806  -1.0915   0.1891  -0.4233  -0.3994
-   4 O   :1s    -1.1429  -0.5585  -1.4550   2.7157  -0.8467  -4.3359   0.7662
-   5 O   :2px    0.0810  -0.0094  -0.0932   0.1580   0.0105   0.1387   0.0015
-   6 O   :2py   -0.0222  -0.0035  -0.0274  -0.0333   0.0050  -0.0034  -0.4370
-   7 O   :2pz   -0.0236   0.0459   0.1286  -0.0576  -0.0008  -0.1514  -0.0576
-   8 O   :2px    0.0592   0.0748  -0.1927   0.3766   0.0392   0.4708   0.0883
-   9 O   :2py   -0.0162  -0.0034  -0.0734  -0.1482   0.0413   0.0488   1.2450
-  10 O   :2pz   -0.0617   0.0332   0.3096  -0.0190  -0.0187  -0.5855   0.2050
-  11 O   :2px    0.1959  -0.5436   0.1130  -0.5429  -2.4163   0.1338   0.0479
-  12 O   :2py    0.0769   0.0170   0.1752   0.3231  -0.0887  -0.0895  -1.3058
-  13 O   :2pz   -0.1591  -0.1413  -1.6565   0.2765  -0.1858  -1.2455  -0.1161
-  14 O   :3d2-   0.0000  -0.0007   0.0003  -0.0007   0.0005   0.0012   0.0187
-  15 O   :3d1-  -0.0002  -0.0005  -0.0009  -0.0032   0.0009   0.0013   0.0396
-  16 O   :3d0   -0.0029   0.0001   0.0073  -0.0012  -0.0004  -0.0135  -0.0032
-  17 O   :3d1+  -0.0026  -0.0008  -0.0025   0.0114   0.0248   0.0168   0.0106
-  18 O   :3d2+  -0.0029  -0.0034   0.0074  -0.0037   0.0019   0.0065  -0.0197
-  19 H   :1s    -0.0006   0.0175  -0.0166   0.0967  -0.0526   0.1401  -0.0329
-  20 H   :1s     0.2839   0.0397   0.5802   0.2026  -1.1959   3.3211   0.0895
-  21 H   :1s     1.6984  -2.0599   0.6467  -1.5579  -1.3848   0.0232  -0.1619
-  22 H   :2px   -0.0086   0.0052  -0.0012  -0.0037  -0.0069   0.0212   0.0043
-  24 H   :2pz    0.0086  -0.0039  -0.0080  -0.0009  -0.0067  -0.0148  -0.0027
-  25 H   :1s    -0.0259  -0.0751   0.0564  -0.0022   0.0489   0.0471  -0.0181
-  26 H   :1s    -0.0039  -0.1009   1.1921  -0.5452   1.6079   1.5109  -0.2587
-  27 H   :1s    -0.0519   2.8424  -0.1422   0.1699   1.7219   0.8513  -0.0914
-  29 H   :2py    0.0013   0.0002   0.0012   0.0009   0.0000   0.0005   0.0253
+   1 O   :1s     0.0375  -0.0013  -0.0028   0.0192  -0.0738   0.0482  -0.0001
+   2 O   :1s     0.2106  -0.0143   0.0181  -0.1183   0.3881  -1.4927   0.1259
+   3 O   :1s    -1.3176   0.0688  -0.0054   0.0262   0.0417   2.4402  -0.2519
+   4 O   :2px    0.0137   0.2974  -0.5131   0.0207   0.0380  -0.0011  -0.0011
+   5 O   :2py   -0.0126   0.0064  -0.0393  -0.9339  -0.2462   0.0070  -0.0002
+   6 O   :2pz    0.3977  -0.0199  -0.0198   0.1097  -0.5148   0.1091   0.0201
+   7 O   :2px   -0.0545  -0.8654   1.6223  -0.0521  -0.0977  -0.0013   0.0006
+   8 O   :2py    0.0238  -0.0079   0.0455   0.9987   0.2566   0.0013   0.0010
+   9 O   :2pz   -0.7715   0.0352   0.0471  -0.2550   1.0452   0.4821  -0.1413
+  10 O   :3d2-   0.0001  -0.0013   0.0025   0.0000  -0.0003  -0.0002  -0.0133
+  11 O   :3d1-  -0.0005  -0.0000   0.0008   0.0155   0.0051   0.0016   0.0000
+  12 O   :3d0   -0.0163   0.0007   0.0015  -0.0090   0.0343   0.0499   0.9878
+  13 O   :3d1+  -0.0052  -0.1101  -0.1447   0.0035   0.0066   0.0002   0.0002
+  14 O   :3d2+  -0.0577   0.0039  -0.0078   0.0456  -0.1683  -0.2827  -0.1130
+  15 H   :1s    -0.3177   0.5277   0.5346   0.1657  -0.6648  -0.3735   0.0796
+  16 H   :1s     1.0527  -1.6946   0.5314  -0.0767   0.0862  -0.5453   0.0496
+  17 H   :1s    -0.3585  -0.4777  -0.6001   0.1926  -0.6172  -0.3756   0.0796
+  18 H   :1s     1.2402   1.5701  -0.5084  -0.0338   0.1658  -0.5430   0.0491
 
     Orbital        15       16       17
-   1 O   :1s    -0.0232  -0.0173   0.0432
-   2 O   :1s    -0.2419   0.3778  -0.2768
-   3 O   :1s     1.2641  -1.0366   0.3340
-   4 O   :1s     1.4683  -1.2840   1.2090
-   5 O   :2px   -0.2638  -0.2627   0.3681
-   6 O   :2py    0.0334   0.0218  -0.1063
-   7 O   :2pz   -0.2178   0.4340   0.2454
-   8 O   :2px    1.0720   0.0845  -1.0910
-   9 O   :2py   -0.0735  -0.0316   0.1530
-  10 O   :2pz    0.9010  -0.7626  -0.5849
-  11 O   :2px    0.1765   0.6762   0.8616
-  12 O   :2py    0.0615   0.0191  -0.0712
-  13 O   :2pz    0.3286  -0.3430   0.7714
-  16 O   :3d0    0.0261  -0.0141  -0.0623
-  17 O   :3d1+   0.1726   0.2671   0.0996
-  18 O   :3d2+   0.0724  -0.1513   0.2250
-  19 H   :1s    -0.0980  -0.8953   0.1927
-  20 H   :1s    -0.0505   2.6331  -0.7894
-  21 H   :1s    -0.5008   0.0466   0.4635
-  22 H   :2px    0.0109   0.2039  -0.1695
-  24 H   :2pz   -0.0296  -0.1843  -0.0276
-  25 H   :1s     0.3646   0.1935   0.9983
-  26 H   :1s    -3.4331   0.2763  -1.3665
-  27 H   :1s     0.6079  -0.0748  -0.6137
-  28 H   :2px    0.1552  -0.0635   0.0360
-  30 H   :2pz    0.1376   0.0326  -0.0354
+   1 O   :1s    -0.0002   0.0011   0.0166
+   2 O   :1s     0.0017   0.0001   0.6026
+   3 O   :1s    -0.0020  -0.0078  -1.4098
+   6 O   :2pz   -0.0008   0.0078   0.0759
+   8 O   :2py   -0.0009  -0.0293   0.0028
+   9 O   :2pz   -0.0019   0.0012  -0.7497
+  10 O   :3d2-   0.9999  -0.0082   0.0001
+  11 O   :3d1-   0.0081   0.9995   0.0009
+  12 O   :3d0    0.0131   0.0001  -0.1523
+  14 O   :3d2+  -0.0015   0.0016  -1.0784
+  15 H   :1s     0.0009   0.0001   0.8305
+  16 H   :1s    -0.0025   0.0019   0.1338
+  17 H   :1s     0.0012   0.0000   0.8344
+  18 H   :1s     0.0033   0.0018   0.1332
 
  Printout of CI-coefficients abs greater than 0.05000 for root  1
  *** NOTE: this root is the reference state ***
@@ -1438,7 +1318,7 @@ File label for MO orbitals:  16May19   (CNOORB)
   Printout of coefficients in interval   0.3162E+00 to  0.1000E+01
   ==============================================================
 
- Coefficient of determinant         1 is     -0.99102014 -9.91020144E-01
+ Coefficient of determinant         1 is     -0.98995329 -9.89953286E-01
  alpha-string:  1  2
   beta-string:  1  2
 
@@ -1451,35 +1331,38 @@ File label for MO orbitals:  16May19   (CNOORB)
   Printout of coefficients in interval   0.5000E-01 to  0.1000E+00
   ==============================================================
 
- Coefficient of determinant         8 is      0.06820570  6.82057045E-02
+ Coefficient of determinant         8 is      0.07247755  7.24775515E-02
  alpha-string:  1     3
   beta-string:  1     3
 
- Coefficient of determinant        29 is      0.08354699  8.35469946E-02
+ Coefficient of determinant        29 is      0.06676298  6.67629840E-02
  alpha-string:     2     4
   beta-string:     2     4
 
- Norm of printed part of CI vector ..      0.99375304
+ Norm of printed part of CI vector ..      0.98971780
 
   Magnitude of CI coefficients
   ============================
 
   ( Ranges are relative to norm of vector :  1.00E+00 )
 
-  10- 1 to 10- 0         1    0.98212093E+00    0.98212093E+00
-  10- 2 to 10- 1        10    0.17757908E-01    0.99987883E+00
-  10- 3 to 10- 2        11    0.12071097E-03    0.99999955E+00
-  10- 4 to 10- 3         8    0.43900535E-06    0.99999998E+00
-  10- 5 to 10- 4         4    0.15152566E-07    0.10000000E+01
-  10- 6 to 10- 5         2    0.14634192E-09    0.10000000E+01
+  10- 1 to 10- 0         1    0.98000751E+00    0.98000751E+00
+  10- 2 to 10- 1        17    0.19826225E-01    0.99983373E+00
+  10- 3 to 10- 2         2    0.16447476E-03    0.99999821E+00
+  10- 4 to 10- 3         4    0.17672159E-05    0.99999997E+00
+  10- 5 to 10- 4        10    0.25438367E-07    0.10000000E+01
+  10- 6 to 10- 5         2    0.21601522E-11    0.10000000E+01
   Number of coefficients less than 10^-11 times norm is             0
 
-  Total CPU  time used in SIRIUS :   3.96 seconds
-  Total wall time used in SIRIUS :   4.30 seconds
+  Total CPU  time used in SIRIUS :   1.11 seconds
+  Total wall time used in SIRIUS :   1.12 seconds
 
  
-     Date and time (Darwin) : Thu May 16 10:38:48 2019
-     Host name              : adm-106152.pc.sdu.dk                    
+     Date and time (Linux)  : Fri Apr  3 12:51:05 2020
+     Host name              : localhost.localdomain                   
+
+ NOTE:    1 warnings have been issued.
+ Check output, result, and error files for "WARNING".
 
 
                      .---------------------------------------.
@@ -1493,9 +1376,9 @@ File label for MO orbitals:  16May19   (CNOORB)
                  `------------------------------------------------'
 
 
- ------------------------------------------------------------------------------
-  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
- ------------------------------------------------------------------------------
+ ----------------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, SOPPA and SOPPA-srDFT response property program
+ ----------------------------------------------------------------------------------------
 
 
  -------- OUTPUT FROM RESPONSE INPUT PROCESSING --------
@@ -1527,14 +1410,14 @@ File label for MO orbitals:  16May19   (CNOORB)
 
  Old direct access AO file found, SORTA skipped.
 
- 2-el. integral transformation level 4: Total CPU and WALL times (sec)       0.022       0.023
+ 2-el. integral transformation level 4: Total CPU and WALL times (sec)       0.003       0.003
 
- Sorting integrals to Dirac format: Total CPU and WALL times (sec)       0.002       0.002
+ Sorting integrals to Dirac format: Total CPU and WALL times (sec)       0.000       0.000
 
 
- MCSCF energy         :      -76.122525881651953
- -- inactive part     :      -78.657441839222429
- --   active part     :       -6.608857726854357
+ MCSCF energy         :      -76.105118429239880
+ -- inactive part     :      -78.175728673501155
+ --   active part     :       -7.074377935959340
  -- nuclear repulsion :        9.195432882281551
 
 
@@ -1553,17 +1436,17 @@ File label for MO orbitals:  16May19   (CNOORB)
  Number of C6/C8 properties of this symmetry       0
 
 
- Perturbation symmetry.     KSYMOP:       1
- Perturbation spin symmetry.TRPLET:       T
- Orbital variables.         KZWOPT:     173
- Configuration variables.   KZCONF:      36
- Total number of variables. KZVAR :     209
+ Perturbation symmetry.     KSYMOP:           1
+ Perturbation spin symmetry.TRPLET:           T
+ Orbital variables.         KZWOPT:          89
+ Configuration variables.   KZCONF:          36
+ Total number of variables. KZVAR :         125
 
  --- In RSPPP:
  THCPP, MAXRM          1.00D-03       600
  KSYMOP,NGPPP(KSYMOP)         1         3
- LWRK , LWRK1          63996464  62914664
-  KEXCNV,NSIM,LWRK2            2           2     1084975
+ LWRK , LWRK1          63998204  62916404
+  KEXCNV,NSIM,LWRK2            2           2     1083487
 
 
 
@@ -1571,128 +1454,170 @@ File label for MO orbitals:  16May19   (CNOORB)
 
  Operator symmetry = 1  ( A  ); triplet =   T
 
-           0  START configuration VECTORS USING LOWEST EIGENVALUES OF PHP
-           2  START orbital VECTORS
+           2  START configuration VECTORS USING LOWEST EIGENVALUES OF PHP
+           0  START orbital VECTORS
 
  ** RSPCTL MICROITERATION NUMBER    1
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    2.46171D-01  5.56D-02  2.40D-01  7.10D-01    4.40062D-01
-         2    2.26307D-01  5.64D-02  2.19D-01  7.10D-01    4.76771D-01
+         1    6.19700D-01  1.14D-14  6.20D-01  1.00D+00    8.44202D-01
+         2    6.14921D-01  1.23D-14  6.15D-01  1.00D+00    8.76164D-01
 
  ** RSPCTL MICROITERATION NUMBER    2
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    1.17949D-01  6.68D-02  9.72D-02  1.59D+00    3.49392D-01
-         2    8.57251D-02  5.70D-02  6.41D-02  1.61D+00    3.91362D-01
+         1    1.48372D-01  6.11D-02  1.35D-01  9.30D-01    5.50130D-01
+         2    1.97583D-01  4.29D-02  1.93D-01  9.60D-01    5.80879D-01
 
  ** RSPCTL MICROITERATION NUMBER    3
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    9.03252D-02  7.24D-02  5.40D-02  1.83D+00    3.36760D-01
-         2    6.83700D-02  6.09D-02  3.10D-02  1.82D+00    3.86100D-01
+         1    9.31394D-02  6.87D-02  6.29D-02  1.08D+00    5.34212D-01
+         2    1.42036D-01  6.73D-02  1.25D-01  1.10D+00    5.48904D-01
 
  ** RSPCTL MICROITERATION NUMBER    4
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    1.46333D-01  7.17D-03  1.46D-01  1.85D+00    3.24336D-01
-         2    1.02336D-01  9.36D-03  1.02D-01  1.81D+00    3.78746D-01
+         1    1.00030D-01  8.41D-02  5.41D-02  1.08D+00    5.27907D-01
+         2    1.16138D-01  1.05D-01  4.96D-02  1.07D+00    5.36639D-01
 
  ** RSPCTL MICROITERATION NUMBER    5
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    6.28281D-02  1.62D-02  6.07D-02  1.53D+00    2.97167D-01
-         2    4.71161D-02  1.45D-02  4.48D-02  1.63D+00    3.67286D-01
+         1    1.55708D-01  7.20D-03  1.56D-01  9.96D-01    4.73555D-01
+         2    4.40545D-02  6.31D-03  4.36D-02  1.09D+00    5.31598D-01
 
  ** RSPCTL MICROITERATION NUMBER    6
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    2.97991D-02  1.68D-02  2.46D-02  1.56D+00    2.94539D-01
-         2    2.68803D-02  1.77D-02  2.02D-02  1.63D+00    3.65676D-01
+         1    5.91646D-02  2.61D-02  5.31D-02  9.62D-01    4.58936D-01
+         2    4.12936D-02  2.93D-02  2.91D-02  1.05D+00    5.29287D-01
 
  ** RSPCTL MICROITERATION NUMBER    7
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    2.20045D-02  1.84D-02  1.20D-02  1.59D+00    2.94019D-01
-         2    2.28761D-02  1.88D-02  1.31D-02  1.66D+00    3.65183D-01
+         1    1.04476D-01  2.47D-02  1.02D-01  9.95D-01    4.51460D-01
+         2    1.08368D-01  8.87D-03  1.08D-01  1.01D+00    5.24679D-01
 
  ** RSPCTL MICROITERATION NUMBER    8
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    2.24792D-02  1.07D-02  1.98D-02  1.59D+00    2.93745D-01
-         2    1.89802D-02  8.16D-03  1.71D-02  1.66D+00    3.65003D-01
+         1    2.07699D-01  3.08D-02  2.05D-01  1.10D+00    3.99863D-01
+         2    1.24203D-01  1.23D-02  1.24D-01  9.60D-01    4.71759D-01
 
  ** RSPCTL MICROITERATION NUMBER    9
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    1.41708D-02  1.15D-02  8.27D-03  1.60D+00    2.93524D-01
-         2    9.65107D-03  6.96D-03  6.68D-03  1.67D+00    3.64834D-01
+         1    6.35601D-02  1.41D-02  6.20D-02  9.43D-01    3.72291D-01
+         2    3.33880D-02  1.79D-02  2.82D-02  9.63D-01    4.64201D-01
 
  ** RSPCTL MICROITERATION NUMBER   10
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    8.97825D-03  2.51D-03  8.62D-03  1.60D+00    2.93475D-01
-         2    6.29348D-03  8.16D-04  6.24D-03  1.68D+00    3.64799D-01
+         1    2.93477D-02  8.50D-03  2.81D-02  9.61D-01    3.68915D-01
+         2    2.33330D-02  2.02D-02  1.16D-02  9.76D-01    4.63573D-01
 
  ** RSPCTL MICROITERATION NUMBER   11
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    5.39701D-03  3.21D-03  4.34D-03  1.61D+00    2.93404D-01
-         2    4.18078D-03  1.01D-03  4.06D-03  1.68D+00    3.64747D-01
+         1    1.08376D-02  2.18D-03  1.06D-02  9.85D-01    3.68281D-01
+         2    8.04405D-03  5.52D-03  5.85D-03  9.83D-01    4.63260D-01
 
  ** RSPCTL MICROITERATION NUMBER   12
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    4.04319D-03  3.36D-03  2.25D-03  1.61D+00    2.93386D-01
-         2    2.44333D-03  1.03D-03  2.22D-03  1.69D+00    3.64727D-01
+         1    4.85565D-03  1.83D-03  4.50D-03  9.91D-01    3.68205D-01
+         2    6.03457D-03  5.63D-03  2.18D-03  9.91D-01    4.63224D-01
 
  ** RSPCTL MICROITERATION NUMBER   13
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    2.26394D-03  4.67D-04  2.22D-03  1.61D+00    2.93379D-01
-         2    1.65067D-03  7.88D-04  1.45D-03  1.69D+00    3.64720D-01
+         1    3.73291D-03  1.10D-03  3.57D-03  9.90D-01    3.68184D-01
+         2    2.17059D-03  7.70D-04  2.03D-03  9.92D-01    4.63211D-01
 
  ** RSPCTL MICROITERATION NUMBER   14
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    1.48513D-03  4.97D-04  1.40D-03  1.61D+00    2.93373D-01
-         2    1.65291D-03  7.82D-04  1.46D-03  1.69D+00    3.64720D-01
+         1    1.83703D-03  1.12D-03  1.46D-03  9.87D-01    3.68175D-01
+         2    2.07802D-03  8.22D-04  1.91D-03  9.92D-01    4.63205D-01
+
+ ** RSPCTL MICROITERATION NUMBER   15
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.21255D-03  1.13D-03  4.44D-04  9.84D-01    3.68173D-01
+         2    4.68045D-03  1.08D-03  4.55D-03  9.91D-01    4.63182D-01
+
+ ** RSPCTL MICROITERATION NUMBER   16
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    4.30836D-04  2.48D-04  3.53D-04  9.84D-01    3.68173D-01
+         2    9.70626D-03  1.06D-03  9.65D-03  9.95D-01    4.63085D-01
+
+ ** RSPCTL MICROITERATION NUMBER   17
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    4.21736D-04  2.49D-04  3.41D-04  9.84D-01    3.68173D-01
+         2    5.12424D-03  1.22D-03  4.98D-03  9.93D-01    4.63002D-01
+
+ ** RSPCTL MICROITERATION NUMBER   18
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    3.94370D-04  2.49D-04  3.06D-04  9.84D-01    3.68173D-01
+         2    1.86726D-03  1.28D-03  1.36D-03  9.89D-01    4.62988D-01
+
+ ** RSPCTL MICROITERATION NUMBER   19
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    4.30531D-04  2.48D-04  3.52D-04  9.84D-01    3.68173D-01
+         2    1.33535D-03  1.27D-03  4.15D-04  9.88D-01    4.62987D-01
+
+ ** RSPCTL MICROITERATION NUMBER   20
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    4.28683D-04  2.45D-04  3.52D-04  9.84D-01    3.68173D-01
+         2    6.14070D-04  4.44D-04  4.24D-04  9.88D-01    4.62986D-01
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
- (dimension of paired reduced space:   54)
- RSP solution vector no.    1; norm of residual   9.25D-04
- RSP solution vector no.    2; norm of residual   9.78D-04
+ (dimension of paired reduced space:   72)
+ RSP solution vector no.    1; norm of residual   4.36D-04
+ RSP solution vector no.    2; norm of residual   6.22D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @ Triplet transition operator label: XDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT: -1.76072423E-02 *ENERGY(eV):   7.9830868    
-@ STATE NO:    2 *TRANSITION MOMENT: -3.90588649E-02 *ENERGY(eV):   9.9245402    
+@ STATE NO:    1 *TRANSITION MOMENT:  2.76209314E-02 *ENERGY(eV):   10.018485    
+@ STATE NO:    2 *TRANSITION MOMENT:  0.17441803     *ENERGY(eV):   12.598497    
 
 @ Triplet transition operator label: YDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT: -0.58208551     *ENERGY(eV):   7.9830868    
-@ STATE NO:    2 *TRANSITION MOMENT: -5.58301222E-02 *ENERGY(eV):   9.9245402    
+@ STATE NO:    1 *TRANSITION MOMENT:  0.25608356     *ENERGY(eV):   10.018485    
+@ STATE NO:    2 *TRANSITION MOMENT: -5.08167437E-02 *ENERGY(eV):   12.598497    
 
 @ Triplet transition operator label: ZDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT:  2.02192022E-02 *ENERGY(eV):   7.9830868    
-@ STATE NO:    2 *TRANSITION MOMENT:  4.28689120E-02 *ENERGY(eV):   9.9245402    
+@ STATE NO:    1 *TRANSITION MOMENT: -0.10047456     *ENERGY(eV):   10.018485    
+@ STATE NO:    2 *TRANSITION MOMENT: -0.67123470     *ENERGY(eV):   12.598497    
 
 
  **************************************************************************************
@@ -1704,19 +1629,19 @@ File label for MO orbitals:  16May19   (CNOORB)
  @ Excited state no:    1 in symmetry 1  ( A  ) - triplet excitation
  -------------------------------------------------------------------
 
-@ Excitation energy :  0.29337305     au
-@                       7.9830868     eV;   64387.942     cm-1;   770.25083     kJ / mol
+@ Excitation energy :  0.36817257     au
+@                       10.018485     eV;   80804.539     cm-1;   966.63694     kJ / mol
 
-@ Total energy :       -75.829153     au
+@ Total energy :       -75.736946     au
 
-@ Operator label: XDIPLEN ; Transition moment : -1.76072423E-02 au
-@ Oscillator strength (LENGTH)   :  6.06333607E-05  (X-polarization)
+@ Operator label: XDIPLEN ; Transition moment :  2.76209314E-02 au
+@ Oscillator strength (LENGTH)   :  1.87256460E-04  (X-polarization)
 
-@ Operator label: YDIPLEN ; Transition moment : -0.58208551     au
-@ Oscillator strength (LENGTH)   :  6.62677967E-02  (Y-polarization)
+@ Operator label: YDIPLEN ; Transition moment :  0.25608356     au
+@ Oscillator strength (LENGTH)   :  1.60962075E-02  (Y-polarization)
 
-@ Operator label: ZDIPLEN ; Transition moment :  2.02192022E-02 au
-@ Oscillator strength (LENGTH)   :  7.99570914E-05  (Z-polarization)
+@ Operator label: ZDIPLEN ; Transition moment : -0.10047456     au
+@ Oscillator strength (LENGTH)   :  2.47783498E-03  (Z-polarization)
 
  Eigenvector for state no.  1
 
@@ -1725,99 +1650,107 @@ File label for MO orbitals:  16May19   (CNOORB)
 
       Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
       ----------    -----  -----      --------------      --------------      --------------      --------------
-          36         2(1)   8(1)        0.0895911573       -0.0011763359        0.1267010297       -0.0016635901
-          59         3(1)   8(1)        0.0801054785       -0.0011117453        0.1132862541       -0.0015722453
-         105         5(1)   8(1)       -0.4969079490        0.0045112948       -0.6999521647        0.0063546791
-         106         5(1)   9(1)       -0.2164621379        0.0003482900       -0.3049118902        0.0004906066
-         107         5(1)  10(1)        0.0612607169        0.0007097239        0.0862927862        0.0009997280
-         108         5(1)  11(1)       -0.2301833641        0.0094081824       -0.3242398200        0.0132525101
-         109         5(1)  12(1)        0.0634501015       -0.0021036760        0.0893767869       -0.0029632703
-         111         5(1)  14(1)       -0.0888872548        0.0017631709       -0.1252079515        0.0024836296
-         112         5(1)  15(1)        0.1396871850       -0.0019673557        0.1967655130       -0.0027712474
-         128         6(1)   8(1)       -1.1205565396       -0.0212387978       -0.1397356263       -0.0026485203
+           9         3(1)   4(1)        0.5972584220        0.0874511823        0.0822579678        0.0120442949
+          11         3(1)   6(1)        0.2405711500       -0.0072848122        0.3384786019       -0.0102495792
+          12         3(1)   7(1)        0.4708290968       -0.0158035109        0.6625454312       -0.0222385235
+          35         3(1)   8(1)        0.4466638623       -0.0066208717        0.6316780919       -0.0093633266
+          36         3(1)   9(1)       -0.0617369529        0.0005302541       -0.0873092361        0.0007498926
+          39         3(1)  12(1)       -0.0590349215        0.0081201736       -0.0834879867        0.0114836596
+          46         4(1)   8(1)        0.0486696657       -0.0005061690        0.0685021277       -0.0007124284
 
-      163 elements with absolute value ≤ 7.00D-02 not printed.
+       82 elements with absolute value ≤ 6.63D-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
       Index(conf)                         Z operator          Y operator
       ----------                      --------------      --------------
-           2                           -0.0789060793       -0.0009023943
-           4                            0.2632927003       -0.0037846627
-           7                            0.0789060793        0.0009023943
-          10                           -0.0272087799       -0.0016293762
-          19                           -0.2632927003        0.0037846627
-          20                            0.0272087799        0.0016293762
+           2                           -0.0142665353        0.0001010139
+           3                            0.0272987520       -0.0003024498
+           4                           -0.0103819601        0.0002295673
+           5                            0.0534126235       -0.0005057413
+           7                            0.0142665353       -0.0001010139
+          13                           -0.0272987520        0.0003024498
+          19                            0.0103819601       -0.0002295673
+          25                           -0.0534126235        0.0005057413
 
-       30 elements with absolute value ≤ 2.63D-02 are not printed.
+       28 elements with absolute value ≤ 5.34D-03 are not printed.
 
  The numbers in parenthesis give the configuration symmetry.
 
 
-  Printout of coefficients in interval   0.1240E+00 to  0.3922E+00
+  Printout of coefficients in interval   0.2812E-01 to  0.8891E-01
   ==============================================================
 
- Coefficient of determinant         4 is      0.26329270  2.63292700E-01
+ Coefficient of determinant         5 is      0.05341262  5.34126235E-02
+ alpha-string:     2     4
+  beta-string:  1  2
+
+ Coefficient of determinant        25 is     -0.05341262 -5.34126235E-02
+ alpha-string:  1  2
+  beta-string:     2     4
+
+
+  Printout of coefficients in interval   0.8891E-02 to  0.2812E-01
+  ==============================================================
+
+ Coefficient of determinant         2 is     -0.01426654 -1.42665353E-02
+ alpha-string:  1     3
+  beta-string:  1  2
+
+ Coefficient of determinant         3 is      0.02729875  2.72987520E-02
+ alpha-string:     2  3
+  beta-string:  1  2
+
+ Coefficient of determinant         4 is     -0.01038196 -1.03819601E-02
  alpha-string:  1        4
   beta-string:  1  2
 
- Coefficient of determinant        19 is     -0.26329270 -2.63292700E-01
+ Coefficient of determinant         7 is      0.01426654  1.42665353E-02
+ alpha-string:  1  2
+  beta-string:  1     3
+
+ Coefficient of determinant        13 is     -0.02729875 -2.72987520E-02
+ alpha-string:  1  2
+  beta-string:     2  3
+
+ Coefficient of determinant        19 is      0.01038196  1.03819601E-02
  alpha-string:  1  2
   beta-string:  1        4
 
 
-  Printout of coefficients in interval   0.3922E-01 to  0.1240E+00
+  Printout of coefficients in interval   0.5341E-02 to  0.8891E-02
   ==============================================================
+   ( no coefficients )
 
- Coefficient of determinant         2 is     -0.07890608 -7.89060793E-02
- alpha-string:  1     3
-  beta-string:  1  2
-
- Coefficient of determinant         7 is      0.07890608  7.89060793E-02
- alpha-string:  1  2
-  beta-string:  1     3
-
-
-  Printout of coefficients in interval   0.2633E-01 to  0.3922E-01
-  ==============================================================
-
- Coefficient of determinant        10 is     -0.02720878 -2.72087799E-02
- alpha-string:  1        4
-  beta-string:  1     3
-
- Coefficient of determinant        20 is      0.02720878  2.72087799E-02
- alpha-string:  1     3
-  beta-string:  1        4
-
- Norm of printed part of CI vector ..      0.15257907
+ Norm of printed part of CI vector ..      0.00781890
 
   Magnitude of CI coefficients
   ============================
 
-  ( Ranges are relative to norm of vector :  3.92E-01 )
+  ( Ranges are relative to norm of vector :  8.89E-02 )
 
-  10- 1 to 10- 0         4    0.15109843E+00    0.15109843E+00
-  10- 2 to 10- 1        16    0.26493226E-02    0.15374775E+00
-  10- 3 to 10- 2        10    0.54171476E-04    0.15380192E+00
+  10- 1 to 10- 0         8    0.78188987E-02    0.78188987E-02
+  10- 2 to 10- 1        14    0.84886314E-04    0.79037850E-02
+  10- 3 to 10- 2         8    0.14267354E-05    0.79052117E-02
   Number of coefficients less than 10^-11 times norm is             6
 
 
  @ Excited state no:    2 in symmetry 1  ( A  ) - triplet excitation
  -------------------------------------------------------------------
 
-@ Excitation energy :  0.36472015     au
-@                       9.9245402     eV;   80046.820     cm-1;   957.57261     kJ / mol
+@ Excitation energy :  0.46298624     au
+@                       12.598497     eV;   101613.73     cm-1;   1215.5702     kJ / mol
 
-@ Total energy :       -75.757806     au
+@ Total energy :       -75.642132     au
 
-@ Operator label: XDIPLEN ; Transition moment : -3.90588649E-02 au
-@ Oscillator strength (LENGTH)   :  3.70943476E-04  (X-polarization)
+@ Operator label: XDIPLEN ; Transition moment :  0.17441803     au
+@ Oscillator strength (LENGTH)   :  9.38986988E-03  (X-polarization)
 
-@ Operator label: YDIPLEN ; Transition moment : -5.58301222E-02 au
-@ Oscillator strength (LENGTH)   :  7.57889093E-04  (Y-polarization)
+@ Operator label: YDIPLEN ; Transition moment : -5.08167437E-02 au
+@ Oscillator strength (LENGTH)   :  7.97059042E-04  (Y-polarization)
 
-@ Operator label: ZDIPLEN ; Transition moment :  4.28689120E-02 au
-@ Oscillator strength (LENGTH)   :  4.46841421E-04  (Z-polarization)
+@ Operator label: ZDIPLEN ; Transition moment : -0.67123470     au
+@ Oscillator strength (LENGTH)   :  0.13906749      (Z-polarization)
 
  Eigenvector for state no.  2
 
@@ -1826,81 +1759,102 @@ File label for MO orbitals:  16May19   (CNOORB)
 
       Index(r,s)      r      s        (r s) operator      (s r) operator      (r s) scaled        (s r) scaled
       ----------    -----  -----      --------------      --------------      --------------      --------------
-          36         2(1)   8(1)        0.0555597607       -0.0006862037        0.0785733672       -0.0009704386
-          37         2(1)   9(1)       -0.0970787749       -0.0000302611       -0.1372901200       -0.0000427956
-          59         3(1)   8(1)        0.0610329018       -0.0003093038        0.0863135575       -0.0004374216
-          60         3(1)   9(1)       -0.0799075794        0.0003220901       -0.1130063825        0.0004555042
-         105         5(1)   8(1)       -0.2898858848        0.0017236471       -0.4083377071        0.0024279558
-         106         5(1)   9(1)        0.5493902506       -0.0004877149        0.7738795404       -0.0006870028
-         108         5(1)  11(1)       -0.1332461002        0.0036734280       -0.1876925022        0.0051744470
-         109         5(1)  12(1)       -0.0578050813       -0.0001366495       -0.0814251249       -0.0001924865
-         110         5(1)  13(1)       -0.0975372085        0.0023818555       -0.1373924091        0.0033551182
-         112         5(1)  15(1)       -0.0824474582       -0.0001328813       -0.1161367553       -0.0001871787
-         128         6(1)   8(1)       -0.6252726842       -0.0164348361       -0.0779727458       -0.0020494567
-         129         6(1)   9(1)        1.2843550208        0.0078105284        0.1601616223        0.0009739884
+           7         2(1)   6(1)       -0.1320844793        0.0023911239       -0.1858401137        0.0033642615
+           8         2(1)   7(1)       -0.1617350433       -0.0021609729       -0.2275917413       -0.0030408969
+          10         3(1)   5(1)        0.3790825062        0.0524807904        0.0552743530        0.0076522701
+          11         3(1)   6(1)        0.3162295070       -0.0048678601        0.4449283358       -0.0068489779
+          12         3(1)   7(1)       -0.2179160125        0.0042045636       -0.3066489719        0.0059166148
+          24         2(1)   8(1)       -0.1829098777        0.0014517603       -0.2586736297        0.0020530991
+          25         2(1)   9(1)        0.0498223176        0.0000449332        0.0704593972        0.0000635451
+          35         3(1)   8(1)       -0.0983499516        0.0010391868       -0.1390878355        0.0014696320
+          36         3(1)   9(1)       -0.2239461093        0.0006400821       -0.3167076250        0.0009052127
+          37         3(1)  10(1)        0.0939342262       -0.0000928189        0.1328430567       -0.0001312657
+          45         3(1)  18(1)        0.0345827536       -0.0008433682        0.0489073992       -0.0011927028
+          46         4(1)   8(1)        0.2634176903       -0.0019375275        0.3707580895       -0.0027270529
+          47         4(1)   9(1)       -0.0575940315        0.0003942341       -0.0810630944        0.0005548810
+          58         5(1)   9(1)       -0.0535332164        0.0007546953       -0.0753039253        0.0010616123
 
-      161 elements with absolute value ≤ 7.74D-02 not printed.
+       75 elements with absolute value ≤ 4.45D-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
       Index(conf)                         Z operator          Y operator
       ----------                      --------------      --------------
-           4                           -0.1730582565       -0.0004283806
-          19                            0.1730582565        0.0004283806
+           2                           -0.1077982290        0.0007779065
+           3                            0.1768566404       -0.0009629914
+           5                            0.2799173072        0.0000271450
+           7                            0.1077982290       -0.0007779065
+          13                           -0.1768566404        0.0009629914
+          25                           -0.2799173072       -0.0000271450
 
-       34 elements with absolute value ≤ 1.73D-02 are not printed.
+       30 elements with absolute value ≤ 2.80D-02 are not printed.
 
  The numbers in parenthesis give the configuration symmetry.
 
 
-  Printout of coefficients in interval   0.7822E-01 to  0.2474E+00
+  Printout of coefficients in interval   0.1566E+00 to  0.4951E+00
   ==============================================================
 
- Coefficient of determinant         4 is     -0.17305826 -1.73058257E-01
- alpha-string:  1        4
+ Coefficient of determinant         3 is      0.17685664  1.76856640E-01
+ alpha-string:     2  3
   beta-string:  1  2
 
- Coefficient of determinant        19 is      0.17305826  1.73058257E-01
+ Coefficient of determinant         5 is      0.27991731  2.79917307E-01
+ alpha-string:     2     4
+  beta-string:  1  2
+
+ Coefficient of determinant        13 is     -0.17685664 -1.76856640E-01
  alpha-string:  1  2
-  beta-string:  1        4
+  beta-string:     2  3
+
+ Coefficient of determinant        25 is     -0.27991731 -2.79917307E-01
+ alpha-string:  1  2
+  beta-string:     2     4
 
 
-  Printout of coefficients in interval   0.2474E-01 to  0.7822E-01
+  Printout of coefficients in interval   0.4951E-01 to  0.1566E+00
+  ==============================================================
+
+ Coefficient of determinant         2 is     -0.10779823 -1.07798229E-01
+ alpha-string:  1     3
+  beta-string:  1  2
+
+ Coefficient of determinant         7 is      0.10779823  1.07798229E-01
+ alpha-string:  1  2
+  beta-string:  1     3
+
+
+  Printout of coefficients in interval   0.2799E-01 to  0.4951E-01
   ==============================================================
    ( no coefficients )
 
-
-  Printout of coefficients in interval   0.1731E-01 to  0.2474E-01
-  ==============================================================
-   ( no coefficients )
-
- Norm of printed part of CI vector ..      0.05989832
+ Norm of printed part of CI vector ..      0.24250486
 
   Magnitude of CI coefficients
   ============================
 
-  ( Ranges are relative to norm of vector :  2.47E-01 )
+  ( Ranges are relative to norm of vector :  4.95E-01 )
 
-  10- 1 to 10- 0         2    0.59898320E-01    0.59898320E-01
-  10- 2 to 10- 1        12    0.12816632E-02    0.61179983E-01
-  10- 3 to 10- 2        14    0.74081689E-05    0.61187392E-01
-  10- 4 to 10- 3         2    0.12948847E-08    0.61187393E-01
+  10- 1 to 10- 0         6    0.24250486E+00    0.24250486E+00
+  10- 2 to 10- 1        12    0.25516642E-02    0.24505652E+00
+  10- 3 to 10- 2        10    0.59885034E-04    0.24511641E+00
+  10- 4 to 10- 3         2    0.23430902E-06    0.24511664E+00
   Number of coefficients less than 10^-11 times norm is             6
 
 
- Time used in polarization propagator calculation is      0.11 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is      0.12 CPU seconds for symmetry 1
 
-  Total CPU  time used in RESPONSE:   0.14 seconds
-  Total wall time used in RESPONSE:   0.18 seconds
+  Total CPU  time used in RESPONSE:   0.13 seconds
+  Total wall time used in RESPONSE:   0.13 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
-  Total CPU  time used in DALTON:   4.16 seconds
-  Total wall time used in DALTON:   4.61 seconds
+  Total CPU  time used in DALTON:   1.25 seconds
+  Total wall time used in DALTON:   1.26 seconds
 
  
-     Date and time (Darwin) : Thu May 16 10:38:48 2019
-     Host name              : adm-106152.pc.sdu.dk                    
+     Date and time (Linux)  : Fri Apr  3 12:51:05 2020
+     Host name              : localhost.localdomain                   

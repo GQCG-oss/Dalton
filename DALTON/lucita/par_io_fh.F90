@@ -20,12 +20,6 @@ module file_io_model
 #include "mpif.h"
 #endif
 
-#if defined (VAR_INT64)
-#define my_MPI_INTEGER MPI_INTEGER8
-#else
-#define my_MPI_INTEGER MPI_INTEGER4
-#endif
-
   public setup_file_io_model
   public close_file_io_model
   public set_file_io_offset
@@ -34,8 +28,9 @@ module file_io_model
 
   save
 
+  integer(kind=MPI_INTEGER_KIND)         :: my_MPI_REAL8 = MPI_REAL8
   integer(kind=MPI_INTEGER_KIND)         :: istat(MPI_STATUS_SIZE)
-  integer(kind=MPI_INTEGER_KIND)         :: ierr
+  integer(kind=MPI_INTEGER_KIND)         :: ierr_mpi
   integer, parameter                     :: flabel_length = 14
 
 contains 
@@ -93,15 +88,15 @@ contains
       call int2char_converter(group_id,gstring) 
 
 !     file info object - provide hints to the MPI implementation
-      call mpi_info_create(file_info_obj,ierr)
+      call mpi_info_create(file_info_obj,ierr_mpi)
 
 !     1. number of processes sharing the following MPI-I/O files
       write(file_info_groupsz,'(i4)') group_io_size
-      call mpi_info_set(file_info_obj,"nb_proc",file_info_groupsz,ierr)
+      call mpi_info_set(file_info_obj,"nb_proc",file_info_groupsz,ierr_mpi)
 !
 #ifdef VAR_PFS
 !     2. extra information on IBMs GPFS to enhance I/O performance
-      call mpi_info_set(file_info_obj,"IBM_largeblock_io","true",ierr)
+      call mpi_info_set(file_info_obj,"IBM_largeblock_io","true",ierr_mpi)
 #endif
  
       do i = 1, nr_files
@@ -118,15 +113,15 @@ contains
         comm_iogrp_mpi = communicator_io_group
         call mpi_file_open(comm_iogrp_mpi,flabel(1:flabel_length),                     &
                            MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE, &
-                           file_info_obj,fh_array_mpi,ierr)
+                           file_info_obj,fh_array_mpi,ierr_mpi)
         fh_array(i) = fh_array_mpi
 !       step d. set fileview
-        call mpi_file_set_view(fh_array_mpi,displacement,MPI_REAL8,MPI_REAL8,           &
-                               "native",file_info_obj,ierr)
+        call mpi_file_set_view(fh_array_mpi,displacement,my_MPI_REAL8,my_MPI_REAL8,           &
+                               "native",file_info_obj,ierr_mpi)
       end do
 
 !     free info object
-      call mpi_info_free(file_info_obj,ierr)
+      call mpi_info_free(file_info_obj,ierr_mpi)
 
   end subroutine setup_file_io_model
 !*******************************************************************************
@@ -149,7 +144,7 @@ contains
 
       do i = 1, number_of_files
         fh_array_mpi = fh_array(i+fh_offset)
-        call mpi_file_close(fh_array_mpi,ierr)
+        call mpi_file_close(fh_array_mpi,ierr_mpi)
       end do
      
   end subroutine close_file_io_model

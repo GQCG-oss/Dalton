@@ -101,7 +101,8 @@ C     integer, save :: numprocs
       integer :: numprocs
       logical :: loadbal_dyn
       double precision ::  timeini, timefin
-      integer(mpi_integer_kind) :: LTRTOT, lrestot, latot
+      integer(mpi_integer_kind) :: LTRTOT_mpi, lrestot, latot
+      integer(mpi_integer_kind) :: my_MPI_REAL8 = MPI_REAL8
       numprocs = nodtot + 1
 C
 C  When to do dynamic load_balancing..?
@@ -198,7 +199,7 @@ C Should probably use non-blocking collectives, where implemented
 !     &              MPI_COMM_WORLD, ierr_mpi)
 !      ELSE
       count_mpi = LCMO
-      CALL MPI_BCAST(WORK(KCMO), count_mpi, MPI_REAL8, SOP_MASTER,
+      CALL MPI_BCAST(WORK(KCMO), count_mpi, my_MPI_REAL8, SOP_MASTER,
      &               SOPPA_COMM_ACTIVE, ierr_mpi)
 
 !      ENDIF
@@ -477,8 +478,8 @@ C---------------------------
 C Communicate trial-vectors
 C---------------------------
 C Rememember that the trial-vectors are contigous in memory
-         LTRTOT = LTR1E + LTR1D + LTR2E + LTR2D
-         CALL MPI_BCAST(WORK(KTR1E), LTRTOT, MPI_REAL8,
+         LTRTOT_mpi = LTR1E + LTR1D + LTR2E + LTR2D
+         CALL MPI_BCAST(WORK(KTR1E), LTRTOT_mpi, my_MPI_REAL8,
      &                  sop_master, SOPPA_COMM_ACTIVE, ierr_mpi)
 C Note for future adjustment:
 C It may be worthwile using non-blocking communication here
@@ -918,12 +919,12 @@ C
 C           Fock-matrix
             count_mpi = lfock
             call mpi_reduce( mpi_in_place, work(kfock), count_mpi,
-     &                       MPI_REAL8, MPI_SUM, sop_master,
+     &                       my_MPI_REAL8, MPI_SUM, sop_master,
      &                       soppa_comm_active, ierr_mpi)
 C
 C           Result-vectors
             call mpi_reduce( mpi_in_place, work(kres1e), lrestot,
-     &                       MPI_REAL8, MPI_SUM, sop_master,
+     &                       my_MPI_REAL8, MPI_SUM, sop_master,
      &                       soppa_comm_active, ierr_mpi)
 C
             if (singles_second) then
@@ -932,7 +933,7 @@ C           Aij / Aab -- only calculated in first pass
                if ( inewtr .eq. 1 ) then
 C               write(lupri,*) 'Aij'
                   call mpi_reduce ( mpi_in_place, work(kaij), latot,
-     &                              MPI_REAL8, MPI_SUM, sop_master,
+     &                              my_MPI_REAL8, MPI_SUM, sop_master,
      &                              soppa_comm_active, ierr_mpi)
                end if
             end if
@@ -942,12 +943,12 @@ C
 C           Fock-matrix
             count_mpi = lfock
             call mpi_reduce( work(kfock), work(kfock), count_mpi,
-     &                       MPI_REAL8, MPI_SUM, sop_master,
+     &                       my_MPI_REAL8, MPI_SUM, sop_master,
      &                       soppa_comm_active, ierr_mpi)
 C
 C           Result-vectors
             call mpi_reduce( work(kres1e), work(kres1e), lrestot,
-     &                       MPI_REAL8, MPI_SUM, sop_master,
+     &                       my_MPI_REAL8, MPI_SUM, sop_master,
      &                       soppa_comm_active, ierr_mpi)
 C
             if (singles_second) then
@@ -955,7 +956,7 @@ C
 C              Aij / Aab
                if ( inewtr .eq. 1 ) then
                   call mpi_reduce ( work(kaij), work(kaij), latot,
-     &                              MPI_REAL8, MPI_SUM, sop_master,
+     &                              my_MPI_REAL8, MPI_SUM, sop_master,
      &                              soppa_comm_active, ierr_mpi)
                endif
             endif
@@ -1072,13 +1073,13 @@ C-----------------------------------------------------------
       IF ( CALC_DENSAI ) THEN
          count_mpi = LDENSAI
          IF (MYNUM.EQ.0) THEN
-            CALL MPI_REDUCE( MPI_IN_PLACE, DENSAI, count_mpi, MPI_REAL8,
-     &                       MPI_SUM, sop_master, SOPPA_COMM_ACTIVE,
-     &                       ierr_mpi)
+            CALL MPI_REDUCE( MPI_IN_PLACE, DENSAI, count_mpi,
+     &                       my_MPI_REAL8, MPI_SUM, sop_master,
+     &                       SOPPA_COMM_ACTIVE, ierr_mpi)
          ELSE
-            CALL MPI_REDUCE( DENSAI, DENSAI, count_mpi, MPI_REAL8,
-     &                       MPI_SUM, sop_master, SOPPA_COMM_ACTIVE,
-     &                       ierr_mpi)
+            CALL MPI_REDUCE( DENSAI, DENSAI, count_mpi,
+     &                       my_MPI_REAL8, MPI_SUM, sop_master,
+     &                       SOPPA_COMM_ACTIVE, ierr_mpi)
          ENDIF
       ENDIF
 C--------------------------------------
@@ -1091,9 +1092,8 @@ C --------
 C Recieve the timings
             count_mpi = soppa_nint
             call mpi_reduce( mpi_in_place, work(ktiming), count_mpi,
-     &                       MPI_REAL8, MPI_SUM, sop_master,
-     &                       SOPPA_COMM_ACTIVE,
-     &                       ierr_mpi)
+     &                       my_MPI_REAL8, MPI_SUM, sop_master,
+     &                       SOPPA_COMM_ACTIVE, ierr_mpi)
 C
 C Redo the loadbalancing based on the timings and distribute them
             ksorted = kend2
@@ -1114,7 +1114,7 @@ C  ---------
 C  Send the timings
             count_mpi = soppa_nint
             call mpi_reduce( work(ktiming), work(ktiming), count_mpi,
-     &                       MPI_REAL8, MPI_SUM, sop_master,
+     &                       my_MPI_REAL8, MPI_SUM, sop_master,
      &                       SOPPA_COMM_ACTIVE, ierr_mpi)
 C  Recieve the new indices
             count_mpi = maxnumjobs

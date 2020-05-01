@@ -129,7 +129,7 @@ ERROR[3]="SYMMETRY NOT CORRECT"
 # Energies
 CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-7\.98584206.." $log | wc -l`
 CRIT2=`$GREP "\= MP2 second order energy *\: * \-8\.0233735..." $log | wc -l`
-CRIT3=`$GREP "Final MCSCF energy\: * \-8\.0023102077.." $log | wc -l`
+CRIT3=`$GREP "Final MCSCF energy\: * \-8\.002310207" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -158,13 +158,13 @@ CTRL[6]=6
 ERROR[6]="TRANSITION MOMENTS NOT CORRECT"
 
 # Phosphorescence
-CRIT1=`$GREP "Partial rates \(H_SO\)\: X\-polarization * 5\.079[0-9]*(D|E)\-03" $log | wc -l`
-CRIT2=`$GREP "Partial rates \(H_SO\)\: Y\-polarization * 5\.100[0-9]*(D|E)\-03" $log | wc -l`
+CRIT1=`$GREP "Partial rates \(H_SO\)\: X\-polarization * 5\.07[0-9]*(D|E)\-03" $log | wc -l`
+CRIT2=`$GREP "Partial rates \(H_SO\)\: Y\-polarization * 5\.10[0-9]*(D|E)\-03" $log | wc -l`
 CRIT3=`$GREP "Partial rates \(H_SO\)\: Z\-polarization * (0\.0000|\.0000|0\.00000D\+00|0\.00000E\+00|\.00000D\+00|\.00000E\+00|0\.    )" $log | wc -l`
 CRIT4=`$GREP "Total transition * rate * \(H_SO\) * 3\.39[0-9]*(D|E)\-03 s\-1" $log | wc -l`
 CRIT5=`$GREP "Total phosphorescence lifetime \(H_SO\) * 2\.94[0-9]*(D|E)\+02 * s" $log | wc -l`
 CRIT6=`$GREP "Partial rates \(H_SO\)\: X\-polarization * (0\.0000|\.0000|0\.00000D\+00|0\.00000E\+00|\.00000D\+00|\.00000E\+00|0\.    )" $log | wc -l`
-CRIT7=`$GREP "Partial rates \(H_SO\)\: Y\-polarization * 0*\.6778[0-9]" $log | wc -l`
+CRIT7=`$GREP "Partial rates \(H_SO\)\: Y\-polarization * 0*\.677" $log | wc -l`
 CRIT8=`$GREP "Partial rates \(H_SO\)\: Z\-polarization * 4\.08.*(D|E)\-02" $log | wc -l`
 CRIT9=`$GREP "Total transition * rate * \(H_SO\) * 2\.39[0-9]*(D|E)\-01 * s\-1" $log | wc -l`
 CRIT10=`$GREP "Total phosphorescence lifetime \(H_SO\) * 4\.17.*(D|E)\+00 * s" $log | wc -l`

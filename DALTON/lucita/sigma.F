@@ -4275,7 +4275,7 @@ C
       DIMENSION CV(*), HCV(*)
      
       
-      CALL QENTER('SIDE ')
+      CALL QENTER('SIGDEN_CI')
       IDUM = 0
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'SIDE  ')
 *
@@ -4483,7 +4483,7 @@ C             TEST_RHO2S(RHO2,RHO2AA,RHO2AB,RHO2BB,NORB)
       idum = 0
       CALL MEMMAN(IDUM ,IDUM,'FLUSM ',2,'SIDE  ')
 *
-      CALL QEXIT('SIDE ')
+      CALL QEXIT('SIGDEN_CI ')
 *
       RETURN
       END
@@ -4510,17 +4510,18 @@ C             TEST_RHO2S(RHO2,RHO2AA,RHO2AB,RHO2BB,NORB)
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
-      integer, intent(in) :: rhotype
+      integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND)  :: IOFFSET
+      INTEGER(KIND=MPI_OFFSET_KIND)  :: IOFFSET_SCRATCH
+      INTEGER(KIND=MPI_OFFSET_KIND)  :: IOFF_SCR1, IOFF_SCR2
+      integer, intent(in)    :: rhotype
       real(8), intent(inout) :: exps2
-      DIMENSION LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
-      INTEGER IPROCLIST(*), RCCTOS(*)
-      DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
-      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
+      INTEGER   LUCLIST(*), IBLOCKL(*), NPARBLOCK(*), IGROUPLIST(*)
+      INTEGER   IPROCLIST(*), RCCTOS(*)
+      INTEGER   ISCLFAC_GROUP(*), LUHCLIST(*)
       CHARACTER SECTID*12,WALLTID*12,WALLTID2*12
-      LOGICAL WRITE_SB
+      LOGICAL   WRITE_SB
 #endif
 #include "parluci.h"
 *     batches of sigma
@@ -4537,7 +4538,7 @@ C             TEST_RHO2S(RHO2,RHO2AA,RHO2AB,RHO2BB,NORB)
       ISI_CALC_BL = 0
       IBI_MULT_BL = 0
 *
-      CALL QENTER('SIDE2')
+      CALL QENTER('SIGDEN2_CI')
 
       NTEST     = 0000 ! normal print level
 !     NTEST     = 9999 ! debug
@@ -4581,7 +4582,7 @@ C
 C
            IF( ISCLFAC_GROUP( IBLK ) .ne. 0 ) THEN
              CALL MPI_FILE_READ_AT(LUC,IOFFSET_SCRATCH,CB,LENGTH_BLK,
-     &                             MPI_REAL8,my_STATUS,IERR)
+     &                             my_MPI_REAL8,my_STATUS,IERR)
              WRITE(LUWRT,'(A,1X,I12,1X,A,1X,I6,1X,I6)') 'Read-in at',
      &             IOFFSET_SCRATCH,'for block', IBLK, LENGTH_BLK
              CALL WRTMATMN(CB,1,LENGTH_BLK,1,LENGTH_BLK,LUWRT)
@@ -4697,7 +4698,7 @@ C       zero SB
 *            check norm of the block
              IF(LUHCLIST(INT_IOFF1).eq.1) THEN
               CALL MPI_FILE_READ_AT(LUHC,IOFF_SCR1,SB(IOFF),LEN,
-     &                              MPI_REAL8,my_STATUS,IERR)
+     &                              my_MPI_REAL8,my_STATUS,IERR)
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
               WRITE(luwrt,*) 'I transfer from file block ISBLK',
@@ -4790,7 +4791,7 @@ C
 #undef LUCI_DEBUG
 #endif
               CALL MPI_FILE_WRITE_AT(LUHC,IOFF_SCR1,SB(IOFF),LEN,
-     &                               MPI_REAL8,my_STATUS,IERR)
+     &                               my_MPI_REAL8,my_STATUS,IERR)
               ISI_CALC_BL = ISI_CALC_BL + 1
             END IF
 *           keep track of correct offset
@@ -4868,7 +4869,7 @@ C
         END IF
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 *
- 999  CALL QEXIT('SIDE2')
+ 999  CALL QEXIT('SIGDEN2_CI')
       RETURN
       END
 
@@ -5336,7 +5337,8 @@ C
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
+      integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
@@ -5391,7 +5393,7 @@ C
 *. For accessing density matrices through KRHO*
 #include "wrkspc.inc"
 *
-      CALL QENTER('SIDE4')
+      CALL QENTER('SIGDEN4_CI')
       NTEST = 000
       NTEST = MAX(NTEST,IPRNT)
       IF(NTEST.GE.10) THEN
@@ -5576,7 +5578,7 @@ C
 !           WRITE(LUWRT,*) 'CB read in IOFFSET',IOFF_SCR_C1
             xxxreadtime = MPI_WTIME()
             CALL MPI_FILE_READ_AT(LUC,IOFF_SCR_C1,CB(JOFF),
-     &                            LBL,MPI_REAL8,my_STATUS,IERR)
+     &                            LBL,my_MPI_REAL8,my_STATUS,IERR)
 !           CALL WRTMATMN(CB(JOFF),1,LBL,1,LBL,LUWRT)
             xreadtimebi    = xreadtimebi - xxxreadtime + MPI_WTIME()
             IBI_MULT_BL    = IBI_MULT_BL + 1
@@ -5946,7 +5948,7 @@ C
        END IF
       END IF
 C
-      CALL QEXIT('SIDE4')
+      CALL QEXIT('SIGDEN4_CI')
 C
       END
 ***********************************************************************

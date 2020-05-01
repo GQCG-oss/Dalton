@@ -175,24 +175,24 @@ CTRL[7]=1
 ERROR[7]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Polarizabilities
-CRIT1=`$GREP "\@ < e \| AB \| f > * \= * (0| )\.77383.[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ < e \| AB \| f > * \= * 1\.3224..[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "\@ < e \| AB \| f > * \= * \-4\.57800.[0-9][0-9]" $log | wc -l`
-CRIT4=`$GREP "\@ < e \| AB \| f > * \= * 28\.846(0|1)..[0-9][0-9]" $log | wc -l`
-CRIT5=`$GREP "\@ < e \| AB \| f > * \= * \-74\.7685..[0-9][0-9]" $log | wc -l`
-CRIT6=`$GREP "\@ < e \| AB \| f > * \= * \-28\.4742..[0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ < e \| AB \| f > * \= * (0| )\.06137.[0-9][0-9]" $log | wc -l`
-CRIT8=`$GREP "\@ < e \| AB \| f > * \= * \-1\.3001..[0-9][0-9]" $log | wc -l`
-CRIT9=`$GREP "\@ < e \| AB \| f > * \= * \-1\.553219[0-9][0-9]" $log | wc -l`
-CRIT10=`$GREP "\@ < e \| AB \| f > * \= * (\-0|\-)\.79515.[0-9][0-9]" $log | wc -l`
-CRIT11=`$GREP "\@ < e \| AB \| f > * \= * (\-0|\-)\.5373..[0-9][0-9]" $log | wc -l`
-CRIT12=`$GREP "\@ < e \| AB \| f > * \= * \-59\.162...[0-9][0-9]" $log | wc -l`
-CRIT13=`$GREP "\@ < e \| AB \| f > * \= * 6\.625(0|1)..[0-9][0-9]" $log | wc -l`
-CRIT14=`$GREP "\@ < e \| AB \| f > * \= * \-16\.249...[0-9][0-9]" $log | wc -l`
-CRIT15=`$GREP "\@ < e \| AB \| f > * \= * \-40\.26(4|5)...[0-9][0-9]" $log | wc -l`
-CRIT16=`$GREP "\@ < e \| AB \| f > * \= * (0| )\.8507(1|2).[0-9][0-9]" $log | wc -l`
-CRIT17=`$GREP "\@ < e \| AB \| f > * \= * 5\.0103..[0-9][0-9]" $log | wc -l`
-CRIT18=`$GREP "\@ < e \| AB \| f > * \= * \-40\.524...[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ < e \| AB \| f > * \= * 0*\.7738" $log | wc -l`
+CRIT2=`$GREP "\@ < e \| AB \| f > * \= * 1\.322" $log | wc -l`
+CRIT3=`$GREP "\@ < e \| AB \| f > * \= * \-4\.578" $log | wc -l`
+CRIT4=`$GREP "\@ < e \| AB \| f > * \= * 28\.84" $log | wc -l`
+CRIT5=`$GREP "\@ < e \| AB \| f > * \= * \-74\.7" $log | wc -l`
+CRIT6=`$GREP "\@ < e \| AB \| f > * \= * \-28\.47" $log | wc -l`
+CRIT7=`$GREP "\@ < e \| AB \| f > * \= * 0*\.0613" $log | wc -l`
+CRIT8=`$GREP "\@ < e \| AB \| f > * \= * \-1\.300" $log | wc -l`
+CRIT9=`$GREP "\@ < e \| AB \| f > * \= * \-1\.553" $log | wc -l`
+CRIT10=`$GREP "\@ < e \| AB \| f > * \= * \-0*\.795" $log | wc -l`
+CRIT11=`$GREP "\@ < e \| AB \| f > * \= * \-0*\.53[67]" $log | wc -l`
+CRIT12=`$GREP "\@ < e \| AB \| f > * \= * \-59\.1" $log | wc -l`
+CRIT13=`$GREP "\@ < e \| AB \| f > * \= * 6\.62" $log | wc -l`
+CRIT14=`$GREP "\@ < e \| AB \| f > * \= * \-16\.2" $log | wc -l`
+CRIT15=`$GREP "\@ < e \| AB \| f > * \= * \-40\.2" $log | wc -l`
+CRIT16=`$GREP "\@ < e \| AB \| f > * \= * 0*\.850" $log | wc -l`
+CRIT17=`$GREP "\@ < e \| AB \| f > * \= * 5\.01" $log | wc -l`
+CRIT18=`$GREP "\@ < e \| AB \| f > * \= * \-40\.5" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18`

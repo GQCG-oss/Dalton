@@ -1,18 +1,24 @@
 add_library(pelib_interface DALTON/pelib/pelib_interface.F90)
 add_dependencies(dalton pelib_interface)
 set(DALTON_LIBS pelib_interface ${DALTON_LIBS})
-if(ENABLE_64BIT_INTEGERS AND USE_32BIT_MPI_INTERFACE)
-    message(STATUS "PElib is not compatible with 64-bit integer builds using 32-bit integer MPI")
-    message(STATUS "PElib DISABLED")
+if(ENABLE_64BIT_INTEGERS)
+    message(STATUS "PElib is not compatible with 64-bit integer builds")
+    message(WARNING "PElib DISABLED")
     set(ENABLE_PELIB OFF)
 endif()
 if(ENABLE_PELIB)
+    include(GNUInstallDirs)
     add_definitions(-DBUILD_PELIB)
     set(PE_HOST_PROGRAM "DALTON")
     if(ENABLE_GEN1INT)
         set(PE_INTEGRAL_LIBRARY "GEN1INT")
     else()
         message(FATAL_ERROR "PElib requires Gen1Int, use -DENABLE_GEN1INT=ON to enable Gen1Int or -DENABLE_PELIB=OFF to disable PElib")
+    endif()
+    if(ENABLE_64BIT_INTEGERS)
+        set(PE_INTEGER_PRECISION INT64)
+    else()
+        set(PE_INTEGER_PRECISION INT32)
     endif()
     set(PE_INCLUDE_DIRS)
     set(PE_MPIF OFF)
@@ -28,16 +34,15 @@ if(ENABLE_PELIB)
         add_definitions(${HDF5_Fortran_DEFINITIONS})
     endif()
     set(ExternalProjectCMakeArgs
-        -DPARENT_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DPARENT_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-        -DPARENT_INCLUDE_DIR=${PE_INCLUDE_DIRS}
-        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+        -DPARENT_INCLUDE_DIRS=${PE_INCLUDE_DIRS}
+        -DPARENT_MODULE_DIRS=${PROJECT_BINARY_DIR}/modules
         -DINTEGRAL_LIBRARY=${PE_INTEGRAL_LIBRARY}
-        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-        -DENABLE_STATIC_LINKING=${ENABLE_STATIC_LINKING}
+        -DINTEGER_PRECISION=${PE_INTEGER_PRECISION}
         -DENABLE_MPI=${ENABLE_MPI}
-        -DENABLE_MPIF=${PE_MPIF}
+        -DUSE_MPIF=${PE_MPIF}
         -DENABLE_PDE=${ENABLE_PDE}
         -DHOST_PROGRAM=${PE_HOST_PROGRAM}
         )
@@ -46,8 +51,9 @@ if(ENABLE_PELIB)
     if(ENABLE_GEN1INT)
         add_dependencies(pelib gen1int_interface)
     endif()
-    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/external/lib/libpelib.a)
+    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/libPElib.a)
     if(ENABLE_PDE)
         set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${HDF5_Fortran_LIBRARIES})
     endif()
+    include_directories(${PROJECT_BINARY_DIR}/include)
 endif()

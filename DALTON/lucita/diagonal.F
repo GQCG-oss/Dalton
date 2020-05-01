@@ -744,8 +744,9 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
 #include "maxorb.h"
 #include "infpar.h"
 #include "mpif.h"
-      integer(kind=MPI_INTEGER_KIND) my_STATUS(MPI_STATUS_SIZE)
-      INTEGER(KIND=MPI_OFFSET_KIND) IDIA_OFFSET
+      integer(kind=MPI_INTEGER_KIND) :: my_MPI_REAL8 = MPI_REAL8
+      integer(kind=MPI_INTEGER_KIND) :: my_STATUS(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND)  :: IDIA_OFFSET
 #endif
 #include "parluci.h"
 C     REAL * 8  INPROD
@@ -912,7 +913,7 @@ C     REAL * 8  INPROD
           if(luci_nmproc .gt. 1)then
 #ifdef VAR_MPI
             CALL MPI_FILE_WRITE_AT(IDIA,IDIA_OFFSET,DIAG,IDET,
-     &                             MPI_REAL8,my_STATUS,IERR)
+     &                             my_MPI_REAL8,my_STATUS,IERR)
 !           new offset
             IDIA_OFFSET = IDIA_OFFSET + IDET
 #endif

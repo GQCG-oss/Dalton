@@ -425,15 +425,16 @@ The \verb|SIRIUS| code within Dalton can recognize and exploit higher
 symmetries automatically for SCF, MCSCF, and MP2 calculations, and for
 response calculations invoked through the \verb|.RUN RESPONSE| command
 in the general input section: one supplies the keyword \verb|.SUPSYM|
-in the \verb|*ORBITAL INPUT| section.  Automatic detection of higher
+in the \verb|*OPTIMIZATION INPUT| section.  Automatic detection of higher
 symmetry requires that the geometry displays that symmetry to within a
 threshold that can be adjusted (see the manual section on this
 keyword): as noted above this may require care in specifying the
 coordinate input.  Note that calculations run via the \verb|ABACUS|
 code within Dalton cannot utilize higher symmetries, and thus the
-\verb|.SUPSYM| keyword is not compatible with runs in which the
-general input \verb|**PROPERTIES| is used, thereby invoking
-\verb|ABACUS|.
+\verb|.SUPSYM| keyword is not compatible for calculations 
+with open shells (non-singlet spin symmetry) in which
+\verb|ABACUS| is invoked ( for example with \verb|.RUN PROPERTIES|
+and the input section \verb|**PROPERTIES| ).
 
 This by no means exhausts the complexities and issues associated with
 symmetry that may confront a new user when using the Dalton program.

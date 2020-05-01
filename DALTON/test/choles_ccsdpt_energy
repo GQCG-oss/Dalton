@@ -52,8 +52,6 @@ cat > choles_ccsdpt_energy.dal << '%EOF%'
 .DIPLEN
 **WAVE FUNCTION
 .CC
-*ORBITAL
-.NOSUPSYM
 *SCF INPUT
 .THRESH
  1.0D-10
