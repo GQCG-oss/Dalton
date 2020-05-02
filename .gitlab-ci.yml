@@ -8,7 +8,7 @@ before_script:
   - dnf upgrade -y -q
   - dnf install -y -q gcc gcc-c++ gcc-gfortran openblas openblas-devel lapack lapack-devel
                       mpich mpich-devel openmpi openmpi-devel hdf5 hdf5-devel git make cmake
-                      python python3 redhat-rpm-config findutils which procps-ng
+                      python python3 redhat-rpm-config findutils which procps-ng coreutils
   - . ~/.bash_profile
   - uname -a
   - lscpu
@@ -45,6 +45,71 @@ coverage:
     - ctest --output-on-failure -L serial -LE "long|verylong" -E dft_ac_multpole
     - ctest -D ExperimentalCoverage
     - bash <(curl -s https://codecov.io/bash) -t 69d70b17-576f-459e-8f6c-409607c9f06b
+
+intel:
+  image: fedora:32
+  variables:
+    DALTON_LAUNCHER: ""
+    OMP_NUM_THREADS: "1"
+  except:
+    - schedules
+  allow_failure: true
+  before_script:
+    - dnf upgrade -y -q
+    - dnf install -y -q gcc gcc-c++ gcc-gfortran git make cmake python python3
+                        redhat-rpm-config findutils which procps-ng coreutils
+    - mv maintenance/oneAPI.repo /etc/yum.repos.d
+    - dnf install -y intel-oneapi-ifort intel-oneapi-icc intel-oneapi-mkl
+    - set +e
+    - . /opt/intel/inteloneapi/setvars.sh
+    - set -e
+    - uname -a
+    - lscpu
+    - free -h
+    - ifort --version
+    - icc --version
+    - icpc --version
+    - python3 --version
+    - git --version
+    - cmake --version
+  script:
+    - python setup --fc=ifort --cc=icc --cxx=icpc --mkl=sequential --type=release
+    - cd build
+    - make
+    - ctest --output-on-failure -L essential
+
+intel-mpi:
+  image: fedora:32
+  variables:
+    DALTON_LAUNCHER: "mpirun -n 3"
+    OMP_NUM_THREADS: "1"
+  except:
+    - schedules
+  allow_failure: true
+  before_script:
+    - dnf upgrade -y -q
+    - dnf install -y -q gcc gcc-c++ gcc-gfortran git make cmake python python3
+                        redhat-rpm-config findutils which procps-ng coreutils
+    - mv maintenance/oneAPI.repo /etc/yum.repos.d
+    - dnf install -y intel-oneapi-ifort intel-oneapi-icc intel-oneapi-mkl intel-oneapi-mpi intel-oneapi-mpi-devel
+    - set +e
+    - . /opt/intel/inteloneapi/setvars.sh
+    - set -e
+    - uname -a
+    - lscpu
+    - free -h
+    - ifort --version
+    - icc --version
+    - icpc --version
+    - mpirun --version
+    - python3 --version
+    - git --version
+    - cmake --version
+  script:
+    - python setup --fc=mpiifort --cc=mpiicc --cxx=mpiicpc --mkl=sequential --type=release
+    - cd build
+    - make
+    - ctest --output-on-failure -L essential
 
 gcc-5:
   image: fedora:23
@@ -453,6 +518,43 @@ nightly-mpi-int64:
     - mpirun --version
     - python setup --int64 --mpi --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
                    -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-mpi-int64
+    - cd build
+    - export CTEST_MAKE_NUM_PROCS=4
+    - ctest --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit
+
+nightly-intel-mpi:
+  image: fedora:32
+  variables:
+    DALTON_LAUNCHER: "mpirun -n 4"
+    OMP_NUM_THREADS: "1"
+  tags:
+    - parallel
+  only:
+    - schedules
+    - dalton/dalton
+  allow_failure: true
+  before_script:
+    - dnf upgrade -y -q
+    - dnf install -y -q gcc gcc-c++ gcc-gfortran git make cmake python python3
+                        redhat-rpm-config findutils which procps-ng coreutils
+    - mv maintenance/oneAPI.repo /etc/yum.repos.d
+    - dnf install -y intel-oneapi-ifort intel-oneapi-icc intel-oneapi-mkl intel-oneapi-mpi intel-oneapi-mpi-devel
+    - set +e
+    - . /opt/intel/inteloneapi/setvars.sh
+    - set -e
+    - uname -a
+    - lscpu
+    - free -h
+    - ifort --version
+    - icc --version
+    - icpc --version
+    - mpirun --version
+    - python3 --version
+    - git --version
+    - cmake --version
+  script:
+    - python setup --fc=mpiifort --cc=mpiicc --cxx=mpiicpc --mkl=sequential --type=release
+                   -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-intel-mpi
     - cd build
     - export CTEST_MAKE_NUM_PROCS=4
     - ctest --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit
