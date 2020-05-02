@@ -461,7 +461,7 @@ gcc-10-int64:
     - make
     - ctest --output-on-failure -L essential
 
-nightly-serial:
+nightly-gcc-serial:
   image: fedora:31
   variables:
     DALTON_LAUNCHER: ""
@@ -470,7 +470,6 @@ nightly-serial:
     - parallel
   only:
     - schedules
-    - dalton/dalton
   allow_failure: true
   script:
     - export FFLAGS="-I/usr/lib64/gfortran/modules"
@@ -480,16 +479,15 @@ nightly-serial:
     - export CTEST_MAKE_NUM_PROCS=4
     - ctest -j 4 --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit
 
-nightly-mpi:
+nightly-gcc-mpi:
   image: fedora:31
   variables:
-    DALTON_LAUNCHER: "mpirun -n 4"
+    DALTON_LAUNCHER: "mpirun -n 4 --allow-run-as-root"
     OMP_NUM_THREADS: "1"
   tags:
     - parallel
   only:
     - schedules
-    - dalton/dalton
   allow_failure: true
   script:
     - module load mpi/openmpi-x86_64
@@ -501,7 +499,7 @@ nightly-mpi:
     - export CTEST_MAKE_NUM_PROCS=4
     - ctest --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit
 
-nightly-mpi-int64:
+nightly-gcc-mpi-int64:
   image: fedora:31
   variables:
     DALTON_LAUNCHER: "mpirun -n 4 --allow-run-as-root"
@@ -510,7 +508,6 @@ nightly-mpi-int64:
     - parallel
   only:
     - schedules
-    - dalton/dalton
   allow_failure: true
   script:
     - dnf install -y -q lapack64 lapack64-devel
@@ -525,13 +522,10 @@ nightly-mpi-int64:
 nightly-intel-mpi:
   image: fedora:32
   variables:
-    DALTON_LAUNCHER: "mpirun -n 4"
+    DALTON_LAUNCHER: "mpirun -n 3"
     OMP_NUM_THREADS: "1"
-  tags:
-    - parallel
   only:
     - schedules
-    - dalton/dalton
   allow_failure: true
   before_script:
     - dnf upgrade -y -q
