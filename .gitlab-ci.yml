@@ -474,7 +474,7 @@ nightly-gcc-serial:
   script:
     - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PDE=ON -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-serial
+                   -DENABLE_PDE=ON -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-gcc-serial
     - cd build
     - export CTEST_MAKE_NUM_PROCS=4
     - ctest -j 4 --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit
@@ -494,7 +494,7 @@ nightly-gcc-mpi:
     - mpirun --version
     - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PDE=ON -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-mpi
+                   -DENABLE_PDE=ON -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-gcc-mpi
     - cd build
     - export CTEST_MAKE_NUM_PROCS=4
     - ctest --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit
@@ -514,16 +514,18 @@ nightly-gcc-mpi-int64:
     - module load mpi/openmpi-x86_64
     - mpirun --version
     - python setup --int64 --mpi --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
-                   -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-mpi-int64
+                   -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-gcc-mpi-int64
     - cd build
     - export CTEST_MAKE_NUM_PROCS=4
     - ctest --output-on-failure -L dalton -M Nightly -T Build -T Test -T Submit
 
-nightly-intel-mpi:
+nightly-intel:
   image: fedora:32
   variables:
-    DALTON_LAUNCHER: "mpirun -n 3"
+    DALTON_LAUNCHER: "mpirun -n 4"
     OMP_NUM_THREADS: "1"
+  tags:
+    - parallel
   only:
     - schedules
   allow_failure: true
@@ -547,7 +549,7 @@ nightly-intel-mpi:
     - git --version
     - cmake --version
   script:
-    - python setup --fc=mpiifort --cc=mpiicc --cxx=mpiicpc --mkl=sequential --type=release
+    - python setup --fc=mpiifort --cc=mpiicc --cxx=mpiicpc --mpi --mkl=sequential --type=release
                    -DSITE=GitLab -DBUILDNAME=$CI_COMMIT_REF_NAME-intel-mpi
     - cd build
     - export CTEST_MAKE_NUM_PROCS=4
