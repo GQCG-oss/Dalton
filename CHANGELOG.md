@@ -29,6 +29,8 @@
     - J. M. H. Olsen and J. Kongsted, Adv. Quantum Chem. 61, 107 (2011)
   - Effective external field (EEF) can now be used for all dipole properties
   - Added support for AMOEBA potential
+  - Added pseudopotentials for avoiding electron spill-out
+    - A. M. Khah, P. Reinholdt, J. M. H. Olsen, J. Kongsted and C. Hattig, J. Chem. Theory. Comput. 16, 1373-1381 (2020)
 
 ### Other new features added
 - Added the possiblitly to create the Dalton pdf manual with "make pdfmanual" in the build directory. (H. J. Aa. Jensen)
