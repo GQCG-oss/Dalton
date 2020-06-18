@@ -1084,6 +1084,14 @@ C     (only set IPRTRA if not set explicitly in input)
 C
       IF (IPRTRA .EQ. -1) IPRTRA = IPRSIR
 C
+C     If MAXCIT not specified in input:
+      IF (MAXCIT .LT. 0) THEN
+         IF (.NOT.(DOSCF .OR. DOMP2 .OR. DOCINO) .AND. FLAG(13)) THEN
+C           ... only MC and reading orbitals from file:
+C               these may be converged orbitals thus MAXCIT = 20
+            MAXCIT = 20
+         END IF
+      END IF
 C     If MAXMAC, MAXJT, MAXMIC not specified in input:
       IF (MAXMAC .LT. 0) THEN
          IF (ISTATE .EQ. 1) THEN
