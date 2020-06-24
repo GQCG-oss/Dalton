@@ -5959,7 +5959,7 @@ C
       END IF
  6110 FORMAT(//'@    Number of frozen SCF orbitals',T38,I5,' |',8I5)
  6111 FORMAT(//'@    Number of frozen KS orbitals',T38,I5,' |',8I5)
- 6111 FORMAT(//'@    Number of frozen srHF orbitals',T38,I5,' |',8I5)
+ 6112 FORMAT(//'@    Number of frozen srHF orbitals',T38,I5,' |',8I5)
  6120 FORMAT(//'@    Number of frozen MP2 orbitals',T38,I5,' |',8I5)
  6100 FORMAT(//'@    Number of frozen MCSCF orbitals',T38,I5,' |',8I5)
 C
