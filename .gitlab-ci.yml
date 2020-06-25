@@ -137,11 +137,49 @@ gcc-5-int64:
   script:
     - dnf install -y -q lapack64 lapack64-devel
     - alternatives --install /usr/bin/python python /usr/bin/python3 1
-    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --int64 --blas=none --lapack=builtin --explicit-libs="-lopenblas64" --type=release
     - cd build
     - make
     - ctest --output-on-failure -L essential
+
+gcc-5-ompi-1.8:
+  image: fedora:23
+  variables:
+    DALTON_LAUNCHER: "mpirun -n 4 --allow-run-as-root"
+    OMP_NUM_THREADS: "1"
+  tags:
+    - parallel
+  except:
+    - schedules
+  script:
+    - module load mpi/openmpi-x86_64
+    - mpirun --version
+    - alternatives --install /usr/bin/python python /usr/bin/python3 1
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
+    - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
+                   -DENABLE_PDE=ON
+    - cd build
+    - make -j 4
+    - ctest --output-on-failure -L essential -LE serial
+
+gcc-5-ompi-1.8-int64:
+  image: fedora:23
+  variables:
+    DALTON_LAUNCHER: "mpirun -n 4 --allow-run-as-root"
+    OMP_NUM_THREADS: "1"
+  tags:
+    - parallel
+  except:
+    - schedules
+  script:
+    - dnf install -y -q lapack64 lapack64-devel
+    - module load mpi/openmpi-x86_64
+    - mpirun --version
+    - alternatives --install /usr/bin/python python /usr/bin/python3 1
+    - python setup --int64 --mpi --blas=none --lapack=builtin --explicit-libs="-lopenblas64" --type=release
+    - cd build
+    - make -j 4
+    - ctest --output-on-failure -L essential -LE serial
 
 gcc-6:
   image: fedora:25
@@ -172,44 +210,6 @@ gcc-6-int64:
     - cd build
     - make
     - ctest --output-on-failure -L essential
-
-gcc-6-ompi-1.10:
-  image: fedora:25
-  variables:
-    DALTON_LAUNCHER: "mpirun -n 4 --allow-run-as-root"
-    OMP_NUM_THREADS: "1"
-  tags:
-    - parallel
-  except:
-    - schedules
-  script:
-    - module load mpi/openmpi-x86_64
-    - mpirun --version
-    - alternatives --install /usr/bin/python python /usr/bin/python3 1
-    - python setup --mpi --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
-                   -DENABLE_PDE=ON
-    - cd build
-    - make -j 4
-    - ctest --output-on-failure -L essential -LE serial
-
-gcc-6-ompi-1.10-int64:
-  image: fedora:25
-  variables:
-    DALTON_LAUNCHER: "mpirun -n 4 --allow-run-as-root"
-    OMP_NUM_THREADS: "1"
-  tags:
-    - parallel
-  except:
-    - schedules
-  script:
-    - dnf install -y -q lapack64 lapack64-devel
-    - module load mpi/openmpi-x86_64
-    - mpirun --version
-    - alternatives --install /usr/bin/python python /usr/bin/python3 1
-    - python setup --int64 --mpi --blas=none --lapack=builtin --explicit-libs="-lopenblas64" --type=release
-    - cd build
-    - make -j 4
-    - ctest --output-on-failure -L essential -LE serial
 
 gcc-7:
   image: fedora:27
