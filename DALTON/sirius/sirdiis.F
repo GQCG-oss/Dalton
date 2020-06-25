@@ -1359,6 +1359,9 @@ C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
 !  Mar. 2011 hjaaj: if abs(EMCDIF) .lt. 1.0D-5 the error can be grid related in DFT
          IF (DODFT .AND. ABS(EMCDIF) .LT. 1.0D-5) THEN
              EMCDIF_test = 0.0D0
+         ELSE IF (ABS(EMCDIF) .LT. 1.0D-9) THEN
+             ! error can be related to integral accuracy or real*8 accuracy
+             EMCDIF_test = 0.0D0
          ELSE
              EMCDIF_test = EMCDIF
          END IF

@@ -2413,7 +2413,7 @@ C            we thus need more ...
      *   ' --- SIRCI.CIST1: plus combination of all degenerate',
      *   '                 configurations is used as start vectors.'
       ELSE
-         NRS = MIN(NCSIM + 5,NCONF)
+         NRS = MIN(NCSIM + 7,NCONF)
 C        ... we add 5 so we can expand if degeneracy.
       END IF
       IF (LWRK .LT. NRS+NCONF) CALL ERRWRK('CIST1',(NRS+NCONF),LWRK)
@@ -2482,6 +2482,13 @@ C           ... 170: repeat until (MCSIM .GE. NCSIM .OR. NRS .GE. LAST)
             END IF
             FAC = 1 + LAST - IFRST ! yields degeneracy
             FAC = 1.0D0 / SQRT(FAC)
+            IF (LAST .EQ. IFRST) THEN
+               WRITE(LUPRI,'(/A,6I10)')
+     &         'Start CI vector is configuration no.',NLIST(IFRST:LAST)
+            ELSE
+               WRITE(LUPRI,'(/A,6I10)')
+     &         'Start CI vector is sum of',NLIST(IFRST:LAST)
+            END IF
             DO 174 I = IFRST,LAST
                WRK(NRS + NLIST(I)) = FAC
   174       CONTINUE
@@ -2494,6 +2501,8 @@ C           ... 170: repeat until (MCSIM .GE. NCSIM .OR. NRS .GE. LAST)
          IF (MCSIM .LT. NCSIM .AND. LAST .LT. NRS) GOTO 170
 C           ... end repeat
       ELSE
+         WRITE(LUPRI,'(A,I0,A)')
+     &      'First ',LAST,' elements used as separate start vectors.'
          DO 185 I = IFRST,LAST
             MCSIM = MCSIM + 1
             WRK(NRS + NLIST(I)) = 1.0D0

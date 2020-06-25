@@ -1084,6 +1084,14 @@ C     (only set IPRTRA if not set explicitly in input)
 C
       IF (IPRTRA .EQ. -1) IPRTRA = IPRSIR
 C
+C     If MAXCIT not specified in input:
+      IF (MAXCIT .LT. 0) THEN
+         IF (.NOT.(DOSCF .OR. DOMP2 .OR. DOCINO) .AND. FLAG(13)) THEN
+C           ... only MC and reading orbitals from file:
+C               these may be converged orbitals thus MAXCIT = 20
+            MAXCIT = 20
+         END IF
+      END IF
 C     If MAXMAC, MAXJT, MAXMIC not specified in input:
       IF (MAXMAC .LT. 0) THEN
          IF (ISTATE .EQ. 1) THEN
@@ -5917,24 +5925,41 @@ C
 C
 C ***
 C
-      NFROT = ISUM(NSYM,NFRO,1)
-      NFRHT = ISUM(NSYM,NFRRHF,1)
-      NFRMT = ISUM(NSYM,NFRMP2,1)
-      IF (DOSCF .AND. NFRHT .GT. 0) THEN
-         IF (.NOT.DODFT) THEN
-            WRITE (IWUNIT,6110) NFRHT,(NFRRHF(I),I=1,NSYM)
+      NFROT   = ISUM(NSYM,NFRO,1)
+      NFRRHFT = ISUM(NSYM,NFRRHF,1)
+      NFRMP2T = ISUM(NSYM,NFRMP2,1)
+      IF (DOSCF .AND. NFRHFT .GT. 0) THEN
+         IF (DODFT) THEN
+            WRITE (IWUNIT,6110) NFRRHFT,(NFRRHF(I),I=1,NSYM)
+         ELSE IF (DOHFSRDFT) THEN
+            WRITE (IWUNIT,6112) NFRRHFT,(NFRRHF(I),I=1,NSYM)
          ELSE
-            WRITE (IWUNIT,6111) NFRHT,(NFRRHF(I),I=1,NSYM)
+            WRITE (IWUNIT,6111) NFRRHFT,(NFRRHF(I),I=1,NSYM)
          END IF
       END IF
-      IF (DOMP2 .AND. NFRMT .GT. 0) THEN
-         WRITE (IWUNIT,6120) NFRMT,(NFRMP2(I),I=1,NSYM)
+      IF (DOMP2 .AND. NFRMP2T .GT. 0) THEN
+         IF (NFRMP2T .EQ. 0 .AND. NFRRHFT .GT. 0) THEN
+            WRITE (LUPRI,'(//A/A)')
+     &    '@INFO: Frozen SCF orbitals must also be frozen in MP2.',
+     &    '@INFO: Therefore frozen MP2 orbitals are set'//
+     &    ' equal to frozen SCF orbitals (default).'
+            NFRMP2(1:8) = NFRRHF(1:8)
+            NFRMP2T     = NVRRHFT
+         END IF
+         WRITE (IWUNIT,6120) NFRMP2T,(NFRMP2(I),I=1,NSYM)
+         IF (NFRMP2T .LT. NFRRHFT) THEN
+            WRITE (IWUNIT, '(/A)') '@ FATAL ERROR: '//
+     &      'a frozen SCF orbital must also be frozen in MP2'
+            CALL QUIT(' FATAL ERROR: '//
+     &      'a frozen SCF orbital must also be frozen in MP2')
+         END IF
       END IF
       IF (DOMC .AND. NFROT.GT.0) THEN
          WRITE (IWUNIT,6100) NFROT,(NFRO(I),I=1,NSYM)
       END IF
  6110 FORMAT(//'@    Number of frozen SCF orbitals',T38,I5,' |',8I5)
  6111 FORMAT(//'@    Number of frozen KS orbitals',T38,I5,' |',8I5)
+ 6112 FORMAT(//'@    Number of frozen srHF orbitals',T38,I5,' |',8I5)
  6120 FORMAT(//'@    Number of frozen MP2 orbitals',T38,I5,' |',8I5)
  6100 FORMAT(//'@    Number of frozen MCSCF orbitals',T38,I5,' |',8I5)
 C

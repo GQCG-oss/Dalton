@@ -941,9 +941,9 @@ C --- start of executable code
                        ! we are parallelizing on the distributions
 
       DIRFCK_save = DIRFCK
-      DIRFCK = .TRUE.  ! NEVER read from AOTWOINT when parallel.
+      DIRFCK = .TRUE.  ! NEVER read from AOTWOINT when parallel
 
-      LUSUPM = -1      ! Do not use supermatrix from file AO2SUPINT.
+      LUSUPM = -1      ! Do not use AO integrals from file AO2_JINT
 
 
       allocate( ICDTRA(NNORBX) )
