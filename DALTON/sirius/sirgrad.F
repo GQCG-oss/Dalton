@@ -596,9 +596,9 @@ C
       CALL QENTER('FCKMAO')
 C
 #ifdef SIRGRAD_DEBUG
-      P6FLAG(11) = .true. !Cdbg DEBUG
-      P6FLAG(18) = .true. !Cdbg DEBUG
-      P6FLAG(15) = .true. !Cdbg DEBUG
+      P6FLAG(11) = .true.
+      P6FLAG(18) = .true.
+      P6FLAG(15) = .true.
 #endif
 C
 C

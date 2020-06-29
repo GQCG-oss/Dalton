@@ -344,7 +344,7 @@ C     Disable "MP2FRO" if result not to be printed
       CHIVAL_SAVE = CHIVAL
 C
 C     if SRMP2_SRINTS
-C     1)  calculate "EMP2" from AO2SRINT integrals (i.e. short-range integrals),
+C     1)  calculate "EMP2" from AOSR2INT integrals (i.e. short-range integrals),
 C     2)  set SRMP2_SRINTS false, go back to label 10, and redo the
 C         standard srMP2 "EMP2" from AOTWOINT integrals (i.e. long-range integrals)
 C     3)  make sure MP2 energy with short-range integrals is printed!
