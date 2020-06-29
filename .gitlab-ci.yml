@@ -439,7 +439,7 @@ gcc-10:
   except:
     - schedules
   script:
-    - export FFLAGS="-I/usr/lib64/gfortran/modules -fallow-argument-mismatch -fallow-invalid-boz"
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --blas=none --lapack=none --explicit-libs="-lopenblas -llapack" --type=release
                    -DENABLE_PDE=ON
     - cd build
@@ -455,7 +455,7 @@ gcc-10-int64:
     - schedules
   script:
     - dnf install -y -q lapack64 lapack64-devel
-    - export FFLAGS="-I/usr/lib64/gfortran/modules -fallow-argument-mismatch -fallow-invalid-boz"
+    - export FFLAGS="-I/usr/lib64/gfortran/modules"
     - python setup --int64 --blas=none --lapack=none --explicit-libs="-lopenblas64 -llapack64_" --type=release
     - cd build
     - make
