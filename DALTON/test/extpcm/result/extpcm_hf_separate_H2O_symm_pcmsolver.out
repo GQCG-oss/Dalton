@@ -182,7 +182,7 @@ Compilation information
 .OLDINT                                           
 .SEPARATE                                         
 **WAVE FUNCTIONS                                  
-.SCF                                              
+.HF
 **END OF DALTON INPUT                             
 
 
