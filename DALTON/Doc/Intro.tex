@@ -3,8 +3,10 @@
 
 The \dalton\ program is designed to allow convenient,
 automated determination of a large number of molecular properties
-based on an HF, DFT, MP2, coupled cluster, or MCSCF reference wave
-function. Additions to the Dalton~2.0 release include
+based on an HF, HF-srDFT, DFT, MP2, coupled cluster,
+CI, MCSCF, MC-srDFT, NEVPT2 reference wave function.
+
+Additions to the Dalton~2.0 release included
 density functional theory implemented fully up to quadratic response
 theory for closed-shell systems, as well as second derivatives for
 properties involving perturbation-dependent basis sets such a
@@ -26,11 +28,11 @@ time-independent, non-relativistic Schr\"{o}dinger equation, as well as
 an extensive number of integrals related to different molecular
 properties. \eri\ is a vectorized and distribution-oriented integral
 generator that may be invoked in certain calculations, in particular in
-integral-direct coupled cluster calculations. \sir\ is the (MC)SCF wave
-function optimization part, and is described comprehensively in the
+integral-direct coupled cluster calculations. \sir\ is the (MC)SCF and MC-srDFT wave
+function optimization part, the MCSCF part is described comprehensively in the
 METECC-94 book~\cite{hjajhajomotecc}. \aba\ evaluates the second-order
 molecular properties of interest for SCF and MCSCF wave functions as
-well density functional theory, in particular second-order static
+well sd density functional theory, in particular second-order static
 molecular properties in which the basis set depends on the applied
 perturbation. \resp\ is a general-purpose program for evaluating
 response functions, up to cubic response functions for (MC)SCF wave
@@ -49,7 +51,7 @@ the MP2-R12 methodologies.
 Throughout this manual there will be references to articles
 describing the implementation of a specific molecular property or
 input option. This will hopefully suffice to give the reader a proper
-theoretical understanding of the current implementation. Only one
+theoretical understanding of the current implementation. One
 reference otherwise not mentioned in the text, the treatment of
 symmetry\index{symmetry}, is given here~\cite{prttca69}.
 
