@@ -167,30 +167,36 @@ C     Delete old MO integrals integrals
       END IF
 
 C     Delete any existing old 2-el. AO integrals
-C     (they may have been generated with the MAKE_AOTWOINT routine,
+C     (they may have been generated in previous run
 C      even if RUNTWO is .false. now ! This will for example be
 C      the case if DIRCAL and DOMP2))
 
-      IF (LUINTA  .LE. 0) CALL GPOPEN(LUINTA,'AOTWOINT',
-     &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-Casm
-C     Let's give a chance to the user who konows what he does
+C     Let us give a chance to the user who knows what she/he does:
+C     if RMAOTWO false then it is user's responsibility that
+C     all the needed AOTWOINT/AOSR2IT/AUSUPINT files are available
 C
-C     CALL GPCLOSE(LUINTA,'DELETE')
       IF (RMAOTWO) THEN
+         IF (LUINTA  .LE. 0) CALL GPOPEN(LUINTA,'AOTWOINT',
+     &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
          CALL GPCLOSE(LUINTA,'DELETE')
-      ELSE
-         CALL GPCLOSE(LUINTA,'KEEP')
-      END IF
 C
-      IF (DOSRIN) THEN
-         IF (LUSRINT .LE. 0) CALL GPOPEN(LUSRINT,'AO2SRINT',
+         IF (LUSRINT .LE. 0) CALL GPOPEN(LUSRINT,'AOSR2INT',
      &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
          CALL GPCLOSE(LUSRINT,'DELETE')
-      END IF
-      IF (LUSUPM .LE. 0) CALL GPOPEN(LUSUPM,'AOSUPINT',
+         IF (LUSUPM .LE. 0) CALL GPOPEN(LUSUPM,'AOSUPINT',
      &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      CALL GPCLOSE(LUSUPM,'DELETE')
+         CALL GPCLOSE(LUSUPM,'DELETE')
+      END IF ! RMAOTWO
+
+      ! Postpone calculation of two-electron integrals;
+      ! 2-el integrals will be calculated with MAKE_AOTWOINT
+      ! calls when needed.
+      IF (RUNTWO) THEN
+         WRITE(LUPRI,'(/A)') 'Calculation of 2-electron integrals'//
+     &   ' are postoned until they are needed.'
+         RUNTWO = .FALSE.
+      END IF
+
 
 C     IF (RUNTWO .or. RUNERI) :
 C        Open LUINTA and LUSRINT for new 2-el. integrals
@@ -199,7 +205,7 @@ C        to be calculated in the CALL HERINT call below
       IF ((RUNTWO .OR. RUNERI) .AND. .NOT. DCCR12) THEN
          CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
          IF (DOSRIN) CALL
-     &      GPOPEN(LUSRINT,'AOSR2INT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+     &       GPOPEN(LUSRINT,'AOSR2INT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       END IF
 C
       CALL GPOPEN(LUONEL,'AOONEINT','OLD',' ',' ',IDUMMY,.FALSE.)
@@ -2046,6 +2052,7 @@ C&&& This option only used in DIRAC
 C&&& ERF  : Value of \chi in separation of two-electron operator
 C&&&        Vee=Vsr+Vlr ; Vlr=erf(\chi*r_12)/(r_12)
                READ (LUCMD,*,ERR=37) CHIVAL
+               DOSRIN = .TRUE.
                GO TO 100
  37            CALL QUIT('Error reading CHIVAL for *TWOINT/.ERF')
    11          CONTINUE
@@ -2054,12 +2061,16 @@ C&&&         NEW VERSION March 2010 mnp+hjaj
                ERFEXP(0) = .TRUE.
                ERFEXP(2) = .TRUE.
                READ (LUCMD,*,ERR=39) CHIVAL
+               DOSRIN = .TRUE.
                GO TO 100
  39            CALL QUIT('Error reading CHIVAL for *TWOINT/.ERFEXP')
    12          CONTINUE
 C&&& DOSRIN : Calculate short-range 2-elec. integrals needed for
 C&&&          computing the short-range Hartree term (U_sr) in MC-srDFT
                DOSRIN = .TRUE.
+               WRITE(LUPRI,*) 'INFO: .DOSRIN option is obsolete'
+               ! is set by .ERF* options, which always are needed
+               ! for DOSRIN = .TRUE.
                GO TO 100
 C&&& KSPT2M
    13          CONTINUE
@@ -2074,6 +2085,7 @@ C&&&         Vee=Vsr+Vlr ; Vlr=erf(\chi*r_12)+N*exp(\chi)/(r_12)
                ERFEXP(0) = .TRUE.
                ERFEXP(1) = .TRUE.
                READ (LUCMD,*,ERR=141) CHIVAL
+               DOSRIN = .TRUE.
                GO TO 100
   141          CALL QUIT('Error reading CHIVAL for *TWOINT/.ERFGAU')
    15          CONTINUE
@@ -3635,6 +3647,10 @@ C
             IF (RUNERI) THEN
                IF (IPRDEF .GT. 1) CALL TITLER('Output from ERI 2INT',
      &            '*',126)
+               IF (CHIVAL .gt. 0.0D0) THEN
+                  CALL QUIT
+     &            ('ERROR: range-separation is not implemented in ERI')
+               END IF
                CALL TIMER('START ',TIMSTR,TIMEND)
                CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)
                CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,
@@ -3681,8 +3697,8 @@ C        ******************************************************
 C
          IF(DOSRIN) THEN
             IF (PANAS .EQ. D0 .AND. CHIVAL .EQ. -1.d0) 
-     &      CALL QUIT('HERINT ERROR : Short-range integrals '//
-     &                'specified with the unmodified 2e-operator!')
+     &      CALL QUIT('FATAL ERROR : Short-range integrals '//
+     &           'specified with the unmodified 2e-repulsion!')
             SRINTS = .TRUE.
             NPAO = MXSHEL*MXAOVC
             CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)
@@ -3889,24 +3905,25 @@ C  INFTAP: LUINTA, LUSRINT
 #include "cbihr2.h"
 #include "inftap.h"
 C
-      LOGICAL AOEXIST, DIRCAL_SAV, RUNONE_SAV, ONEPRP_SAV, RUNTWO_SAV !, DOSRIN_SAV
+      LOGICAL AOEXIST, SREXIST
+      LOGICAL DIRCAL_SAV, RUNONE_SAV, ONEPRP_SAV, RUNTWO_SAV
 C
       CALL QENTER('MAKE_AOTWOINT')
       CALL GPINQ('AOTWOINT','EXIST',AOEXIST)
-      IF (.NOT. AOEXIST) THEN
+      IF (DOSRIN) THEN
+         CALL GPINQ('AOSR2INT','EXIST',SREXIST)
+      ELSE
+         SREXIST = .TRUE. ! to signal not needed
+      END IF
+      IF (.NOT. AOEXIST .OR. .NOT. SREXIST) THEN
          RUNONE_SAV = RUNONE
          ONEPRP_SAV = ONEPRP
          RUNTWO_SAV = RUNTWO
-!        DOSRIN_SAV = DOSRIN
          DIRCAL_SAV = DIRCAL
          RUNONE = .FALSE.
          ONEPRP = .FALSE.
          RUNTWO = .TRUE.
-!        DOSRIN = DOSRIN .AND. .NOT.DIRCAL
          DIRCAL = .FALSE.
-C       ... hjaaj: AOSR2INT is only needed if not DIRCAL (not direct)
-C       /Jun 09 -- not true any more - hjaaj April 2010 (parallel
-C       activates DIRCAL !!!)
 C        Open LUINTA/LUSRINT for new integrals
          WRITE (LUPRI,'(/A)') '---> (Re)generating AOTWOINT'
          CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
@@ -3921,7 +3938,6 @@ C        Open LUINTA/LUSRINT for new integrals
          RUNONE = RUNONE_SAV
          ONEPRP = ONEPRP_SAV
          RUNTWO = RUNTWO_SAV
-!        DOSRIN = DOSRIN_SAV
          DIRCAL = DIRCAL_SAV
       END IF
 

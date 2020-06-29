@@ -2676,7 +2676,19 @@ C
 
 !     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
-      IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
+      IF (ADDSRI) THEN
+         CALL SRFUN_INPUT(SR_FUNCS)
+         IF (CHIVAL .LT. 0.0D0) THEN
+            CHIVAL = 0.4D0
+            WRITE(LUPRI,'(/A)')
+     &      ' mu value for srDFT set to 0.4 (default)'
+         ELSE
+            WRITE(LUPRI,'(/A,F5.2,A)')
+     &      ' mu value for srDFT is',CHIVAL,' (user input)'
+         END IF
+         DOSRIN = .TRUE.
+         ! default is erf
+      END IF
 #else
       IF (ADDSRI) CALL QUIT('srDFT is not available in this version')
 #endif

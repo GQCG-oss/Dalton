@@ -1206,6 +1206,9 @@ C              This exchange-only matrix is zero
 C
 C
       IF (LU2INT .GT. 0) CALL GPCLOSE(LU2INT,'KEEP')
+
+C     hjaaj 2010: make sure AOTWOINT exists (and AOSR2INT if srDFT)
+      CALL MAKE_AOTWOINT(WRK,LWORK)
       CALL GPOPEN(LU2INT,FN2INT,'OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
 C

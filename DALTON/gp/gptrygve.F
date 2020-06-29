@@ -1008,7 +1008,7 @@ C
          if (LENOUT .EQ. max_filename_length) then
             write (lugppri,*) 'max_filename_length is too short'
             write (lugppri,*) OUTFIL
-            call quit('file name too long')
+            call quit('GPOPEN error: file name too long')
          end if
          if (LENOUT .gt. 0) then
 c        IF (OUTFIL(1:1) .NE. ' ') THEN
@@ -1023,7 +1023,7 @@ c43         CONTINUE
             if (LENWRK .EQ. max_filename_length) then
                write (lugppri,*) 'max_filename_length is too short'
                write (lugppri,*) WRKDIR
-               call quit('GPOPEN: work directory name too long')
+               call quit('GPOPEN error: work directory name too long')
             end if
 c           LENWRK = 0
 c           DO I = 1, max_filename_length
@@ -1036,7 +1036,7 @@ c44         CONTINUE
                write (lugppri,*) 'max_filename_length is too short'
                write (lugppri,*) WRKDIR(1:LENWRK)//'/'//
      &                         OUTFIL(1:LENOUT)
-               call quit('GPOPEN: file name too long')
+               call quit('GPOPEN error: file name too long')
             end if
             FILENM(1:FILELN) = WRKDIR(1:LENWRK)//'/'//
      &                         OUTFIL(1:LENOUT)
@@ -1212,9 +1212,10 @@ C
       CALL QUIT('ERROR (GPOPEN) UPON OPENING A FILE')
 C
  9005 CONTINUE
-      WRITE (LUGPPRI,'(//A/A/A//A)')
-     &   '--> ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING OLD FILE',
-     &   '--> A FILE HAS BEEN SPECIFIED TO BE OLD, BUT THE TABLE',
+      WRITE (LUGPPRI,'(//2A/A/A//A)')
+     &   '--> ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING OLD FILE'//
+     &   ' with filename ',FILENM(1:FILELN),
+     &   '--> IT HAS BEEN SPECIFIED TO BE OLD, BUT THE TABLE',
      &   '--> ENTRY INDICATES THAT IT DOES NOT EXIST',
      &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
