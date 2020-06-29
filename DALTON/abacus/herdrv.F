@@ -191,10 +191,15 @@ C
       ! Postpone calculation of two-electron integrals;
       ! 2-el integrals will be calculated with MAKE_AOTWOINT
       ! calls when needed.
+      ! Except for all R12-type integrals.
+
       IF (RUNTWO) THEN
+      IF (.NOT.(R12CAL .OR. DCCR12 .OR. R12EIN
+     &     .OR. R12INT .OR. U12INT .OR. U21INT)) THEN
          WRITE(LUPRI,'(/A)') 'Calculation of 2-electron integrals'//
      &   ' are postoned until they are needed.'
          RUNTWO = .FALSE.
+      END IF
       END IF
 
 
@@ -1026,7 +1031,7 @@ C Modified by Bin Gao, December 14, 2009: adds XYZ-ALL
             THETA  = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
-  203    CONTINUE
+  203    CONTINUE ! .R12
 C           R12 calculation requested with linear r12 terms (WK/UniKA/04-11-2002).
             R12CAL = .TRUE.
             CARMOM = .TRUE.
