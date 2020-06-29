@@ -64,6 +64,7 @@ C-------------------------
 C
       IF (LUINTA.LE.0) THEN
         LUINTA = -1
+        CALL MAKE_AOTWOINT(WORK,LWORK)
         CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ','UNFORMATTED',
      &              IDUMMY,.FALSE.)
       END IF
