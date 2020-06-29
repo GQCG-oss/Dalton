@@ -24,7 +24,8 @@ options are omitted.
    with no leading blanks.  The preceding lines in the input file may
    contain arbitrary information.
 }
-\item{ Input is directed by keywords written in upper case.
+\item{Input is directed by keywords which internally are stored
+   in upper case, however, in the input file they may be written in upper or lower or mixed case.
    Only the first 7 characters including the prompt are significant.
    The keywords are divided in a number of main input groups. Each main
    input group is initiated by a {\starkey}. For example
@@ -53,23 +54,29 @@ specifying the keyword \quotekw{\Key{OPTIONS}}.  For example, the input
 .OPTIONS
 **END OF DALTON INPUT
 \end{verbatim} \end{inputex}
-   will cause a dump of the labels for the main input groups in {\sir},
-   while
+
+   will cause a dump  of all keywords in the main input groups in {\sir}, while
 
 \begin{inputex} \begin{verbatim}
-**WAVE FUNCTIONS
-*ORBITAL INPUT
-.OPTIONS
-**END OF DALTON INPUT
+**Wave functions
+*Orbital input
+.options
+**End of Dalton input
 \end{verbatim} \end{inputex}
-   will cause a dump of the labels for the \quotekw{*ORBITAL INPUT} input group
+
+   will cause a dump of all keywords in the \quotekw{*ORBITAL INPUT} input group
    in {\sir}.
 }
-\item{ The {\sir} input is finished with a line beginning with two stars,
-   {\it e.g.\/}
+\item{ The {\sir} input is finished with a line beginning with two stars {\starstarkey},
+   {\it e.g.}
 
 \begin{inputex} \begin{verbatim}
 **END OF DALTON INPUT
+\end{verbatim} \end{inputex}
+   or {\it e.g.}
+
+\begin{inputex} \begin{verbatim}
+**Properties
 \end{verbatim} \end{inputex}
 }
 \end{enumerate}
@@ -113,7 +120,7 @@ Section~\ref{ref-solinp} \Sec{SOLVENT}
 
 \noindent
 The next input group specifies the configurations included
-in the MCSCF and CI wave functions:
+in the MCSCF, MC-srDFT, CI, and CI-srDFT wave functions:
 
 Section~\ref{ref-wavinp} \Sec{CONFIGURATION INPUT}
 
@@ -126,7 +133,7 @@ Section~\ref{ref-orbinp} \Sec{ORBITAL INPUT}
 Section~\ref{ref-civinp} \Sec{CI VECTOR}
 
 \noindent
-The two following input groups control the second-order MCSCF
+The two following input groups control a second-order MCSCF, MC-srDFT, HF, HF-srDFT, or DFT
 optimization:
 
 Section~\ref{ref-optinp} \Sec{OPTIMIZATION}
@@ -137,7 +144,7 @@ Section~\ref{ref-stpinp} \Sec{STEP CONTROL}
 The next groups have special input only relevant for the
 specified calculation types:
 
-Section~\ref{ref-rhfinp} \Sec{SCF INPUT}, for \Key{HF} (or \Key{SCF}) and \Key{DFT}
+Section~\ref{ref-rhfinp} \Sec{SCF INPUT}, for \Key{HF}, \Key{DFT}, and \Key{HFsrDFT}
 
 Section~\ref{ref-dftinp} \Sec{DFT INPUT}, for \Key{DFT}
 
@@ -151,14 +158,14 @@ Section~\ref{ref-stexinp} \Sec{STEX INPUT}, for \Key{STEX}
 
 \noindent
 The next section is used to select some types of analysis of the final
-Hartree--Fock, DFT, MCSCF, or CI wave function:
+HF, HF-srDFT, DFT, MCSCF, MC-srDFT, CI, or CI-srDFT wave function:
 
 Section~\ref{ref-popinp} \Sec{POPULATION ANALYSIS}
 
 \noindent
 The next section is used to change the default integral transformation
 and specify any final integral transformation after convergence (a
-program following {\sir} may need a higher transformation level):
+main Dalton module following {\sir} may need a higher transformation level):
 
 Section~\ref{ref-trainp} \Sec{TRANSFORMATION}
 
@@ -180,12 +187,12 @@ Chapter~\ref{ch:CC} \Sec{CC INPUT}
 \bigskip
 \noindent
 The wave function input is finished when a line is encountered beginning
-with two stars, for example
+with two stars {\starstarkey}, two examples:
 
 \begin{inputex} \begin{verbatim}
    **END OF DALTON INPUT
 \end{verbatim} \end{inputex}
-or
+and
 
 \begin{inputex} \begin{verbatim}
    **MOLORB
@@ -210,52 +217,88 @@ of the input file.
 
 Specification of which wave function calculation is to be performed.
 
-{\bf Primary keywords, listed in the order the corresponding modules
- will be executed by the program (if the keyword is set): }
+{\bf Primary keywords, {\color{red} listed in the order the corresponding modules
+ will be executed by the program (if the keyword is set)}: }
+
+\begin{description}
+
+\item[{\color{blue}Single configuration models}] Models with a single configuration (HF, DFT, HFsrDFT)
 
 \begin{description}
 
 \item[\Key{HF}]
-  Restricted closed-shell or one open-shell 
-  Hartree--Fock\index{HF}\index{SCF}\index{Hartree--Fock}\index{open shell!HF} calculation.
+  Restricted closed-shell, one open-shell, or high-spin spin-restricted Hartree--Fock calculation.
+  \index{HF}\index{SCF}\index{Hartree--Fock}\index{open shell!HF}\index{high spin!HF}
+  (Unrestricted HF is not possible in \dalton.)
   The occupied orbitals, optimization control etc. are specified in the
-  \quotekw{*SCF INPUT} submodule.
-  Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
-
-%\item[\Key{SCF}]
-%  Alias for \Key{HF}. Deprecated.
+  \quotekw{*SCF INPUT} submodule. \\
+  Note: you can only specify one of the \quotekw{.HF}, \quotekw{.DFT}, and \quotekw{.HFSRDFT} keywords.
 
 \item[\Key{DFT}] \ \\
   \kw{READ (LUINP,'(A80)') LINE} \\
-  Restricted closed-shell, one
-  open-shell or high-spin spin-restricted Kohn-Sham density functional
-  theory\index{DFT}\index{Kohn--Sham}\index{open shell!DFT}
+  Restricted closed-shell, one open-shell, or high-spin spin-restricted Kohn-Sham density functional
+  theory\index{DFT}\index{Kohn--Sham}\index{open shell!DFT}\index{high spin!DFT}
+  (Unrestricted Kohn-Sham DFT is not possible in \dalton.)
   calculation.  On the following line you must specify which
   functional to use.  The occupied orbitals, optimization control
   etc. are specified in the \quotekw{*SCF INPUT} submodule shared with
   the \quotekw{.HF} option.  The DFT specific input options are
   collected in the \quotekw{*DFT INPUT} input submodule.
-  Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
-
-\item[\Key{MP2}]
- \index{M{\o}ller-Plesset!second-order}\index{MP2}
-  M{\o}ller-Plesset second-order perturbation theory calculation.
-  Requires \quotekw{.HF} or previously calculated canonical Hartree--Fock orbitals.
+  Note: you can only specify one of the \quotekw{.HF}, \quotekw{.DFT}, and \quotekw{.HFSRDFT} keywords.
 
 \item[(\quotekw{.FC MVO} in \quotekw{*SCF INPUT}]
-  Calculation of modified virtual SCF orbitals based on the
+  Calculation of modified virtual SCF orbitals after SCF convergence based on the
   potential determined by the keyword (see comments below).
   The occupied SCF orbitals are not modified.
-  Note that this keyword is not located in this module but in the
+  MVOs are typically used for subsequent CI calculation.
+  {\em Note that this keyword is not located in this module but in the
   \quotekw{*SCF INPUT} submodule. It is mentioned here to make clear
-  at what point this transformation will be performed, if requested.
+  at what point this orbital transformation will be performed, if requested.}
+  Option is incompatible with CC, which requires canonical orbitals.
+
+\end{description}
+
+\item[{\color{blue} Single configuration reference models}] Models based on a single configuration (e.g.\ MP2, CC).
+
+\begin{description}
+
+\item[\Key{MP2}]
+ \index{M{\o}ller-Plesset!second-order}\index{MP2}\
+  M{\o}ller-Plesset second-order perturbation theory calculation,
+  MP2 if HF and srMP2 if HFsrDFT.
+  Calculates second-order energy, second-order natural orbitals\index{natural orbitals!MP2},
+  and first-order wave function for SOPPA.
+  Requires \quotekw{.HF}, \quotekw{.HFSRDFT},
+  or previously calculated canonical HF/HF-srDFT orbitals.
+
+\item[\Key{CC}]
+  \index{Coupled Cluster}\index{CC}
+  Coupled cluster calculation. Automatically activates Hartree--Fock (\quotekw{.HF}).
+  After the Hartree--Fock calculation,
+  the \cc\ module is called to do a coupled cluster (response) calculation.
+  M
+  For further input options for the \cc\ module see Section~\ref{sec:ccgeneral}. 
+
+\item[\Key{CC ONLY}] Skip the calculation of a Hartree--Fock wave
+  function, and start directly in the coupled cluster part. Convenient
+  for restarts in the coupled cluster module.
+
+\end{description}
+
+\item[{\color{blue} Multi-configuration models}] CI, MCSCF, NEVPT2, GAS-CI; CI-srDFT, MC-srDFT, srNEVPT2.
+
+\begin{description}
 
 \item[\Key{CI}]
   \index{CI}\index{Configuration Interaction}
-  Configuration interaction calculation.
+  Configuration interaction calculation. This CI will be based on the molecular orbitals from the SCF options, or
+  read in from file (then they can be from MCSCF, MP2, ...).
 
 \item[\Key{MCSCF}]
-  Multiconfiguration self-consistent field (MCSCF) calculation.\index{MCSCF}
+  Multiconfiguration self-consistent field (MCSCF) calculation. CASSCF or RASSCF .\index{MCSCF}
+
+\item[\Key{MCSRDFT}]
+  Long-range MCSCF and short-range DFT (MC-srDFT) calculation. CAS-srDFT or RAS-srDFT.\index{MC-srDFT}
 
 \item[\Key{VIRTRUNC}] \ \\
   \kw{READ (LUINP,*) N, THR\_VIRTUNC} \\
@@ -270,20 +313,12 @@ Specification of which wave function calculation is to be performed.
 
 \item[\Key{NEVPT2}]
   Multireference second-order perturbation theory calculation.\index{NEVPT2}
+  Requires preceding MCSCF or MC-srDFT calculation.
 
 \item[\Key{STEX}]
   Static exchange calculation.\index{Static exchange}
 
-\item[\Key{CC}]
-  \index{Coupled Cluster}\index{CC}
-  Coupled cluster calculation. Automatically activates Hartree--Fock (\quotekw{.HF}).
-  After the Hartree--Fock calculation,
-  the \cc\ module is called to do a coupled cluster (response) calculation.
-  For further input options for the \cc\ module see Section~\ref{sec:ccgeneral}. 
-
-\item[\Key{CC ONLY}] Skip the calculation of a Hartree--Fock wave
-  function, and start directly in the coupled cluster part. Convenient
-  for restarts in the coupled cluster module.
+\end{description}
 
 \end{description}
 
@@ -316,8 +351,8 @@ Specification of which wave function calculation is to be performed.
   (default is the general print level from \verb|**DALTON|).
 
 \item[\Key{RESTART}]
-  Restart {\sir}\index{restart!wave function} second order optimization,
-  the {\sir} restart file (\verb|SIRIUS.RST|) must be available and contain restart information.
+  Restart {\sir}\index{restart!wave function} second order optimization of HF, HF-srDFT, MCSCF, or MC-srDFT.
+  The {\sir} restart file (\verb|SIRIUS.RST|) must be available and contain restart information.
 
 %hjaaj Oct 2003: obsolete, we want the specific .HF or .DFT
 %\item[\Key{SCF}]
@@ -403,12 +438,12 @@ Options for a CI calculation.
 \begin{description}
 \item[\Key{CIDENSITY}]
   Calculate CI one-electron density matrix and natural
-  orbital\index{natural orbital}
+  orbital\index{natural orbitals!CI}
   occupations after convergence.
 
 \item[\Key{CINO}]
   Generate CI\index{CI}\index{Configuration Interaction} natural
-  orbitals\index{natural orbital} for CI root
+  orbitals\index{natural orbitals!CINO} for CI root
   number \kw{ISTACI},
   clear the \verb|SIRIUS.RST| file and write the orbitals with label \quotekw{NEWORB  }.
   The \quotekw{\Key{STATE}} option must be specified.
@@ -1078,7 +1113,7 @@ with the same meanings and syntax as for the CAMB3LYP functional.\index{rCAMB3LY
   functional LYPr.\index{EDF1}
  \funexample{Combine Slater=1.030952 Becke=-8.44793 mBecke=10.4017 LYPr=1}
 
-\item[EDF2] is a linear combination of the Hartree-Fock exchange and the Double-Becke 
+\item[EDF2] is a linear combination of the Hartree--Fock exchange and the Double-Becke 
   exchange, Slater exchange, LYP correlation, revised LYPr correlation and VWN 
   correlation functionals \cite{dft:edf2}\index{EDF2}.
  \funexample{Combine HF=0.1695 Slater=0.2811 Becke=0.6227 mBecke=-0.0551 VWN=0.3029 LYP=0.5998 LYPr=-0.0053}
@@ -1350,6 +1385,7 @@ the number of occupied Hartree--Fock orbitals in each symmetry must anyway be
 specified with the \quotekw{.DOUBLY OCCUPIED} under \quotekw{*SCF INPUT}.
 
 The MP2 calculation will produce the MP2 energy and the natural orbitals
+{natural orbitals!MP2}
 for the density matrix through second order.  The primary purpose of
 this option is to generate good starting orbitals for CI or MCSCF wave
 functions, but it
@@ -1943,7 +1979,7 @@ identification of the various orbitals by inspection of the output.
 {\bf Purpose:}
 
 To direct population analysis\index{population analysis} of the wave function.
-Requires a set of natural orbitals\index{natural orbital} and their occupation.
+Requires a set of natural orbitals\index{natural orbitals!population analysis} and their occupation.
 
 \begin{description}
 \item[\Key{ALL}]
@@ -1994,7 +2030,7 @@ To control the printing of output.
 \begin{description}
 \item[\Key{CANONI}] \ \\
   Generate canonical/natural orbitals if the wave function has
-  converged\index{canonical orbital}\index{natural orbital}.
+  converged\index{canonical orbital}\index{natural orbitals}.
 
 \item[\Key{IPRAVE}] \ \\
   \kw{READ (LUINP,*) IPRAVE} \\

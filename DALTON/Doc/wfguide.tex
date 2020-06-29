@@ -5,11 +5,17 @@ Currently the following wave function types are implemented in \dalton:
 
 \begin{description}
 
-\item[RHF] Closed-shell singlet and spin-restricted high-spin
-Hartree--Fock (SCF, self-consistent
-field)\index{HF}\index{SCF}\index{Hartree--Fock}.
+\item[HF] Closed-shell singlet and spin-restricted high-spin
+Hartree--Fock (RHF, ROHF, HSHF, SCF, self-consistent field).
+(UHF, unrestricted Hartree-Fock is not implemented.)
+\index{HF}\index{SCF!see HF}\index{Hartree--Fock!see HF}
 
-\item[DFT] Density functional theory, closed shell and spin-restricted high-spin Kohn--Sham DFT, allowing for both local density functionals (LDA), generalized gradient approximation (GGA) functionals and hybrid functionals.\index{DFT}\index{Density Functional Theory}.
+\item[DFT] Density functional theory, closed shell and spin-restricted high-spin Kohn--Sham DFT, allowing for both local density functionals (LDA), generalized gradient approximation (GGA) functionals and hybrid functionals.
+(UDFT, unrestricted DFT is not implemented.)
+\index{Density Functional Theory}\index{KS-DFT}\index{DFT!restricted, closed shell}\index{DFT!restricted, high-spin}
+
+\item[HF-srDFT] Hybrid closed-shell combination of long-range Hartree-Fock and short-range Density functional theory, allowing for short-range local density functionals (srLDA), generalized gradient approximation (srPBE) functionals and hybrid functionals with exact exchange.
+\index{Density Functional Theory!short-range}\index{HF-srDFT}\index{srDFT!lrHF}
 
 \item[MP2]
 \index{MP2}\index{M{\o}ller-Plesset!second-order} 
@@ -21,25 +27,51 @@ numerical gradients. MP2 is also part of CC (see Chapter~\ref{ch:CC}).
 First-order properties and geometry optimization are available through
 this module.  
 
-\item[CI] Configuration
-interaction\index{CI}\index{Configuration Interaction}. Two types of
-configuration selection schemes are implemented: the complete active
-space model (CAS) and the restricted active space model (RAS).
+\item[MP2-srdFT, a.k.a. srMP2]
+\index{srMP2}\index{M{\o}ller-Plesset!second-order, short-range}\index{MP2!MP2-srDFT, a.k.a. srMP2}\index{srDFT!MP2-srDFT, a.k.a. srMP2}
+M{\o}ller-Plesset second-order perturbation theory which is based on
+closed-shell restricted long-range Hartree--Fock with a short-range density functional (HF-srDFT).
+Energy, second-order one-electron density matrix (primarily used as start guess for MC-srDFT),
+and first-order wave function (for srSOPPA) may be calculated,
+as well as first-order geometry optimizations using numerical gradients.
 
-\item[GASCI] Generalized Active Spaces Configuration
-interaction\index{GASCI}\index{Generalized Active Spaces Configuration Interaction}. 
-The most general scheme of defining configuration selection schemes (including CAS and RAS).
+\item[CI] Configuration interaction.
+\index{CI}\index{Configuration Interaction}
+Two types of configuration selection schemes are implemented: the complete active
+space model (CAS-CI) and the restricted active space model (RAS-CI).
+
+\item[CI-srDFT] Long-range configuration interaction combined with a short-range density functional.
+\index{CI-srDFT}\index{Configuration Interaction!long-range with srDFT functional}\index{CI!CI-srDFT}\index{srDFT!CI-srDFT}
+Two types of configuration selection schemes are implemented: the complete active
+space model (CASCI-srDFT) and the restricted active space model (RASCI-srDFT).
+
+\item[MCSCF] Multiconfiguration self-consistent field for any spin multiplicity
+and both ground state and low-lying excited states.
+Implemented models are the complete active space model (CASSCF) and
+the restricted active space model (RASSCF).
+\index{MCSCF}\index{CASSCF}\index{RASSCF}
+
+\item[MC-srDFT] Long-range multiconfiguration self-consistent field combined with a short-range density functional for any spin multiplicity
+and both ground state and low-lying excited states.
+Implemented models are the complete active space model (CAS-srDFT) and
+the restricted active space model (RAS-srDFT).
+\index{MC-srDFT}\index{MCSCF!MC-srDFT}\index{CASSCF!CAS-srDFT}\index{RASSCF!RAS-srDFT}\index{CAS-srDFT}\index{RAS-srDFT}\index{srDFT!MC-srDFT}
+
+\item[NEVPT2] NEVPT2 variant of CASSCF second-order perturbation theory.
+\index{NEVPT2}
+
+\item[srNEVPT2] Long-range NEVPT2 variant of CAS-srDFT second-order perturbation theory.
+\index{NEVPT2!CAS-srDFT}\index{srNEVPT2}\index{sr-DFT!srNEVPT2}
+
+\item[GAS-CI] Generalized Active Spaces Configuration interaction.
+\index{GAS-CI}\index{Configuration Interaction!Generalized Active Spaces (GAS-CI)}\index{CI!GAS-CI}
+The most general scheme of defining configuration selection schemes (CAS and RAS are special cases).
 For more information on how to run this kind of calculation, we refer to
 Chapters~\ref{ch:lucitaexamples} and~\ref{ch:lucita}.
 
 \item[CC] Coupled Cluster\index{CC}\index{Coupled Cluster}.
 For information on how to run this kind of calculation, we refer to 
 Chapters~\ref{ch:ccexamples} and~\ref{ch:CC}.
-
-\item[MCSCF] Multiconfiguration self-consistent field based on
-the complete active space model (CASSCF) and
-the restricted active space model
-(RASSCF)\index{MCSCF}\index{CASSCF}\index{RASSCF}.
 
 \end{description}
 
@@ -119,24 +151,25 @@ and available integral files.
 
 \noindent
 The following sample input specifies a CASSCF\index{CASSCF}
-calculation on water with maximum use of defaults:
+calculation on water with maximum use of defaults and starting
+from existing molecular orbitals on file:
 
 \begin{verbatim}
 **WAVE FUNCTIONS
-.MCSCF              -- specifies that this is an MCSCF calculation
+.MCSCF              ! specifies that this is an MCSCF calculation
 *CONFIGURATION INPUT
-.SPIN MULTIPLICITY  -- converge to singlet state
+.SPIN MULTIPLICITY  ! converge to a singlet state
     1
-.SYMMETRY           -- converge to state of symmetry 1 (i.e. A1)
+.SYMMETRY           ! converge to a state of symmetry 1 (i.e. A1)
     1
-.INACTIVE ORBITALS  -- number of doubly occupied orbitals each symmetry
+.INACTIVE ORBITALS  ! number of doubly occupied orbitals in each symmetry
     1    0    0    0
-.CAS SPACE          -- selects CAS and defines the active orbitals.
+.CAS SPACE          ! selects CAS and defines the active orbitals.
     4    2    2    0
-.ELECTRONS          -- number of electrons distributed in the active
-    8                  orbitals.
+.ELECTRONS          ! number of electrons distributed in the active orbitals.
+    8                  
 *ORBITAL INPUT
-.MOSTART            -- initial orbitals are orbitals from a previous run
+.MOSTART            ! initial orbitals are orbitals from a previous run
  NEWORB                (for example MP2 orbitals)
 **(name of next input module)
 \end{verbatim}
@@ -167,7 +200,7 @@ input modules through indentation
 \begin{verbatim}
 **WAVE FUNCTIONS
   .TITLE
-  .HF
+  .HF or .HFSRDFT
      *SCF INPUT
        .DOUBLY OCCUPIED
        ...
@@ -181,22 +214,24 @@ input modules through indentation
        ...
      *ORBITAL INPUT        (2)
      *STEP CONTROL         (if QCSCF)
-  .MP2
+  .MP2 (standard or long-range/short-range, depending on .HF or .HFSRDFT)
      *MP2 INPUT
      *ORBITAL INPUT        (2)
      *SCF INPUT
        .DOUBLY OCCUPIED
-  .CI
+  .CI or .CISRDFT
      *CONFIGURATION INPUT  (1)
      *ORBITAL INPUT        (2)
      *CI VECTOR            (3)
      *CI INPUT
-  .MCSCF
+  .MCSCF or .MCSRDFT
      *CONFIGURATION INPUT  (1)
      *ORBITAL INPUT        (2)
      *CI VECTOR            (3)
      *OPTIMIZATION
      *STEP CONTROL
+  .NEVPT2
+  .GASCI
   .CC
      *CC INPUT
   .STOP
@@ -268,7 +303,7 @@ loose part of one macro iteration in case of system crashes, disks
 running full, or other irregularities. \noindent In general the
 only change needed to the wave function input is to add the
 \Key{RESTART} keyword under \Sec{*WAVE FUNCTIONS}. However, if the
-original job was a multistep calculation involving {\it e.g.}~SCF,
+original job was a multistep calculation involving {\it e.g.}~HF,
 MP2 and MCSCF wave functions, restarting the MCSCF part requires the
 removal of the \Key{HF} and \Key{MP2} keywords in the input
 file. If the correct
@@ -287,9 +322,9 @@ made available to the job.
 %As done in Example~\ref{ex-6.1.4}, you can also use the restart feature if you
 You can also use the restart feature if you find it desirable to
 converge\index{convergence!threshold} the wave function sharper
-than specified in the original input. By default, SCF, MCSCF
-and CI wave functions are converged to 1.0D-5 in the gradient norm.
-However, if MP2 is requested then the default SCF wave function convergence threshold is 1.0D-6 in the gradient norm.
+than specified in the original input. By default, HF, MCSCF
+and CI wave functions are converged to 1.0D-5 ($10^{-5}$) in the gradient norm.
+However, if MP2 is requested then the default HF wave function convergence threshold is 1.0D-6 in the gradient norm.
 
 \pagebreak[2]
 \section{\label{sec:ig_orbtransfer}
@@ -320,15 +355,12 @@ coefficients to follow immediately afterwards).
 
 \section{\label{examples} Wave function input examples}
 
-Those who are used to the old \sirius\ input will not
-experience any dramatic changes with respect to the \dalton\ input,
-although a few minor differences exist in order to create a more
-user-friendly environment. The input sections are the same as
-before starting with a wave function specification, currently,
-including options for SCF, DFT, MP2, MCSCF, and CC reference states.
+The input sections for wave function options start of course
+with a wave function specification, currently,
+including options for HF, HF-srDFT, DFT, MP2, MCSCF, MC-srDFT, and CC reference states.
 Depending on this choice of reference state the following input
-sections take different form, from the simplest SCF input to the
-more complex MCSCF input. Minimal SCF and SCF+MP2\index{HF}\index{Hartree--Fock}\index{SCF}\index{MP2}\index{M{\o}ller-Plesset!second-order}
+sections take different form, from the simplest HF input to the
+more complex MCSCF input. Minimal HF and HF+MP2\index{HF}\index{MP2}\index{M{\o}ller-Plesset!second-order}
 using the new feature of generating the HF
 occupation on the basis of an initial H\"{u}ckel
 calculation\index{H\"{u}ckel} and then possibly change the
@@ -364,7 +396,7 @@ wave functions, we refer to Chapter~\ref{ch:ccexamples}.
 \bigskip
 
 The following input example gives a minimal
-SCF\index{SCF}\index{HF}\index{Hartree--Fock} input with default
+HF\index{HF}\index{Hartree--Fock} input with default
 starting  orbitals (that is, H\"{u}ckel guess), and automatic Hartree--Fock
 occupation, first based on the H\"{u}ckel\index{H\"{u}ckel} guess, and
 then updated during the DIIS\index{DIIS} iterations:
