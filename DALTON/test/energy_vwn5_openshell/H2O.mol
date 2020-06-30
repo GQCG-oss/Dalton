@@ -1,9 +1,0 @@
-ATOMBASIS
-MC-srDFT Energy calculation with symmetry
-Basis set specified with ATOMBASIS
-    2
-        8.    1      Basis=MINI(Scaled)
-O     0.0 -0.2249058930 0.0
-        1.    2      Bas=MINI(Scaled)
-H1    1.45235 0.899623 0.0
-H2   -1.45235 0.899623 0.0

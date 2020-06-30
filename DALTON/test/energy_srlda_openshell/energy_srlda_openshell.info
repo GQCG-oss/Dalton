@@ -1,6 +1,0 @@
-   energy_srlda_openshell
-   ----------------------
-   Molecule:         H2O
-   Wave Functions:   MCsrDFT (CAS) triplet symmetry 2 (B1) / MINI(Scaled) (Atombasis)
-   Test Purpose:     Check srDFT energy calculations of open-shell CAS-srSCF
-                     with symmetry, with GGA (PBE), with erf 0.4
