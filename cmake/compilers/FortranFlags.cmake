@@ -1,6 +1,9 @@
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     add_definitions(-DVAR_GFORTRAN)
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffloat-store -fcray-pointer -std=legacy")
+    if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER 10.0.0)
+        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-invalid-boz -fallow-argument-mismatch")
+    endif()
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i386")
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -m32"
@@ -12,7 +15,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
             )
     endif()
     set(CMAKE_Fortran_FLAGS_DEBUG   "-Og -g -fbacktrace -fcray-pointer -Wuninitialized")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -Wno-argument-mismatch -Wno-unused-variable -Wno-unused-dummy-argument -Wno-maybe-uninitialized")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -w")
     set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS
