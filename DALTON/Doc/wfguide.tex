@@ -97,29 +97,30 @@ essential information.
 \begin{minipage}{\mpwidth}
 \begin{verbatim}
 
-   Calculation type(s): RHF, MP2, CI, MCSCF, CC.
+   Calculation type(s): RHF, DFT, MP2, CI, MCSCF, CC, RHF-srDFT, CI-srDFT, MP2-srDFT, MC-SRDFT.
 
-   Number of symmetries (needed only for MCSCF wave functions)
-   If MCSCF or CI calculation then
+   If MCSCF, CI, MC-srDFT,or CI-srDFT calculation then
       Symmetry of wave function.
       Spin multiplicity of wave function.
-   else if one open shell RHF
-      Symmetry of open shell, doublet spin multiplicity
+   else if one open shell ROHF/ROHF-srDFT/DFT
+      Symmetry of open shell, doublet spin multiplicity (automatic)
+   else if two or more open shells HS-RHF/HS-DFT
+      Symmetry of Slater determinant, high-spin spin muliplicity (automatic)
    else
-      Totally symmetric, singlet spin multiplicity
+      Totally symmetric, singlet spin multiplicity(automatic)
    end if
 
    Number of basis orbitals.
    Number of molecular orbitals.
 
    Number of inactive orbitals in each symmetry.
-   If high-spin open shell RHF then
+   If high-spin open shell HS-RHF then
       Number of singly occupied orbitals in each symmetry
-   else if MCSCF or CI calculation then
+   else If MCSCF, CI, MC-srDFT, or CI-srDFT calculation then
       Number of active electrons.
-      If CAS calculation desired then
+      If CAS calculation then
          Number of active orbitals in each symmetry.
-      else if RAS calculation desired then
+      else if RAS calculation then
          Number of active orbitals in RAS1 space in each symmetry.
          Number of active orbitals in RAS2 space in each symmetry.
          Number of active orbitals in RAS3 space in each symmetry.
@@ -127,9 +128,9 @@ essential information.
       end if
    end if
 
-   if not MP2 then convergence threshold.
+   Convergence threshold (not for MP2/MP2-srDFT).
 
-   how to begin the calculation (initial guess).
+   How to begin the calculation (initial guess).
 
 \end{verbatim}
 \end{minipage} \\ \hline
@@ -356,8 +357,8 @@ coefficients to follow immediately afterwards).
 \section{\label{examples} Wave function input examples}
 
 The input sections for wave function options start of course
-with a wave function specification, currently,
-including options for HF, HF-srDFT, DFT, MP2, MCSCF, MC-srDFT, and CC reference states.
+with a wave function specification, currently
+including options for RHF/ROHF, RHF-srDFT, DFT/HS-DFT, MP2/MP2-srDFT, CI/CI-srDFT, MCSCF/MC-srDFT, NEVPT2/srNEVPT2, GAS-CI, and CC reference states.
 Depending on this choice of reference state the following input
 sections take different form, from the simplest HF input to the
 more complex MCSCF input. Minimal HF and HF+MP2\index{HF}\index{MP2}\index{M{\o}ller-Plesset!second-order}
@@ -379,7 +380,7 @@ MCSCF-CAS\index{CASSCF} input without starting
 orbitals\index{starting orbitals} will be given, as well as an
 MCSCF-RAS\index{RASSCF} with starting orbitals. We note that an
 MCSCF wave function by default will be optimized using
-spin-adapted configurations
+spin-adapted configuration state functions
 (CSFs)\index{CSF}\index{configuration state function}.
 %unless the wave function optimization is followed
 %by a calculation of molecular properties or geometry optimization,
@@ -387,7 +388,7 @@ spin-adapted configurations
 The three
 following examples illustrate calculations on an excited
 state\index{excited state}, on a core-hole\index{core hole} state
-with frozen core orbital\index{frozen core} and on a core-hole
+with frozen core orbital,\index{frozen core} and on a core-hole
 state with relaxed core\index{relaxed core} orbital. The last
 example shows an MCSCF calculation of non-equilibrium solvation
 energy\index{non-equilibrium solvation}. For examples on how to run CC
@@ -480,7 +481,7 @@ and \Key{DOUBLY OCCUPIED} keywords respectively
 **END OF DALTON INPUT
 \end{verbatim}
 
-A complete list of available functionals can be found in the Reference Guide, see Sec.~\ref{ref-dft}
+A complete list of available DFT functionals can be found in the Reference Guide, see Sec.~\ref{ref-dft}
 
 \begin{center}
 \fbox{
