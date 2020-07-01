@@ -2280,7 +2280,7 @@ C
      *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',  ! 21:25
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',  ! 26:30
      *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','.VIRTRU',  ! 31:35
-     *            '.MULOFA','.DSFAC ','.PVALUE','.HFXFAC','xXXXXXX'/  ! 36:40
+     *            '.MULOFA','.DSFAC ','.PVALUE','.HFXFAC','.ERF   '/  ! 36:40
 C
       functional_line_read = .false.
 C
@@ -2669,7 +2669,8 @@ C     Multiplication factor for DS in the localspin model
       IF (HFXSET) WRITE(LUPRI,*)
      &   'New     HFXFAC = ',HFXFAC
       HFXSET = .TRUE.
-  140 CONTINUE ! not used yet
+  140 CONTINUE ! .ERF
+      READ (LUCMD,*) CHIVAL
       GO TO 100
 C
  8000 CONTINUE
