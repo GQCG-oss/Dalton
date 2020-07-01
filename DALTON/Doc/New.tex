@@ -46,7 +46,7 @@ added and correted basis sets, performance improvements, bugs fixed etc. }
   \item Added support for AMOEBA potential
   \item Added pseudopotentials for avoiding electron spill-out \\ {}
     [ A. M. Khah, P. Reinholdt, J. M. H. Olsen, J. Kongsted and C. Hattig, J. Chem. Theory. Comput. 16, 1373-1381 (2020) ].
-  \item  Allow basis set(s) after BASIS in line 1 of .mol file (instead of on second line). (H. J. Aa. Jensen)
+  \item  Allow specification of basis set(s) after BASIS in line 1 of .mol file (instead of on second line). (H. J. Aa. Jensen)
    \end{itemize}
 \end{description}
 
@@ -107,8 +107,7 @@ added and correted basis sets, performance improvements, bugs fixed etc. }
 \item{\bf  Polarizable embedding (PE) model} for multiscale modelling \\
 Main authors: J\'{o}gvan Magnus H.\ Olsen, Kristan Sneskov, Janus J.\ Eriksen and Jacob Kongsted
 \begin{enumerate}
-  \item{PE library:}  \\
-   Reference: \newbibentry{pelib2012} \cite{pelib2012}
+  \item{PE library} Polarizable embedding library (Main author: J. M. H. Olsen)
   \item{PE-HF/DFT:}  \\
    Reference: \newbibentry{pescf} \cite{pescf}
   \item{PE-CC:}  \\
@@ -132,9 +131,9 @@ Main authors: Bin Gao \\
 Main authors: Olav Vahtras, Zilvinas Rinkevicius and Hans {\AA}gren\\
 References:
 \begin{enumerate}
-\item \newbibentry{niskanencppc13}\cite{niskanencppc13}
-\item \newbibentry{luopra97}\cite{luopra97}
-\item \newbibentry{vahtrasjpb97}\cite{vahtrasjpb97}
+\item \newbibentry{niskanencppc13}\cite{niskanencppc13},
+\item \newbibentry{luopra97}\cite{luopra97},
+\item \newbibentry{vahtrasjpb97}\cite{vahtrasjpb97},
 \item \newbibentry{agrencpl94}\cite{agrencpl94}
 \end{enumerate}
 \item{\bf  Quadratic response for open-shell DFT.}\\
@@ -237,7 +236,7 @@ Main authors: Stephan P. A. Sauer, Keld L. Bak, Ove Christiansen, Jacob Kongsted
 \begin{enumerate}
   \item{\bf An atomic integral direct implementation of SOPPA and SOPPA(CCSD) for singlet excitation energies:}  \\
    Main authors: Stephan P. A. Sauer, Keld L. Bak \\
-   References: \newbibentry{spas037}\cite{spas037} \\
+   References: \newbibentry{spas037}\cite{spas037},
    \newbibentry{spas089}\cite{spas089}
   \item{\bf RPA(D) Method:}\index{RPA(D)}
   A non-iterative doubles correction to RPA\\
@@ -280,35 +279,6 @@ Main authors: Keld L. Bak, Stephan P. A. Sauer\\
    References: "The vibrational g factor of dihydrogen from theoretical calculation
    and analysis of vibration-rotational spectra", K. L. Bak, S. P. A. Sauer, J. Oddershede and J. F. Ogilvie ,
    Phys. Chem. Chem. Phys. 7, 1747-1758 (2005)
-
-\item{\bf More basis sets and extended basis sets:}
-\begin{enumerate}
-  \item{pc-n} The polarization consistent basis sets by Frank Jensen.
-  \item{The aug-cc-pVTZ-J} basis sets for NMR spin-spin coupling constants by Stephan P. A. Sauer and co-workers.
-\end{enumerate}
-
-\item{\bf Code improvements:}
-Main author: Hans J\o rgen Aagaard Jensen
-\begin{enumerate}
-  \item{Mulliken population analysis works} A nice feature is the printing of populations in each
-   SCF iteration -- often quite illuminating when convergence problems.
-  \item{Large intermediate files for AO to MO transformation have been eliminated.}
-  \item{All modules can run under MPI} However, most parts of the code are not parallelized and will run
-    on only the master node, while the nodes idle. Yet, as the Fock matrices are constructed in parallel,
-    all calculations of Fock-type matrices in MCSCF and CC will be done in parallel, although the MCSCF and CC
-    codes themselves are not parallelized (yet). In Dalton 2.0 you HAD to use a sequential code for MCSCF and CC
-    calculations, and often this may not be practical.
-  \item{} CODATA 2002 constants instead of CODATA 1998 constants
-    (changes some values in output, if you compare with Dalton 2.0 output)
-  \item{} User input not needed to transform 2-el integrals for $>$ 255 basis functions
-    (switches by default to .NEWTRA if $>$ 255 bf)
-  \item{} Eliminated the at times very large intermediate files for integral transformation
-    with $>$ 255 basis functions (NEWTRA).
-  \item{} More modules of the program run correctly if Dalton run in parallel.
-    Example: the MCSCF code per se is not parallelized yet, but it will
-    give correct results when run in parallel, and the construction of
-    generalized Fock matrices will be done in parallel.
-\end{enumerate}
 
 \item{\bf .THRRED option} to scale all (most?) significant
 convergence thresholds, in order to check what digits in the results are
@@ -366,11 +336,6 @@ MP2 energies are available in a couple of  approximations~\cite{wkccmsjcp116,ccm
 \item{\bf Absorption in linear response:} The linear response code now
   allows finite lifetimes for excited states~\cite{pndmbhjajjojcp115}, allowing both scattering
   and absorptions processes to be taken into account simultaneously.
-
-\item{\bf Improvements for 64-bit machines:} The code can now also
-  calculate two-electron spin--orbit integrals as well as do AO to MO
-  transformations for more than 255 basis functions also on 64-bit
-  machines.
 
 \item{\bf Extensions to the coupled cluster code:} CCSD(T) energies
   and analytical gradients are now available.
