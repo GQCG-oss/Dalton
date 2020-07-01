@@ -3,25 +3,24 @@
 
 The \dalton\ program is designed to allow convenient,
 automated determination of a large number of molecular properties
-based on an HF, HF-srDFT, DFT, MP2, coupled cluster,
-CI, MCSCF, MC-srDFT, NEVPT2 reference wave function.
+based on an HF, HF-srDFT, DFT, MP2, CC,
+CI, MCSCF, or MC-srDFT reference wave function.
 
 Additions to the Dalton~2.0 release included
 density functional theory implemented fully up to quadratic response
 theory for closed-shell systems, as well as second derivatives for
 properties involving perturbation-dependent basis sets such a
-molecular Hessians, magnetizabilities and nuclear shieldings. Also
-available is the NEVPT2 approach
+molecular Hessians, magnetizabilities and nuclear shieldings.
+Also available from later releases are the NEVPT2 approach
 (the $n$-electron valence second-order perturbation theory) for
 calculating  accurate energetics of
-multireference-based systems including also dynamic electron
+CASSCF or CAS-srDFT multireference-based systems including also dynamic electron
 correlation, a parallel large-scale multireference CI program based on the concept of
 Generalized Active Spaces, and highly accurate MP2-R12
  methods are available for high-accuracy energetics of
 single-reference dominated closed-shell systems.
 
- The program consists
-of seven separate components, developed more or less independently.
+The program consists of seven separate components, developed more or less independently.
 \her\ is the integral generator, generating ordinary
 atomic\index{atomic integrals} and molecular integrals appearing in the
 time-independent, non-relativistic Schr\"{o}dinger equation, as well as
@@ -32,17 +31,24 @@ integral-direct coupled cluster calculations. \sir\ is the (MC)SCF and MC-srDFT 
 function optimization part, the MCSCF part is described comprehensively in the
 METECC-94 book~\cite{hjajhajomotecc}. \aba\ evaluates the second-order
 molecular properties of interest for SCF and MCSCF wave functions as
-well sd density functional theory, in particular second-order static
+well as density functional theory, in particular second-order static
 molecular properties in which the basis set depends on the applied
 perturbation. \resp\ is a general-purpose program for evaluating
 response functions, up to cubic response functions for (MC)SCF wave
 functions, quadratic response for DFT, and linear response for the
-Second-Order Polarization Propagator Approximation (SOPPA) and
+Second-Order Polarization Propagator Approximation (SOPPA), based on MP2, and
 Second-Order Polarization Propagator Approximation with Coupled Cluster
 Singles and Doubles Amplitudes - SOPPA(CCSD) or SOPPA(CC2). A new
 density functional theory module has been added in the 2.0 release of
 the program. Existing modules have been extended with the NEVPT2 and
-the MP2-R12 methodologies.
+the MP2-R12 and CC-R12 methodologies.
+
+Solvent effect can be approximated for many of the wave function types and in a number of different ways:
+polarizable embedding (PE), polarizable density embedding (PDE),
+frozen density embedding (FDE), polaricable cavity model (PCM), or the simple reaction field spherical cavity.
+
+%hjaaj June 2020: make a table over analytical and numeric response properties
+% for all wave function options?
 %New for
 %this release is {\cc}, a coupled cluster program that can calculate
 %coupled cluster energies and response properties for a number of
