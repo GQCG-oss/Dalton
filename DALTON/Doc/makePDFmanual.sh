@@ -45,7 +45,6 @@ fi
 
 echo "--> Output from making of pdf manual will be in $PDFDIR/Dalton_pdfmanual.log"
 
-
 PDFOUT="-halt-on-error -output-directory $PDFDIR"
 
 cp $DOC_DIRECTORY/*.bib $PDFDIR # needed for bibtex
