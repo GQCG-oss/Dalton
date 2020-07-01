@@ -45,9 +45,12 @@ fi
 
 echo "--> Output from making of pdf manual will be in $PDFDIR/Dalton_pdfmanual.log"
 
+
 PDFOUT="-halt-on-error -output-directory $PDFDIR"
 
-(pdflatex $PDFOUT Master; bibtex $PDFOUT Master; pdflatex $PDFOUT Master; pdflatex $PDFOUT Master; makeindex $PDFOUT Master; pdflatex $PDFOUT Master) \
+cp $DOC_DIRECTORY/*.bib $PDFDIR # needed for bibtex
+
+(pdflatex $PDFOUT Master; (cd $PDFDIR; bibtex Master); pdflatex $PDFOUT Master; pdflatex $PDFOUT Master; makeindex $PDFOUT Master; pdflatex $PDFOUT Master) \
 >& $PDFDIR/dalton_pdfmanual.log
 
 if [ $? -ne 0 ]; then
