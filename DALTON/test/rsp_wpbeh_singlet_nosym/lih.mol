@@ -1,9 +1,0 @@
-BASIS
-MINI(Scaled)
-
-
-Atomtypes=2 Angstrom nosymmetry
-Charge=3.0 Atoms=1
-Li 0.00000000 0.00000000 0.00000000
-Charge=1.0 Atoms=1
-H 1.4000000 0.00000000 0.00000000
