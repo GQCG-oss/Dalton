@@ -248,7 +248,7 @@ Specification of which wave function calculation is to be performed.
   calculation.  On the following line you must specify which
   functional to use.  The occupied orbitals, optimization control
   etc. are specified in the \quotekw{*SCF INPUT} submodule shared with
-  the \quotekw{.HF} option.  The DFT specific input options are
+  the \quotekw{.HF} option. The DFT specific input options are
   collected in the \quotekw{*DFT INPUT} input submodule.
   Note: you can only specify one of the \quotekw{.HF}, \quotekw{.DFT}, and \quotekw{.HFSRDFT} keywords.
 
@@ -261,6 +261,14 @@ Specification of which wave function calculation is to be performed.
   \quotekw{*SCF INPUT} submodule. It is mentioned here to make clear
   at what point this orbital transformation will be performed, if requested.}
   Option is incompatible with CC, which requires canonical orbitals.
+
+\item[\Key{SRFUN}] \ \\
+  \kw{READ (LUINP,'(A80)') LINE} \\
+  Specification of functional used for \quotekw{.HFSRDFT} and \qoutekw{.MCSRDFT} calculations.
+
+\item[\Key{HFXFAC}] \ \\
+  \kw{READ (LUINP,'(A80)') LINE} \\
+  Specification of the full-range Hartree-Fock like exchange for \quotekw{.HFSRDFT} and \qoutekw{.MCSRDFT} calculations.
 
 \end{description}
 
@@ -1295,7 +1303,58 @@ are possible with the \verb|Combine| keyword.
 \end{description}
 
 Note that at present double-hybrid functionals are implemented for energies only, analytic gradient contributions are not implemented.
+\pagebreak[3]
 
+\subsection{\label{ref-dft}DFT functionals}
+
+TEXT
+
+\subsubsection{SFunctionals}
+\providecommand\onefn[1]{#1}
+\begin{description}
+
+\item[SRLDA] ~\cite{dft:lb94}
+
+\item{SRPBEGWS} 
+
+\item{SRPBE0GWS}
+
+\item{SRPBERI}
+
+\end{description}
+
+\subsubsection{Exchange Functionals}
+\providecommand\exfn[1]{#1}
+\begin{description}
+
+\item{NULL}
+
+\item{HFEXCH}
+
+\item[SRXLDA]
+
+\item{SRXPBEGWS}
+
+\item{SRPBEHSE}
+
+\end{description}
+
+\subsubsection{Correlation Functionals}
+\providecommand\corfn[1]{#1}
+\begin{description}
+
+\item{NULL}
+
+\item{SRCVWN5}
+
+\item{SRCPW92}
+
+\item{SRCPBEGWS}
+
+\item{SRCPBERI}
+
+\end{description}
+ 
 \pagebreak[3]
 \subsection{\label{ref-haminp}\Sec{HAMILTONIAN}}
 
