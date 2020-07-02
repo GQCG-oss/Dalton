@@ -2163,8 +2163,13 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
                   ELSE
                      WRITE (LUPRI,400)
                   ENDIF
-                  WRITE (LUPRI,'(A,F10.5)')
-     &            '              with the coupling parameter : ',CHIVAL
+                  IF (CHIVAL .GT. 0.1d0) then
+                     WRITE (LUPRI,'(A,F10.5)')
+     &           '                with the coupling parameter : ',CHIVAL
+                  ELSE
+                     WRITE (LUPRI,'(A,1P,G12.5)')
+     &           '                with the coupling parameter : ',CHIVAL
+                  END IF
                   IF (COMLAM) THEN
                      WRITE (LUPRI,'(2A,E15.5)')
      &                 ' Two-electron integrals calculated',
@@ -2205,10 +2210,12 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
      +           'SS-integrals: ',THRFAC(2)
             END IF
          END IF
- 400  FORMAT(/' DFT-hybrid : Using a Erf type two-elec. operator')
- 410  FORMAT(/' DFT-hybrid : Using a Erf+Gau type two-elec. operator')
- 420  FORMAT(/' DFT-hybrid : Using a Erf+Exp type two-elec. operator')
-      END IF
+      END IF ! NEWDEF
+ 400  FORMAT(/' srDFT-hybrid : Using an Erf type two-elec. operator')
+ 410  FORMAT(/' srDFT-hybrid : Using an Erf+Gau type two-elec. operator'
+     &      ) 
+ 420  FORMAT(/' srDFT-hybrid : Using an Erf+Exp type two-elec. operator'
+     &      ) 
  199  CALL QEXIT('HR2INP')
       RETURN
       END
