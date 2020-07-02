@@ -43,7 +43,7 @@ fi
 #echo "DALTON_VERSION is " $DALTON_VERSION
 #echo "RELEASE_VERSION is " $RELEASE_VERSION
 
-echo "--> Output from making of pdf manual will be in $PDFDIR/Dalton_pdfmanual.log"
+echo "--> Output from making of pdf manual will be in $PDFDIR/dalton_pdfmanual.log"
 
 PDFOUT="-halt-on-error -output-directory $PDFDIR"
 
@@ -53,7 +53,7 @@ cp $DOC_DIRECTORY/*.bib $PDFDIR # needed for bibtex
 >& $PDFDIR/dalton_pdfmanual.log
 
 if [ $? -ne 0 ]; then
-   echo "--> latex error, see $PDFDIR/Dalton_pdfmanual.log"
+   echo "--> latex error, see $PDFDIR/dalton_pdfmanual.log"
    exit 2
 fi
 

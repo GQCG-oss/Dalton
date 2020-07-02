@@ -37,11 +37,11 @@ options are omitted.
    marks the beginning of the input group for orbital input.
 }
 
-\item { The keywords belonging to one of the main input groups begin with
+\item {The keywords belonging to one of the main input groups begin with
    the prompt {\dotkey}.
 }
 
-\item { Keywords that are necessary to specify are marked by "Required".
+\item {Keywords that are necessary to specify are marked by "Required".
    For other keywords the default values can be used in ordinary runs.
 }
 
@@ -261,7 +261,7 @@ Specification of which wave function calculation is to be performed.
   collected in the \quotekw{*DFT INPUT} input submodule.
   Note: you can only specify one of the \quotekw{.HF}, \quotekw{.DFT}, and \quotekw{.HFsrDFT} keywords.
 
-\item[(\quotekw{.FC MVO} in \quotekw{*SCF INPUT}]
+\item[\quotekw{.FC MVO} in \quotekw{*SCF INPUT}]
   Calculation of modified virtual SCF orbitals after SCF convergence based on the
   potential determined by the keyword (see comments below).
   The occupied SCF orbitals are not modified.
@@ -273,11 +273,11 @@ Specification of which wave function calculation is to be performed.
 
 \item[\Key{SRFUN}] \ \\
   \kw{READ (LUINP,'(A80)') LINE} \\
-  Specification of functional used for \quotekw{.HFSRDFT} and \qoutekw{.MCSRDFT} calculations.
+  Specification of functional used for \quotekw{.HFSRDFT} and \quotekw{.MCSRDFT} calculations.
 
 \item[\Key{HFXFAC}] \ \\
   \kw{READ (LUINP,'(A80)') LINE} \\
-  Specification of the full-range Hartree-Fock like exchange for \quotekw{.HFSRDFT} and \qoutekw{.MCSRDFT} calculations.
+  Specification of the full-range Hartree-Fock like exchange for \quotekw{.HFSRDFT} and \quotekw{.MCSRDFT} calculations.
 
 \item[\Key{STEX}]
   Static exchange calculation.\index{Static exchange}
@@ -1323,21 +1323,25 @@ are possible with the \verb|Combine| keyword.
 Note that at present double-hybrid functionals are implemented for energies only, analytic gradient contributions are not implemented.
 \pagebreak[3]
 
-\subsection{\label{ref-dft}DFT functionals}
+\subsection{\label{ref-srdft}srDFT functionals}
 
-TEXT
+In this sections the available srDFT functionals will be listed.
+The functonals are actived by specifying them after the \quotekw{.SRFUN} keyword.
+The most common functionals can be specied as a single word, whereas custom combinations of exchange and correlation can be specified by a two word key.
+The exchange functional will be specified first and the correlation functional second.
+For example, \verb|SRXPBEGWS SRCPBEGWS|
 
-\subsubsection{SFunctionals}
+\subsubsection{Functionals}
 \providecommand\onefn[1]{#1}
 \begin{description}
 
-\item[SRLDA] ~\cite{dft:lb94}
+\item[SRLDA] combination of \quotekw{SRXLDA} for exchange and \quotekw{SRCVWN5} for correlation~\cite{srdft:LDAERF}
 
-\item{SRPBEGWS} 
+\item[SRPBEGWS] combination of \quotekw{SRXPBEGWS} for exchange and \quotekw{SRCPBEGWS} for correlation~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
 
-\item{SRPBE0GWS}
+\item[SRPBE0GWS] combination of \quotekw{SRXPBEGWS} with \quotekw{.HFXFAC} set to 0.25 for exchange and \quotekw{SRCPBEGWS} for correlation~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
 
-\item{SRPBERI}
+\item[SRPBERI] combination of \quotekw{SRXPBEHSE} for exchange and \quotekw{SRCPBERI} for correlation~\cite{srdft:erfgau,srdft:Heyd2004}
 
 \end{description}
 
@@ -1345,15 +1349,15 @@ TEXT
 \providecommand\exfn[1]{#1}
 \begin{description}
 
-\item{NULL}
+\item[NULL] no exchange functional.
 
-\item{HFEXCH}
+\item[HFEXCH] 100\% full-range Hartree-Fock like exchange.
 
-\item[SRXLDA]
+\item[SRXLDA] a short-range LDA exchange functional based on the uniform electron gas by Paziani \textit{et al.}~\cite{srdft:LDAERF}
 
-\item{SRXPBEGWS}
+\item[SRXPBEGWS] short-range GGA exchange functional based on the PBE exchange functional by Goll, Werner and Stoll~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
 
-\item{SRPBEHSE}
+\item[SRXPBEHSE] short-range GGA exchange functional based on the PBE exchange functional by Heyd and Scuseria~\cite{srdft:Heyd2004}
 
 \end{description}
 
@@ -1361,15 +1365,15 @@ TEXT
 \providecommand\corfn[1]{#1}
 \begin{description}
 
-\item{NULL}
+\item[NULL] no correlation functional.
 
-\item{SRCVWN5}
+\item[SRCVWN5] short-range LDA correlation functional based on VWN5 by Paziani \textit{et al.}~\cite{srdft:LDAERF}
 
-\item{SRCPW92}
+\item[SRCPW92] short-range LDA correlation functional based on PW92 by Paziani \textit{et al.}~\cite{srdft:LDAERF}
 
-\item{SRCPBEGWS}
+\item[SRCPBEGWS] short-range GGA correlation functional based on the PBE correlation functional by Goll, Werner and Stoll~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
 
-\item{SRCPBERI}
+\item[SRCPBERI] short-range GGA correlation functional based on rational interpolation of the PBE correlation functionalbetween the short-range limit and the long-range limit by Toulouse, Colonna and Savin~\cite{srdft:erfgau}
 
 \end{description}
  
