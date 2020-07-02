@@ -608,15 +608,11 @@ C---------- Last line of EONE ----------
       end do
 
 * delete occurence in first position:
-      found = .false.
-      do while(.not. found)
       if(copy(1:1).eq.charac) then
          temp = copy(2:lenstr)
          copy = temp(1:lenstr-1)
          lenstr = lenstr-1
-         found = .true.
       end if
-      end do
 
       NF    = 0
       indf  = 0
