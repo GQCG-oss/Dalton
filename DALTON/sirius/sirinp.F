@@ -925,7 +925,7 @@ C
             INPERR = INPERR + 1
          ELSE IF (MCTYPE .NE. 1) THEN
             WRITE (LUPRI,'(/A)') 'INPUT ERROR: NEVPT2 requested,'//
-     &      ' NEVPT2 is only implemented for complecte active space.'
+     &   ' NEVPT2 is only implemented for complecte active space (CAS).'
             INPERR = INPERR + 1
          END IF
       END IF
@@ -2669,6 +2669,7 @@ C     Multiplication factor for DS in the localspin model
       IF (HFXSET) WRITE(LUPRI,*)
      &   'New     HFXFAC = ',HFXFAC
       HFXSET = .TRUE.
+      GO TO 100
   140 CONTINUE ! .ERF
       READ (LUCMD,*) CHIVAL
       GO TO 100
@@ -5413,12 +5414,18 @@ C     formulation of NEVPT.
             WRITE (IWUNIT,1050)
      &      'Antisymmetrized Product of Strongly Orthogonal Geminals'
             NUMRUN_LOCAL = NUMRUN_LOCAL - 1
-         ELSE IF ( DOMC ) THEN
-            IF (WFTYPE .EQ. ' ') WFTYPE='MC-SCF'
-            WRITE (IWUNIT,1050) 'MC-SCF optimization.'
+         ELSE IF ( DOMCSRDFT ) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='MC-srDFT'
+            WRITE (IWUNIT,1050) 'MC-srDFT optimization.'
             NUMRUN_LOCAL = NUMRUN_LOCAL - 1
             IF ( DORSP ) WRITE (IWUNIT,1050)
-     *         'Multi-configurational response calculation.'
+     *         'MC-srDFT response calculation.'
+         ELSE IF ( DOMC ) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='MC-SCF'
+            WRITE (IWUNIT,1050) 'MCSCF optimization.'
+            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
+            IF ( DORSP ) WRITE (IWUNIT,1050)
+     *         'MCSCF response calculation.'
          ELSE
             IF (DOCINO) THEN
                WRITE (IWUNIT,1050) 'CI-NO calculation.'
@@ -5668,15 +5675,15 @@ C
       WRITE(IWUNIT,1000)
       IF (DOCCSD) THEN
          WRITE(IWUNIT,'(/5X,A/)')
-     &   'For the specification of the Coupled Cluster: see later.'
+     &   'For the specification of the Coupled Cluster: see below.'
       END IF
       IF (DOLUCITA) THEN
          WRITE(IWUNIT,'(/5X,A/)')
-     &   'For the specification of the GAS CI in LUCITA: see later.'
+     &   'For the specification of the GAS CI in LUCITA: see below.'
       END IF
       IF (DOAPSG) THEN
          WRITE(IWUNIT,'(/5X,A/)')
-     &   'For the specification of the APSG: see later.'
+     &   'For the specification of the APSG: see below.'
       END IF
       IF (USE_PELIB()) THEN
          WRITE(IWUNIT,'(/5X,A/5X,A/)')
