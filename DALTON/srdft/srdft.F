@@ -129,8 +129,9 @@ C C K. Sharkas and J. Toulouse end
       mu_0   = -1.0D0
 
 C Cut string SRFTMP
-       call  CUT_INTO_FIELDS (SRFTMP,' ',maxfld,fields,lenfld,Nfld)
-       IF (NFld .LE. 0) THEN
+
+      call  CUT_INTO_FIELDS (SRFTMP,' ',maxfld,fields,lenfld,Nfld)
+      IF (NFld .LE. 0) THEN
           WRITE(LUPRI,'(//A/A/2A)') ' FATAL INPUT ERROR, '//
      &  'invalid specification of short range functionals.',
      &  ' Both an exchange and a correlation functional must be given.',
@@ -140,31 +141,31 @@ C Cut string SRFTMP
           WRITE(LUPRI,'(/A/,(5X,A))') ' Known correlation functionals:',
      &       (CTABLE(I),I=1,NCTABLE)
           CALL QUIT('Invalid specification of short range functionals')
-       END IF
-       IF (NFld .EQ. 1) THEN
-          SRXFUN = fields(1)
-          SRCFUN = ' '
-          SRLOCALSPIN = ' '
-          DFT_LOCALSPIN = .FALSE.
-       ELSE IF (NFld .EQ. 2) THEN
-          SRXFUN = fields(1)
-          SRCFUN = fields(2)
-          SRLOCALSPIN = ' '
-          DFT_LOCALSPIN = .FALSE.
-       ELSE IF (NFld .GE. 3) THEN
-          SRLOCALSPIN = fields(3)
-          IF (INDEX(SRLOCALSPIN,'SRLOCALSP') .GT. 0) THEN
-             DFT_LOCALSPIN = .TRUE.
-             DFT_SPINDNS   = .TRUE.
-             write (lupri,*) 'DFT_LOCALSPIN activated! ',SRLOCALSPIN
+      END IF
+      IF (NFld .EQ. 1) THEN
+         SRXFUN = fields(1)
+         SRCFUN = ' '
+         SRLOCALSPIN = ' '
+         DFT_LOCALSPIN = .FALSE.
+      ELSE IF (NFld .EQ. 2) THEN
+         SRXFUN = fields(1)
+         SRCFUN = fields(2)
+         SRLOCALSPIN = ' '
+         DFT_LOCALSPIN = .FALSE.
+      ELSE IF (NFld .GE. 3) THEN
+         SRLOCALSPIN = fields(3)
+         IF (INDEX(SRLOCALSPIN,'SRLOCALSP') .GT. 0) THEN
+            DFT_LOCALSPIN = .TRUE.
+            DFT_SPINDNS   = .TRUE.
+            write (lupri,*) 'DFT_LOCALSPIN activated! ',SRLOCALSPIN
 ! --- do not quit, field 3 might be mu_0 for SRCPBERI below /160523-hjaaj
-!         ELSE
-!            WRITE (LUPRI,'(//2A/2A)') 'FATAL INPUT ERROR, '//
-!    &       'invalid specification of local spin option: ',SRLOCALSPIN,
-!    &       ' Input line: ',SRFTMP
+!        ELSE
+!           WRITE (LUPRI,'(//2A/2A)') 'FATAL INPUT ERROR, '//
+!    &      'invalid specification of local spin option: ',SRLOCALSPIN,
+!    &      ' Input line: ',SRFTMP
 !          CALL QUIT('Invalid specification of short range functionals')
-          END IF
-       END IF
+         END IF
+      END IF
 
       SETXFUN = .TRUE.
       DO 100 II = 1, NXTABLE

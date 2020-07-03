@@ -925,7 +925,7 @@ C
             INPERR = INPERR + 1
          ELSE IF (MCTYPE .NE. 1) THEN
             WRITE (LUPRI,'(/A)') 'INPUT ERROR: NEVPT2 requested,'//
-     &   ' NEVPT2 is only implemented for complecte active space (CAS).'
+     &   ' NEVPT2 is only implemented for complete active space (CAS).'
             INPERR = INPERR + 1
          END IF
       END IF
@@ -1497,9 +1497,9 @@ C *** Check if initial occupation for RHF has been defined.
 C
       IF ((DOSCF .OR. DOMP2 .OR. DOCCSD) .AND. INIOCC .LE. 0) THEN
          INPERR = INPERR + 1
-         WRITE (LUPRI,'(/A/A)')
-     &     'ERROR: Input error for DFT, HF, MP2, or CC calculation:',
-     &     'ERROR: Initial SCF occupation has not been defined.'
+         WRITE (LUPRI,'(/A/A)') 'ERROR: '//
+     &      'Input error for DFT, HF, MP2, CC, or a srDFT calculation:',
+     &      'ERROR: Initial SCF occupation has not been defined.'
          INIOCC = 0
 C        ... set INIOCC = 0 for SIR_PRTINP
       END IF
@@ -2242,14 +2242,14 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 40)
+      PARAMETER (NTABLE = 41)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      &          REWORD*20, TITLIN*80, SR_FUNCS*80
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
       character(80) :: functional_line
-      logical functional_line_read
+      logical functional_line_read, SRFUN_set
 C
 C Used from common:
 C  INFINP : FLAG(*), IORTO, DO*
@@ -2280,11 +2280,13 @@ C
      *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',  ! 21:25
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',  ! 26:30
      *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','.VIRTRU',  ! 31:35
-     *            '.MULOFA','.DSFAC ','.PVALUE','.HFXFAC','.ERF   '/  ! 36:40
+     *            '.MULOFA','.DSFAC ','.PVALUE','.HFXFAC','.ERF   ',  ! 36:40
+     *            '.MP2SRD'/                                          ! 41
 C
       functional_line_read = .false.
 C
       SR_FUNCS = ' ERROR: .SRFUN was not specified in input.'
+      SRFUN_set = .FALSE.
 C
 C     ***** PROCESS INPUT FOR SIR_GENINP *****
 C
@@ -2300,7 +2302,8 @@ C
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,106,117,118,119,120,
      &                   121,122,123,124,125,126,127,128,129,130,
-     &                   131,132,133,134,135,136,137,138,139,140), II
+     &                   131,132,133,134,135,136,137,138,139,140,
+     &                   141), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION' .OR. WORD .EQ. '.ALLOPT') THEN
@@ -2628,6 +2631,7 @@ C&&& SRFUN : Read Correlation (SRCFUN) and
 C&&&         Exchange (SRXFUN) functionals
   130 READ (LUCMD,'(A)') SR_FUNCS
       DFTADD = .TRUE.
+      SRFUN_set = .TRUE.
       GO TO 100
 C&&&  SRHYBR : Perform a DFT MC-SRDFT hybrid calculation.
 C&&&           Treat core with regular DFT and valence with MC-SRDFT
@@ -2673,24 +2677,44 @@ C     Multiplication factor for DS in the localspin model
   140 CONTINUE ! .ERF
       READ (LUCMD,*) CHIVAL
       GO TO 100
+C *** Option  10 >MP2SRD<  srDFT Moeller-Plesset PT2 calculation
+  141 CONTINUE
+        DOMP2    = .TRUE.
+        ADDSRI   = .TRUE.
+        NUMRUN   = NUMRUN + 1
+        FLAG(3)  = .FALSE.
+      GO TO 100
 C
  8000 CONTINUE
 
 !     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
       IF (ADDSRI) THEN
-         CALL SRFUN_INPUT(SR_FUNCS)
-         IF (CHIVAL .LT. 0.0D0) THEN
+        IF (SRFUN_set) THEN
+          CALL SRFUN_INPUT(SR_FUNCS)
+          IF (CHIVAL .LT. 0.0D0) THEN
             CHIVAL = 0.4D0
             WRITE(LUPRI,'(/A)')
      &      ' mu value for srDFT set to 0.4 (default)'
-         ELSE
+          ELSE
             WRITE(LUPRI,'(/A,F5.2,A)')
      &      ' mu value for srDFT is',CHIVAL,' (user input)'
-         END IF
-         DOSRIN = .TRUE.
-         ! default is erf
+          END IF
+          DOSRIN = .TRUE.
+          ! default is erf
+        ELSE
+          CALL QUIT('ERROR: '//
+     &      '.SRFUN not specified for srDFT wave function')
+        END IF
+        IF (DODFT) THEN
+          CALL QUIT('ERROR: Both .DFT and an srDFT model not allowed')
+        END IF
+      ELSE IF (DODFT) THEN
+        IF (SRFUN_set) THEN
+          CALL QUIT('ERROR: .SRFUN specified for Kohn-Sham DFT')
+        END IF
       END IF
+
 #else
       IF (ADDSRI) CALL QUIT('srDFT is not available in this version')
 #endif
