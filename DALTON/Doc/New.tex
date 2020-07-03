@@ -14,8 +14,9 @@ added and correted basis sets, performance improvements, bugs fixed etc. }
     \begin{itemize}
   \item HF-srDFT, MP2-srDFT, CAS-srDFT, RAS-srDFT, NEVPT2-srDFT ground state energies and wave functions \\
   \item State specific CAS-srDFT and RAS-srDFT for excited states \\
-  \item Singlet and triplet excitation energies and transition moments for HF-srDFT and MC-srDFT (linear response module) \\
-  \item Singlet and triplet excitation energies and transition moments from SOPPA-srDFT, using MP2-srDFT \\
+  \item Singlet and triplet excitation energies and transition moments for HF-srDFT and MC-srDFT (linear response module).
+  \item Singlet and triplet excitation energies and transition moments from SOPPA-srDFT, based on MP2-srDFT
+  (the second-order polarization propagator approximation for srDFT).
   \item srLDA and srPBEGWS short-range functionals.
     \end{itemize}
 \item{\bf gTDA} The generalized Tamm-Dancoff approximation.
@@ -26,35 +27,34 @@ added and correted basis sets, performance improvements, bugs fixed etc. }
    Useful for avoiding (near-)triplet-instability problems, for example in DFT or MC-srDFT calculations of triplet excitations or spin-spin coupling constants.
   \item gTDA for singlet linear response propertes and singlet excitation energites for wave functions of any spin multiplicity.
    \end{itemize}
-\item{\bf qFIT} is extended to include up to quadrupoles (C. Steinmann)
-\item{\bf CVS for CC} The core-valence separation ( CVS ) approximation for CC calculations of core-excited states (S. Coriani et al.)
-\item{\bf Triplet-triplet excited state moments using EOM-CC} (R. Faber)
-\item{\bf  New features using the Polarizable Embedding library (PElib)}
+\item{\bf qFITLAB} is extended to include up to quadrupoles. (C. Steinmann)
+\item{\bf CVS for CC} The core-valence separation ( CVS ) approximation for CC calculations of core-excited states. (S. Coriani et al.)
+\item{\bf Triplet-triplet excited state moments using EOM-CC}. (R. Faber)
+\item{\bf New features using the Polarizable Embedding library (PElib)}:
    \begin{itemize}
-  \item Calculate and print oscillator strengths based on .EEF dipole transition moments. (N. List, J. M. H. Olsen, H. J. Aa. Jensen)
+  \item Effective external field (EEF) can now be used for all dipole properties. Calculated oscillator strengths based on EEF dipole transition moments are now printed. (N. List, J. M. H. Olsen, H. J. Aa. Jensen)
   \item Polarizable density embedding (PDE) model (use -DENABLE\_PDE=ON during setup to enable it [requires HDF5]) \\ {}
     [ J. M. H. Olsen, C. Steinmann, K. Ruud, and J. Kongsted, J. Phys. Chem. A 119, 5344 (2015); \\
-      P. Reinholdt, J. Kongsted, and J. M. H. Olsen, J. Phys. Chem. Lett. 8, 5949 (2017) ]
+      P. Reinholdt, J. Kongsted, and J. M. H. Olsen, J. Phys. Chem. Lett. 8, 5949 (2017) ].
   \item PDE-CC2, PDE-CCSD, and PDE-CCSDR(3) including linear and quadratic response (also enables PE-CC through PElib) \\ {}
-    [ D. Hrsak, J. M. H. Olsen, and J. Kongsted, J. Chem. Theory Comput. 14, 1351 (2018) ]
+    [ D. Hrsak, J. M. H. Olsen, and J. Kongsted, J. Chem. Theory Comput. 14, 1351 (2018) ].
   \item FixSol continuum solvation with FIXPVA2 cavity tesselation \\ {}
     [ M. S. Nørby, C. Steinmann, J. M. H. Olsen, H. Li, and J. Kongsted, J. Chem. Theory Comput. 12, 5050 (2016);
-      N. M. Thellamurege and H. Li, J. Chem. Phys. 137, 246101 (2012) ]
+      N. M. Thellamurege and H. Li, J. Chem. Phys. 137, 246101 (2012) ].
   \item Enabled cubic response for PE-HF/DFT and PDE-HF/DFT \\ {}
-    [ J. M. H. Olsen and J. Kongsted, Adv. Quantum Chem. 61, 107 (2011) ]
-  \item Effective external field (EEF) can now be used for all dipole properties
-  \item Added support for AMOEBA potential
+    [ J. M. H. Olsen and J. Kongsted, Adv. Quantum Chem. 61, 107 (2011) ].
+  \item Added support for AMOEBA potential.
   \item Added pseudopotentials for avoiding electron spill-out \\ {}
     [ A. M. Khah, P. Reinholdt, J. M. H. Olsen, J. Kongsted and C. Hattig, J. Chem. Theory. Comput. 16, 1373-1381 (2020) ].
-  \item  Allow specification of basis set(s) after BASIS in line 1 of .mol file (instead of on second line). (H. J. Aa. Jensen)
    \end{itemize}
+  \item  Allow specification of basis set(s) after BASIS in line 1 of .mol file (instead of on second line). (H. J. Aa. Jensen)
 \end{description}
 
 \section{New features in Dalton2018}
 
 \begin{enumerate}
 
-\item{\bf integral tranformation} New parallel 2-electron integral transformation .FCKTRA  (H. J. Aa. Jensen).
+\item{\bf Integral tranformation} New parallel 2-electron integral transformation .FCKTRA  (H. J. Aa. Jensen).
 \item{\bf AO-SOPPA} triplet excitation energies and polarizabilities (P. A. B. Haase).
 \item{\bf Analytical PE-HF/DFT molecular gradients} (see e.g. test/pehf\_geoopt for example of input). \\ {}
   [ Reference: N. H. List, M. T. B. Beerepoot, J. M. H. Olsen, B. Gao, K. Ruud, H. J. Aa. Jensen, and J. Kongsted. J. Chem. Phys. 142, 034119 (2015). ]
@@ -121,7 +121,7 @@ Reference: \newbibentry{kauczor:2011} \cite{kauczor:2011}
 \item{\bf  Relativistic corrections to nuclear shielding constants:}  \\
 Main authors: Juan I. Melo \\
  References:  \newbibentry{melojcp03} \cite{melojcp03}, \newbibentry{melomaldojcp12} \cite{melomaldojcp12}
-\item{\bf  Empirical dispersion corrections DFT-D1, DFT-D3 and DFT-D3BJ:}  \\
+\item{\bf  Empirical dispersion corrections DFT-D2, DFT-D3 and DFT-D3BJ:}  \\
 Main authors: Andrew Teale
 \item{\bf  More general ECP using GEN1INT module:} \\
 Main authors: Bin Gao \\
