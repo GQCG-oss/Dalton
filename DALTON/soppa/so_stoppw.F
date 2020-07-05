@@ -42,11 +42,11 @@ C
 C
             IF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QMAXV)) THEN
 C
-               STOPP(1,IVEL,1) = STOPP(1,IVEL,1) + TRGOS(1)*QSTEP*
+               STOPP(1,IVEL,1) = STOPP(1,IVEL,1) + TRGOS(1)*QSTEP*      &
      &                           PI*D4/(QVAL*VELOC*VELOC)
-               STOPP(2,IVEL,1) = STOPP(2,IVEL,1) + TRGOS(2)*QSTEP*
+               STOPP(2,IVEL,1) = STOPP(2,IVEL,1) + TRGOS(2)*QSTEP*      &
      &                           PI*D4/(QVAL*VELOC*VELOC)
-               STOPP(3,IVEL,1) = STOPP(3,IVEL,1) + TRGOS(3)*QSTEP*
+               STOPP(3,IVEL,1) = STOPP(3,IVEL,1) + TRGOS(3)*QSTEP*      &
      &                           PI*D4/(QVAL*VELOC*VELOC)
 
             ENDIF
@@ -62,22 +62,22 @@ C
                IF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QINP)
      &                            .AND. (QVAL .LE. QMAXV)) THEN
 C
-                  STOPP(1,IVEL,2) = STOPP(1,IVEL,2) + TRGOS(1)*QSTEP*
+                  STOPP(1,IVEL,2) = STOPP(1,IVEL,2) + TRGOS(1)*QSTEP*   &
      &                              PI*D4/(QVAL*VELOC*VELOC)
-                  STOPP(2,IVEL,2) = STOPP(2,IVEL,2) + TRGOS(2)*QSTEP*
+                  STOPP(2,IVEL,2) = STOPP(2,IVEL,2) + TRGOS(2)*QSTEP*   &
      &                              PI*D4/(QVAL*VELOC*VELOC)
-                  STOPP(3,IVEL,2) = STOPP(3,IVEL,2) + TRGOS(3)*QSTEP*
+                  STOPP(3,IVEL,2) = STOPP(3,IVEL,2) + TRGOS(3)*QSTEP*   &
      &                              PI*D4/(QVAL*VELOC*VELOC)
 C
                ENDIF
 C
             ELSEIF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QMAXV)) THEN
 C
-               STOPP(1,IVEL,2) = STOPP(1,IVEL,2) + TRGOS(1)*QSTEP*
+               STOPP(1,IVEL,2) = STOPP(1,IVEL,2) + TRGOS(1)*QSTEP*      &
      &                           PI*D4/(QVAL*VELOC*VELOC)
-               STOPP(2,IVEL,2) = STOPP(2,IVEL,2) + TRGOS(2)*QSTEP*
+               STOPP(2,IVEL,2) = STOPP(2,IVEL,2) + TRGOS(2)*QSTEP*      &
      &                           PI*D4/(QVAL*VELOC*VELOC)
-               STOPP(3,IVEL,2) = STOPP(3,IVEL,2) + TRGOS(3)*QSTEP*
+               STOPP(3,IVEL,2) = STOPP(3,IVEL,2) + TRGOS(3)*QSTEP*      &
      &                           PI*D4/(QVAL*VELOC*VELOC)
 C
             ENDIF
