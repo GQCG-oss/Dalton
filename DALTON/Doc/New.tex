@@ -1,16 +1,87 @@
 \chapter{New features in the \dalton\ releases}
 
+%{ \renewcommand{\descriptionlabel}[1]{\hspace{\labelsep}\rmfamily{{\bf #1}}}
+
+{\it See {\rm CHANGELOG.md} in the root directory of the Dalton distribution (available from {\rm \url{http://gitlab.com}} for 
+added and correted basis sets, performance improvements, bugs fixed etc. }
+
+\section{New features in Dalton2020}
+
+\begin{description}
+
+\item{\bf MC-srDFT and more} Short-range density functional theory combined with many long-range wave function models
+    (H. J. Aa. Jensen, E. Fromager, S. Knecht, E. R. Kjellgren and others)
+    \begin{itemize}
+  \item HF-srDFT, MP2-srDFT, CAS-srDFT, RAS-srDFT, NEVPT2-srDFT ground state energies and wave functions \\
+  \item State specific CAS-srDFT and RAS-srDFT for excited states \\
+  \item Singlet and triplet excitation energies and transition moments for HF-srDFT and MC-srDFT (linear response module).
+  \item Singlet and triplet excitation energies and transition moments from SOPPA-srDFT, based on MP2-srDFT
+  (the second-order polarization propagator approximation for srDFT).
+  \item srLDA and srPBEGWS short-range functionals.
+    \end{itemize}
+\item{\bf gTDA} The generalized Tamm-Dancoff approximation.
+   gTDA signifies that it is also implemented for MCSCF and MC-srDFT wave functions, for which it corresponds to a contracted CIS. (H. J. Aa. Jensen)
+   \begin{itemize}
+  \item gTDA for triplet linear response properties for singlet wave functions;
+   triplet excitation energies as well as triplet linear response properties (e.g. Fermi contact).\\
+   Useful for avoiding (near-)triplet-instability problems, for example in DFT or MC-srDFT calculations of triplet excitations or spin-spin coupling constants.
+  \item gTDA for singlet linear response propertes and singlet excitation energites for wave functions of any spin multiplicity.
+   \end{itemize}
+\item{\bf qFITLAB} is extended to include up to quadrupoles. (C. Steinmann)
+\item{\bf CVS for CC} The core-valence separation ( CVS ) approximation for CC calculations of core-excited states. (S. Coriani et al.)
+\item{\bf Triplet-triplet excited state moments using EOM-CC}. (R. Faber)
+\item{\bf New features using the Polarizable Embedding library (PElib)}:
+   \begin{itemize}
+  \item Effective external field (EEF) can now be used for all dipole properties. Calculated oscillator strengths based on EEF dipole transition moments are now printed. (N. List, J. M. H. Olsen, H. J. Aa. Jensen)
+  \item Polarizable density embedding (PDE) model (use -DENABLE\_PDE=ON during setup to enable it [requires HDF5]) \\ {}
+    [ J. M. H. Olsen, C. Steinmann, K. Ruud, and J. Kongsted, J. Phys. Chem. A 119, 5344 (2015); \\
+      P. Reinholdt, J. Kongsted, and J. M. H. Olsen, J. Phys. Chem. Lett. 8, 5949 (2017) ].
+  \item PDE-CC2, PDE-CCSD, and PDE-CCSDR(3) including linear and quadratic response (also enables PE-CC through PElib) \\ {}
+    [ D. Hrsak, J. M. H. Olsen, and J. Kongsted, J. Chem. Theory Comput. 14, 1351 (2018) ].
+  \item FixSol continuum solvation with FIXPVA2 cavity tesselation \\ {}
+    [ M. S. Nørby, C. Steinmann, J. M. H. Olsen, H. Li, and J. Kongsted, J. Chem. Theory Comput. 12, 5050 (2016);
+      N. M. Thellamurege and H. Li, J. Chem. Phys. 137, 246101 (2012) ].
+  \item Enabled cubic response for PE-HF/DFT and PDE-HF/DFT \\ {}
+    [ J. M. H. Olsen and J. Kongsted, Adv. Quantum Chem. 61, 107 (2011) ].
+  \item Added support for AMOEBA potential.
+  \item Added pseudopotentials for avoiding electron spill-out \\ {}
+    [ A. M. Khah, P. Reinholdt, J. M. H. Olsen, J. Kongsted and C. Hattig, J. Chem. Theory. Comput. 16, 1373-1381 (2020) ].
+   \end{itemize}
+  \item  Allow specification of basis set(s) after BASIS in line 1 of .mol file (instead of on second line). (H. J. Aa. Jensen)
+\end{description}
+
+\section{New features in Dalton2018}
+
+\begin{enumerate}
+
+\item{\bf Integral tranformation} New parallel 2-electron integral transformation .FCKTRA  (H. J. Aa. Jensen).
+\item{\bf AO-SOPPA} triplet excitation energies and polarizabilities (P. A. B. Haase).
+\item{\bf Analytical PE-HF/DFT molecular gradients} (see e.g. test/pehf\_geoopt for example of input). \\ {}
+  [ Reference: N. H. List, M. T. B. Beerepoot, J. M. H. Olsen, B. Gao, K. Ruud, H. J. Aa. Jensen, and J. Kongsted. J. Chem. Phys. 142, 034119 (2015). ]
+\item{\bf Freezing atoms in geometry optimization.}
+  See e.g. test/geoopt\_freeze for example of input.  (N. H. List and H. J. Aa. Jensen).
+\item{\bf Effective external field (EEF)} for one- and two-photon absorption in PE-HF/DFT calculations.\\ {}
+  [ Reference: N. H. List, H. J. Aa. Jensen, and J. Kongsted. Phys. Chem. Chem. Phys. 18, 10070 (2016). ]
+\item{\bf Remove the most diffuse virtual orbitals} after SCF or MCSCF (new .VIRTRUNC option). (H. J. Aa. Jensen).
+\item{\bf PE-QM interaction energy} Add purely classical multipole-multipole interaction energy in PE-QM calculations (which can be skipped using the .SKIPMUL keyword under the \*PEQM section).
+\item{\bf FDE} Add basic frozen density embedding (FDE) functionality (A. Gomes, C. Jacob, L. Visscher).
+\item{\bf Dipole velocity complex linear polarizability} with test rsp\_cpp\_veloci (N. H. List).
+\item{\bf Resonant-convergent (damped) cubic response} at HF/DFT levels (T. Fahleson and P. Norman)\\ {}
+  [ T. Fahleson and P. Norman. J. Chem. Phys. 147, 144109 (2017). ]
+ 
+ \end{enumerate}
+
 \section{New features in Dalton2016}
 
 \begin{enumerate}
-\item{\bf New faster CC3 module}\\
-Main authors: Rolf H. Myhre and Henrik Koch
-\item{\bf Parallel AO-SOPPA}\\
-Main author: Frederik Beyer Kjær Hansen and Rasmus Faber
-\item{\bf QFIT library - fitting charges, and, if desired, dipoles to simulate the electrostatic potential from QM wave functions:}\\
-Main author: Casper Steinmann
-\item{\bf Vibrational averaging of NMR coupling constants at SOPPA/MP2 level} \\
-Main author: Rasmus Faber
+\item{\bf New faster CC3 module}
+(Main authors: Rolf H. Myhre and Henrik Koch)
+\item{\bf Parallel AO-SOPPA}
+(Main author: Frederik Beyer Kjær Hansen and Rasmus Faber)
+\item{\bf QFIT library - fitting charges, and, if desired, dipoles to simulate the electrostatic potential from QM wave functions:}
+(Main author: Casper Steinmann)
+\item{\bf Vibrational averaging of NMR coupling constants at SOPPA/MP2 level} 
+(Main author: Rasmus Faber)
 \end{enumerate}
 
 \section{New features in Dalton2015}
@@ -25,17 +96,18 @@ Main author: Rasmus Faber
  \item{Magnetic linear response properties using London atomic orbitals (LAOs).} \\
   Reference: \newbibentry{pelao} \cite{pelao}
 \end{enumerate}
+\item{\bf PCM-SOPPA excitation energies}
+\item{\bf QM/CMM approach}
+\item{\bf DFT-D3 and DFT-D3(BJ) dispersion energy corrections}
 \end{enumerate}
-
 
 \section{New features in DALTON2013}
 
 \begin{enumerate}
-\item{\bf  Polarizable embedding (PE) model:}  \\
+\item{\bf  Polarizable embedding (PE) model} for multiscale modelling \\
 Main authors: J\'{o}gvan Magnus H.\ Olsen, Kristan Sneskov, Janus J.\ Eriksen and Jacob Kongsted
 \begin{enumerate}
-  \item{PE library:}  \\
-   Reference: \newbibentry{pelib2012} \cite{pelib2012}
+  \item{PE library} Polarizable embedding library (Main author: J. M. H. Olsen)
   \item{PE-HF/DFT:}  \\
    Reference: \newbibentry{pescf} \cite{pescf}
   \item{PE-CC:}  \\
@@ -57,21 +129,17 @@ Main authors: Bin Gao \\
 \item{\bf  Subsystems CC using Cholesky decomposition.}
 \item{\bf  Static exchange (STEX) for X-ray spectroscopy.} \\
 Main authors: Olav Vahtras, Zilvinas Rinkevicius and Hans {\AA}gren\\
-Reference:\\
-\newbibentry{niskanencppc13}\cite{niskanencppc13},\\
-\newbibentry{luopra97}\cite{luopra97}\\
-\newbibentry{vahtrasjpb97}\cite{vahtrasjpb97}\\
-\newbibentry{agrencpl94}\cite{agrencpl94}\\
+References:
+\begin{enumerate}
+\item \newbibentry{niskanencppc13}\cite{niskanencppc13},
+\item \newbibentry{luopra97}\cite{luopra97},
+\item \newbibentry{vahtrasjpb97}\cite{vahtrasjpb97},
+\item \newbibentry{agrencpl94}\cite{agrencpl94}
+\end{enumerate}
 \item{\bf  Quadratic response for open-shell DFT.}\\
 Main authors: Zilvinias Rinkevicius and Olav Vahtras\\
-Reference:\\
+Reference:
 \newbibentry{rinkeviciusjctc08} \cite{rinkeviciusjctc08}
-\item{\bf  Various performance improvements and a few bug fixes. Including:}
-\begin{enumerate}
-   \item{\bf  Fixed and enhanced MOLDEN interface file}
-   \item{\bf  Parallel exponent gradient calculation (.EXPGRA), contributed by Frank Jensen}
-   \item{\bf  Generation of Gaussian CUBE files (new .CUBE option), by Bin Gao}
-\end{enumerate}
 \end{enumerate}
 
 \section{New features in DALTON2011}
@@ -83,11 +151,9 @@ Main authors: Alfredo S{\'a}nchez {de Mer{\'a}s}, Henrik Koch,
 Thomas Bondo Pedersen.
 \begin{enumerate}
   \item{\bf Decomposition of orbital energy denominators:}  \\
-   Reference: \newbibentry{jcp_chopt}
-   \cite{jcp_chopt}
+   Reference: \newbibentry{jcp_chopt} \cite{jcp_chopt}
   \item{\bf Decomposition of two-electron integrals:}  \\
-   Reference: \newbibentry{choint}
-   \cite{choint}
+   Reference: \newbibentry{choint} \cite{choint}
 \end{enumerate}
 
 \item{\bf Extensions to the coupled cluster module:} CC3 \\
@@ -150,8 +216,7 @@ Main authors: Christian Neiss, Wim Klopper, Christof H\"{a}ttig
 
 \item{\bf Parallel, large scale configuration interaction (LUCITA):} \\
 Main authors: Stefan Knecht, Hans J\o rgen Aagaard Jensen, Jeppe Olsen.\\
-Reference: \newbibentry{knecht08}
-\cite{knecht08}
+Reference: \newbibentry{knecht08} \cite{knecht08}
 
 \item{\bf Extensions to the DFT module:}
 \begin{enumerate}
@@ -171,7 +236,7 @@ Main authors: Stephan P. A. Sauer, Keld L. Bak, Ove Christiansen, Jacob Kongsted
 \begin{enumerate}
   \item{\bf An atomic integral direct implementation of SOPPA and SOPPA(CCSD) for singlet excitation energies:}  \\
    Main authors: Stephan P. A. Sauer, Keld L. Bak \\
-   References: \newbibentry{spas037}\cite{spas037} \\
+   References: \newbibentry{spas037}\cite{spas037},
    \newbibentry{spas089}\cite{spas089}
   \item{\bf RPA(D) Method:}\index{RPA(D)}
   A non-iterative doubles correction to RPA\\
@@ -214,35 +279,6 @@ Main authors: Keld L. Bak, Stephan P. A. Sauer\\
    References: "The vibrational g factor of dihydrogen from theoretical calculation
    and analysis of vibration-rotational spectra", K. L. Bak, S. P. A. Sauer, J. Oddershede and J. F. Ogilvie ,
    Phys. Chem. Chem. Phys. 7, 1747-1758 (2005)
-
-\item{\bf More basis sets and extended basis sets:}
-\begin{enumerate}
-  \item{pc-n} The polarization consistent basis sets by Frank Jensen.
-  \item{The aug-cc-pVTZ-J} basis sets for NMR spin-spin coupling constants by Stephan P. A. Sauer and co-workers.
-\end{enumerate}
-
-\item{\bf Code improvements:}
-Main author: Hans J\o rgen Aagaard Jensen
-\begin{enumerate}
-  \item{Mulliken population analysis works} A nice feature is the printing of populations in each
-   SCF iteration -- often quite illuminating when convergence problems.
-  \item{Large intermediate files for AO to MO transformation have been eliminated.}
-  \item{All modules can run under MPI} However, most parts of the code are not parallelized and will run
-    on only the master node, while the nodes idle. Yet, as the Fock matrices are constructed in parallel,
-    all calculations of Fock-type matrices in MCSCF and CC will be done in parallel, although the MCSCF and CC
-    codes themselves are not parallelized (yet). In Dalton 2.0 you HAD to use a sequential code for MCSCF and CC
-    calculations, and often this may not be practical.
-  \item{} CODATA 2002 constants instead of CODATA 1998 constants
-    (changes some values in output, if you compare with Dalton 2.0 output)
-  \item{} User input not needed to transform 2-el integrals for $>$ 255 basis functions
-    (switches by default to .NEWTRA if $>$ 255 bf)
-  \item{} Eliminated the at times very large intermediate files for integral transformation
-    with $>$ 255 basis functions (NEWTRA).
-  \item{} More modules of the program run correctly if Dalton run in parallel.
-    Example: the MCSCF code per se is not parallelized yet, but it will
-    give correct results when run in parallel, and the construction of
-    generalized Fock matrices will be done in parallel.
-\end{enumerate}
 
 \item{\bf .THRRED option} to scale all (most?) significant
 convergence thresholds, in order to check what digits in the results are
@@ -301,11 +337,6 @@ MP2 energies are available in a couple of  approximations~\cite{wkccmsjcp116,ccm
   allows finite lifetimes for excited states~\cite{pndmbhjajjojcp115}, allowing both scattering
   and absorptions processes to be taken into account simultaneously.
 
-\item{\bf Improvements for 64-bit machines:} The code can now also
-  calculate two-electron spin--orbit integrals as well as do AO to MO
-  transformations for more than 255 basis functions also on 64-bit
-  machines.
-
 \item{\bf Extensions to the coupled cluster code:} CCSD(T) energies
   and analytical gradients are now available.
 
@@ -340,7 +371,7 @@ species~\cite{fjthjcp121}.
 
 \item{\bf Single input file:} In addition to the new input format,
   \dalton\ now also allows the entire input to be given in a
-  single file. This file must be started by the molecule input on the
+  single file. This file {\em must} be started by the molecule input on the
   first line, and the dalton input is placed at the end of the input
   file. An optimization of methane may thus look like:
 
@@ -375,30 +406,30 @@ set library. Dalton~1.2 would search in only one directory,
 either a directory specified by the user
 or the \dalton\ basis set library.
 
-\item{\bf Changes to basis set names:} The following basis sets
-have been renamed from Dalton~1.2, largely for consistency with the
-EMSL basis set order form. Note that spaces are not
-permitted in basis set names.
-\begin{center}
-\begin{tabular}{|l|l|}\hline
-Old Label & New Label \\\hline
-DunningDZ & DZ(Dunning)\\
-DunningTZ & TZ(Dunning)\\
-SVP(Dunning-Hay)+diffuse & SVP+Diffuse(Dunning-Hay) \\
-AhlrichsVDZ & Ahlrichs-VDZ \\
-AhlrichsVTZ & Ahlrichs-VTZ \\
-japrtano & Almlof-Taylor-ANO \\
-daug-cc-pVXZ (also t,q) & d-aug-cc-pVXZ (t-,q-)\\
-daug-cc-pCVXZ (also t,q) & d-aug-cc-pCVXZ (t-,q-)\\
-sadlej & Sadlej-pVTZ \\
-sad-J & Sadlej-pVTZ-J \\
-\hline
-\end{tabular}
-\end{center}
+%\item{\bf Changes to basis set names:} The following basis sets
+%have been renamed from Dalton~1.2, largely for consistency with the
+%EMSL basis set order form. Note that spaces are not
+%permitted in basis set names.
+%\begin{center}
+%\begin{tabular}{|l|l|}\hline
+%Old Label & New Label \\\hline
+%DunningDZ & DZ(Dunning)\\
+%DunningTZ & TZ(Dunning)\\
+%SVP(Dunning-Hay)+diffuse & SVP+Diffuse(Dunning-Hay) \\
+%AhlrichsVDZ & Ahlrichs-VDZ \\
+%AhlrichsVTZ & Ahlrichs-VTZ \\
+%japrtano & Almlof-Taylor-ANO \\
+%daug-cc-pVXZ (also t,q) & d-aug-cc-pVXZ (t-,q-)\\
+%daug-cc-pCVXZ (also t,q) & d-aug-cc-pCVXZ (t-,q-)\\
+%sadlej & Sadlej-pVTZ \\
+%sad-J & Sadlej-pVTZ-J \\
+%\hline
+%\end{tabular}
+%\end{center}
 
-\item{\bf Note also that if a parallel \dalton\ is
-  requested, the executable can both run parallel and sequential
-  calculations.
+%\item{\bf Note also that if a parallel \dalton\ is
+%  requested, the executable can both run parallel and sequential
+%  calculations.
 %
 \item{\bf Numerical Hessian in VROA/Raman calculations:} The
   analytical Hessian is no longer required for the calculation of
@@ -458,7 +489,7 @@ depend on the applied perturbations. That is, molecular gradients and
 Hessians, as well as London orbital-based magnetic properties, {\em cannot}
 be calculated with ECPs.
 
-\item {\bf Douglas-Kroll} The Douglas-Kroll scalar relativistic Hamiltonian
+\item {\bf Douglas-Kroll-Hess} The Douglas-Kroll-Hess scalar relativistic Hamiltonian
 has been implemented to second order. It can be used to account for
 scalar relativistic effects in molecular energies and response
 functions, and although molecular gradients and Hessians can be
@@ -492,11 +523,13 @@ only the second-order geometry optimization routines in the
 \verb|*WALK| module will be able to do geometry optimizations with the
 solvent model.
 
-\item {\bf File splitting} For file systems where the maximum file length is
-2~Gb, {\dalton} will automatically split large files  so that
-calculations can be performed on these systems even though some files
-may be longer than 2~Gb. Currently the implementation limits the
-maximum file size to 22~Gb.
+% note: file splitting is not relevant any more and has been removed in a later release.
+
+%\item {\bf File splitting} For file systems where the maximum file length is
+%2~Gb, {\dalton} will automatically split large files  so that
+%calculations can be performed on these systems even though some files
+%may be longer than 2~Gb. Currently the implementation limits the
+%maximum file size to 22~Gb.
 
 \item {\bf Restart features in \resp } Assuming that the files
 \verb|RESULTS.RSP| and \verb|RSPVEC| are available, the \resp\ program
@@ -508,3 +541,5 @@ cubic response vector, making it significantly more computationally
 efficient to determine both linear, quadratic and cubic response
 functions using SCF or MCSCF wave functions.
 \end{enumerate}
+
+%} % end of \renewcommand{\descriptionlabel}[1]{\hspace{\labelsep}\bf{#1}}

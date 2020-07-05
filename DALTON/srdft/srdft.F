@@ -44,10 +44,9 @@ C     variables for SRCPBERI
       real*8 :: mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C     general variables
-      PARAMETER  (NXTABLE = 26, NCTABLE = 43)
+      INTEGER, PARAMETER :: NXTABLE=30, NCTABLE=43, maxfld=3
       character(len=23) :: XTABLE(NXTABLE), CTABLE(NCTABLE)
-      CHARACTER SRFTMP*80
-      PARAMETER  (maxfld=3)
+      CHARACTER :: SRFTMP*80
       character(len=23) :: fields(maxfld)
       integer :: lenfld(maxfld)
       logical :: SETXFUN, SETCFUN
@@ -63,7 +62,9 @@ C     general variables
      &             'LXPBEGWS               ','LXBCK                  ', ! 19:20
      &             'SRXPBEGWSS             ','SRXLDA_C               ', ! 21:22
      &             'SRXTPSS_S              ','SRXTPSS                ', ! 23:24
-     &             'LRCWPBE_S              ','LRCWPBE                '/ ! 25:28
+     &             'LRCWPBE_S              ','LRCWPBE                ', ! 25:26
+     &             'SRLDA                  ','SRPBEGWS               ', ! 27:28
+     &             'SRPBERI                ','SRPBE0GWS              '/! 29:30
       DATA CTABLE /'NULL                   ','SRCLDA                 ', ! 1:2
      &             'SRCGGA                 ','SRCMULO_A              ', ! 3:4
      &             'SRLYPT                 ','SRCWIB                 ', ! 5:6
@@ -128,8 +129,9 @@ C C K. Sharkas and J. Toulouse end
       mu_0   = -1.0D0
 
 C Cut string SRFTMP
-       call  CUT_INTO_FIELDS (SRFTMP,' ',maxfld,fields,lenfld,Nfld)
-       IF (NFld .LE. 1) THEN
+
+      call  CUT_INTO_FIELDS (SRFTMP,' ',maxfld,fields,lenfld,Nfld)
+      IF (NFld .LE. 0) THEN
           WRITE(LUPRI,'(//A/A/2A)') ' FATAL INPUT ERROR, '//
      &  'invalid specification of short range functionals.',
      &  ' Both an exchange and a correlation functional must be given.',
@@ -139,31 +141,38 @@ C Cut string SRFTMP
           WRITE(LUPRI,'(/A/,(5X,A))') ' Known correlation functionals:',
      &       (CTABLE(I),I=1,NCTABLE)
           CALL QUIT('Invalid specification of short range functionals')
-       END IF
-       SRXFUN = fields(1)
-       SRCFUN = fields(2)
-       SRLOCALSPIN = ' '
-       DFT_LOCALSPIN = .FALSE.
-       IF (NFld .GE. 3) THEN
-          SRLOCALSPIN = fields(3)
-          IF (INDEX(SRLOCALSPIN,'SRLOCALSP') .GT. 0) THEN
-             DFT_LOCALSPIN = .TRUE.
-             DFT_SPINDNS   = .TRUE.
-             write (lupri,*) 'DFT_LOCALSPIN activated! ',SRLOCALSPIN
+      END IF
+      IF (NFld .EQ. 1) THEN
+         SRXFUN = fields(1)
+         SRCFUN = ' '
+         SRLOCALSPIN = ' '
+         DFT_LOCALSPIN = .FALSE.
+      ELSE IF (NFld .EQ. 2) THEN
+         SRXFUN = fields(1)
+         SRCFUN = fields(2)
+         SRLOCALSPIN = ' '
+         DFT_LOCALSPIN = .FALSE.
+      ELSE IF (NFld .GE. 3) THEN
+         SRLOCALSPIN = fields(3)
+         IF (INDEX(SRLOCALSPIN,'SRLOCALSP') .GT. 0) THEN
+            DFT_LOCALSPIN = .TRUE.
+            DFT_SPINDNS   = .TRUE.
+            write (lupri,*) 'DFT_LOCALSPIN activated! ',SRLOCALSPIN
 ! --- do not quit, field 3 might be mu_0 for SRCPBERI below /160523-hjaaj
-!         ELSE
-!            WRITE (LUPRI,'(//2A/2A)') 'FATAL INPUT ERROR, '//
-!    &       'invalid specification of local spin option: ',SRLOCALSPIN,
-!    &       ' Input line: ',SRFTMP
+!        ELSE
+!           WRITE (LUPRI,'(//2A/2A)') 'FATAL INPUT ERROR, '//
+!    &      'invalid specification of local spin option: ',SRLOCALSPIN,
+!    &      ' Input line: ',SRFTMP
 !          CALL QUIT('Invalid specification of short range functionals')
-          END IF
-       END IF
+         END IF
+      END IF
 
       SETXFUN = .TRUE.
       DO 100 II = 1, NXTABLE
         IF (XTABLE(II) .EQ. SRXFUN) THEN
           GO TO (101,102,103,104,105,106,107,108,109,110,111,112,113,
-     &           114,115,116,117,118,119,120,121,122,123,124,125,126),II
+     &           114,115,116,117,118,119,120,121,122,123,124,125,126,
+     &            127,128,129,130),II
         END IF
  100  CONTINUE
       SETXFUN = .FALSE.
@@ -265,6 +274,37 @@ C Short-range wPBE exchange functional (erk 27 feb. 19)
 126   DOSRX_wPBE   = .TRUE.
       ISJT         = .TRUE.
       GO TO 15
+C Short-range LDA functional (erk 30 jun. 20)
+127   DOSRX_LDA    = .TRUE.
+      DOSRC_VWN5   = .TRUE.
+      DFT_SPINDNS  = .TRUE.
+      ISJT         = .TRUE.
+      SETCFUN      = .TRUE.
+      GO TO 20
+C Short-range Goll-Werner-Stoll PBE functional (erk 30 jun. 20)
+128   DOSRX_PBEGWS = .TRUE.
+      DOSRC_PBEGWS = .TRUE.
+      DFT_SPINDNS  = .TRUE.
+      ISJT         = .TRUE.
+      SETCFUN      = .TRUE.
+      GO TO 20
+C Short-range PBERI functional (erk 30 jun. 20)
+129   DOSRX_PBEHSE = .TRUE.
+      DOSRC_PBERI  = .TRUE.
+      DFT_SPINDNS  = .TRUE.
+      ISJT         = .TRUE.
+      SETCFUN      = .TRUE.
+      GO TO 20
+C Short-range Goll-Werner-Stoll PBE0 functional (erk 30 jun. 20)
+130   DOSRX_PBEGWS = .TRUE.
+      DOSRC_PBEGWS = .TRUE.
+      DFT_SPINDNS  = .TRUE.
+      ISJT         = .TRUE.
+      HFXFAC       = 0.25D0
+      HFXSET       = .TRUE.
+      SETCFUN      = .TRUE.
+      GO TO 20
+
 
   15  CONTINUE
 

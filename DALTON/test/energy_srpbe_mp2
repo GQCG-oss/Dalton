@@ -55,7 +55,7 @@ cat > energy_srpbe_mp2.dal <<'%EOF%'
  0.4
 **WAVE FUNCTIONS
 .HFSRDFT
-.MP2
+.MP2SRDFT
 .SRFUN
 SRXPBEHSE SRCPBERI
 *SCF INPUT

@@ -11,7 +11,10 @@
 !                 Dec 2017/hjaaj: also define in abaset.F(SETSIR) for restart in RESPONS without
 !                 calling SIRIUS.
 !
-!
+! general variables
+      REAL*8  GRADML, THR_REDFAC, PANAS, CHIVAL
+      INTEGER KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS
+      INTEGER GNRINFlast
       LOGICAL TESTIN, OPTWLK, RNHERM, RNSIRI, RNABAC, GEOCNV,           &
      &        HRINPC, SRINPC, RDINPC, RDMLIN, PARCAL, DIRCAL,           &
      &        WRINDX, WLKREJ, WALKIN, RNRESP, USRIPR, SEGBAS,           &
@@ -20,19 +23,19 @@
      &        CHI1ST, DKHINT,                                           &
      &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,   USE_LSLIB,        &
      &        SIR_INPPRC, NEWGEO, DOFDE
-      REAL*8  GRADML, PANAS,  CHIVAL, THR_REDFAC
 
 ! srDFT variables
+!     ERFEXP() : which type of lr-sr operators
+!     DOsrIN(TEGRALS) : top level variable to decide if lr and sr integrals
+!     - srINTS: false - calculate lr integrals; true - calculate sr integrals
 
       LOGICAL ERFEXP(0:2), DOSRIN, SRINTS, COMLAM
       REAL*8  VLAMBDA
 
-      INTEGER KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS
-      INTEGER GNRINFlast
 !
       COMMON /GNRINF/                                                   &
               ! real*8
-     &        GRADML, PANAS,  CHIVAL, VLAMBDA, THR_REDFAC,              &
+     &        GRADML, THR_REDFAC, PANAS,  CHIVAL, VLAMBDA,              &
               ! integer
      &        KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS,                   &
               ! logical
@@ -41,9 +44,9 @@
      &        WRINDX, WLKREJ, WALKIN, RNRESP, USRIPR, SEGBAS,           &
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,           &
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
-     &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT, COMLAM,           &
-     &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,   USE_LSLIB,        &
-     &        SIR_INPPRC, NEWGEO, DOFDE
+     &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT, COMLAM,           & ! srDFT
+     &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,                     & ! embedding & QFIT
+     &        USE_LSLIB, SIR_INPPRC, NEWGEO, DOFDE
       COMMON /GNRINF/ GNRINFlast
       ! Very important: Always keep GNRINFlast as the last variable in the common block.
       ! See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.

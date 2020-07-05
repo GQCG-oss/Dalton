@@ -683,7 +683,7 @@ C---------- Last line of EONE ----------
          go to 10
         end if
       else
-      write(6,'(9x,a)')' error_STRIM> zero length string '
+        write(6,'(9x,a)')' error_STRIM> zero length string'
       end if
       return
       end

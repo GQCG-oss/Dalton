@@ -33,7 +33,8 @@
      &        DOLAX_PBEGWS,DOLANSC_PBEGWS,DOLASC_PBEGWS,DOLAX_GGABCK,   &
      &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI,                  &
      &        DOC_PBE_nomu_S, DOC_PBE_nomu, DOSRX_wPBE_S, DOSRX_wPBE,   &
-     &        DOSRC_VWN5_S, DOSRC_VWN5, DOC_VWN5_nomu_S, DOC_VWN5_nomu
+     &        DOSRC_VWN5_S, DOSRC_VWN5, DOC_VWN5_nomu_S, DOC_VWN5_nomu, &
+     &        SRLDA, SRPBEGWS, SRPBERI, SRPBE0GWS
       COMMON /DFTCOM/ HFXFAC, HFXATT, HFXMU,                            &
      &        DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT, WDFTMP, COPFAC,   &
      &        XMULFAC_READIN, DSFAC, HEAVISIDE_PVALUE,                  &
@@ -61,7 +62,8 @@
      &        DOLAX_PBEGWS,DOLANSC_PBEGWS,DOLASC_PBEGWS,DOLAX_GGABCK,   &
      &        DOLANC_GGALYP,DOLASC_GGALYP,DOSRC_LYPRI,                  &
      &        DOC_PBE_nomu_S, DOC_PBE_nomu, DOSRX_wPBE_S, DOSRX_wPBE,   &
-     &        DOSRC_VWN5_S, DOSRC_VWN5, DOC_VWN5_nomu_S, DOC_VWN5_nomu
+     &        DOSRC_VWN5_S, DOSRC_VWN5, DOC_VWN5_nomu_S, DOC_VWN5_nomu, &
+     &        SRLDA, SRPBEGWS, SRPBERI, SRPBE0GWS
       INTEGER DFTCOMlast
       COMMON /DFTCOM/ DFTCOMlast
       !  Very important !!!  Always keep DFTCOMlast as the last variable in the common block. 

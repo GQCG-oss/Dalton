@@ -55,7 +55,7 @@ cat > energy_solv.dal <<'%EOF%'
 .SOLVENT
  7
 **WAVE FUNCTIONS
-.SCF
+.HF
 .MP2
 .MCSCF
 *ORBITAL INPUT
