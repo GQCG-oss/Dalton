@@ -20,27 +20,15 @@ hf.add(string = 'Final HF-SRDFT energy',
 hf.add(string = '@ Excitation energy :',
       rel_tolerance = 1.0e-3)
 
-test.run(['mcsrtpss_mu_zero.dal',
-          'mcsrtpss_mu_04.dal'],
+test.run(['mcsrtpss_mu_04.dal'],
          ['water.mol'],
          f={'out': mc})
-test.run(['mcsrpbe0_mu_zero.dal'],
-         ['h2o.mol'],
-         f={'out': mc})
-test.run(['mcsrtpss_mu_zero_nosym.dal'],
-          ['lih_nosym.mol'],
-          f={'out': mc})
 test.run(['mcsrtpss_mu_04_nosym.dal'],
           ['water_nosym.mol'],
           f={'out': mc})
-test.run(['hfsrtpss_mu_04.dal',
-          'hfsrtpss_mu_zero.dal'],
+test.run(['hfsrtpss_mu_04.dal'],
          ['water.mol'],
          f={'out': hf})
-test.run(['hfsrtpss_mu_zero_nosym.dal'],
-#          'wpbe_nosym.dal',
-          ['lih_nosym.mol'],
-          f={'out': hf})
 test.run(['hfsrtpss_mu04_nosym.dal'],
           ['water_nosym.mol'],
           f={'out': hf})
