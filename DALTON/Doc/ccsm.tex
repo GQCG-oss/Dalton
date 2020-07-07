@@ -62,12 +62,16 @@ If this option is switched on, the photon energies given with the
 specification of the states (\Key{STATES}) will be ignored.
 %
 \item[\Key{OPERAT}] \verb| |\newline
-\verb|READ (LUCMD,'(4A)') LABELA, LABELB|\newline
+\verb|READ (LUCMD,'(2A8)') LABELA, LABELB|\newline
 \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
-\verb|  READ (LUCMD,'(4A)') LABELA, LABELB|\newline
+\verb|  READ (LUCMD,'(2A8)') LABELA, LABELB|\newline
 \verb|END DO|\newline
-Read pairs of operator labels.
-For each pair the left and right two-photon transition moments
+Read pairs of operator labels, using exactly 8 characters for each. 
+This means that if you should want e.g LABELA='XXROTSTR' and LABELB='YYROTSTR'
+you must enter\newline
+\verb|XXROTSTRYYROTSTR|
+
+For each pair, the left and right two-photon transition moments
 and strengths $S^{of}_{AB,AB}(\omega)$ will be evaluated 
 for all states and frequencies.
 Operator pairs which do not correspond to symmetry allowed

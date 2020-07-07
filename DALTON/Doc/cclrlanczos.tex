@@ -48,12 +48,17 @@ singlet states only).
 \begin{description}
 
 \item[\Key{OPERAT}] \verb| |\newline
-   \verb|READ (LUCMD,'(2A)') LABELA, LABELB|\newline
+   \verb|READ (LUCMD,'(2A8)') LABELA, LABELB|\newline
 %   \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
- %  \verb|  READ (LUCMD,'(2A)') LABELA, LABELB|\newline
+ %  \verb|  READ (LUCMD,'(2A8)') LABELA, LABELB|\newline
   % \verb|END DO|
 
-Read the wished pair of operator labels. Note that ONLY \verb|LABELA=LABELB| 
+Read the wanted pair of operator labels, using exactly 8 characters for each. 
+This means that if you should want e.g LABELA='XXROTSTR' and LABELB='YYROTSTR'
+you must enter\newline
+\verb|XXROTSTRYYROTSTR|
+
+Note that ONLY \verb|LABELA=LABELB| 
 works in current implementation, and only for one pair at a time
 (i.e. you need to run 3 jobs if you want both $xx$, $yy$ and $zz$ components.
 

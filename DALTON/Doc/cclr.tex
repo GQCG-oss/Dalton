@@ -138,12 +138,16 @@ Hartree (may be combined with wave length input).
 % \item[\Key{FTST}] 
 %
 \item[\Key{OPERAT}] \verb| |\newline
-   \verb|READ (LUCMD,'(2A)') LABELA, LABELB|\newline
+   \verb|READ (LUCMD,'(2A8)') LABELA, LABELB|\newline
    \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
-   \verb|  READ (LUCMD,'(2A)') LABELA, LABELB|\newline
+   \verb|  READ (LUCMD,'(2A8)') LABELA, LABELB|\newline
    \verb|END DO|
 
-Read pairs of operator labels. 
+Read pairs of operator labels, using exactly 8 characters for each. 
+This means that if you should want e.g LABELA='XXROTSTR' and LABELB='YYROTSTR'
+you must enter\newline
+\verb|XXROTSTRYYROTSTR|
+
 
 \item[\Key{OR}] 
 Evaluate the specific and molar optical rotation using the length gauge

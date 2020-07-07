@@ -123,12 +123,16 @@ $\bar{t}^A {\bf B} t^{B} t^{C}$. This is usually less
 efficient.
 
 \item[\Key{OPERAT}] \verb| |\newline
-\verb|READ (LUCMD'(3A)') LABELA, LABELB, LABELC|\newline
+\verb|READ (LUCMD'(3A8)') LABELA, LABELB, LABELC|\newline
 \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
-\verb|  READ (LUCMD'(3A)') LABELA, LABELB, LABELC|\newline
+\verb|  READ (LUCMD'(3A8)') LABELA, LABELB, LABELC|\newline
 \verb|END DO|
 
-Read triples of operator labels. 
+Read triples of operator labels, using exactly 8 characters for each. 
+This means that if you should want e.g LABELA='XXROTSTR', LABELB='ZDIPLEN ', and LABELC='XYROTSTR'
+you must enter\newline
+\verb|XXROTSTRZDIPLEN XYROTSTR|
+
 For each of these operator triples the quadratic response
 function will be evaluated at all frequency pairs.
 Operator triples which do not correspond to symmetry allowed
