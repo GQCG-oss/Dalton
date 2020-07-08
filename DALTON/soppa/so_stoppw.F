@@ -1,23 +1,22 @@
 C
-C  /* Deck so_stoppw */
-      SUBROUTINE SO_STOPPW(STOPP,TRGOS,ISYMTR,IEXCI,EXENG,QVAL)
+      SUBROUTINE SO_STOPPW(RSTOPP,TRGOS,ISYMTR,IEXCI,EXENG,QVAL)
 C
 C     This routine is part of the atomic integral directSOPPA program.
-C
 C     The charge Z of the incoming ions is set to 1 here.
-C
 C     Zhiwen Shi (Clark), Stephan P. A. Sauer, January 2016
-C
 C     PURPOSE: Calculate Stopping Power.
 C
-#include "implicit.h"
-#include "cbiexc.h"
-#include "ccorb.h"
-#include "pi.h"
+      implicit none
+#include "cbiexc.h" ! LVEL, MXNEXI
+#include "ccorb.h" ! NSYM
+#include "pi.h" ! PI
 C
-      DIMENSION STOPP(3,LVEL,2),TRGOS(3),EXENG(NSYM,MXNEXI)
-      REAL*8    QVAL,VELOC,QMAXV,QMINV
-      PARAMETER ( D4 = 4.0D00 )
+      REAL*8, INTENT(INOUT) :: RSTOPP(3,LVEL,2)
+      REAL*8, INTENT(IN) :: TRGOS(3), EXENG(NSYM,MXNEXI), QVAL
+      INTEGER, INTENT(IN) :: ISYMTR, IEXCI
+      REAL*8 :: VELOC, QMAXV, QMINV
+      REAL*8, PARAMETER :: D4 = 4.0D0
+      INTEGER :: IVEL
 C
 C------------------
 C     Add to trace.
@@ -32,21 +31,18 @@ C
       DO IVEL=1, LVEL
 C
          VELOC = VMIN+(IVEL-1)*VSTEP
-C
-C         QMAXV = 20.0
          QMAXV = VELOC*2
-C         QMINV = EXENG(ISYMTR,IEXCI)
          QMINV = EXENG(ISYMTR,IEXCI)/VELOC
 C
          IF (QMINV .LE. QMAXV) THEN
 C
             IF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QMAXV)) THEN
 C
-               STOPP(1,IVEL,1) = STOPP(1,IVEL,1) + TRGOS(1)*QSTEP*      &
+               RSTOPP(1,IVEL,1) = RSTOPP(1,IVEL,1) + TRGOS(1)*QSTEP*
      &                           PI*D4/(QVAL*VELOC*VELOC)
-               STOPP(2,IVEL,1) = STOPP(2,IVEL,1) + TRGOS(2)*QSTEP*      &
+               RSTOPP(2,IVEL,1) = RSTOPP(2,IVEL,1) + TRGOS(2)*QSTEP*
      &                           PI*D4/(QVAL*VELOC*VELOC)
-               STOPP(3,IVEL,1) = STOPP(3,IVEL,1) + TRGOS(3)*QSTEP*      &
+               RSTOPP(3,IVEL,1) = RSTOPP(3,IVEL,1) + TRGOS(3)*QSTEP*
      &                           PI*D4/(QVAL*VELOC*VELOC)
 
             ENDIF
@@ -57,27 +53,27 @@ C This velocity as half of chosen Q value corresponds to
 C the highest excitation energy for given basis set.
 C i.e. integration can be split after this velocity.
 C
-            IF (VELOC .GE. QINP/2.0) THEN
+            IF (VELOC .GE. QINP/2.0d0) THEN
 C
                IF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QINP)
      &                            .AND. (QVAL .LE. QMAXV)) THEN
 C
-                  STOPP(1,IVEL,2) = STOPP(1,IVEL,2) + TRGOS(1)*QSTEP*   &
+                  RSTOPP(1,IVEL,2) = RSTOPP(1,IVEL,2) + TRGOS(1)*QSTEP*
      &                              PI*D4/(QVAL*VELOC*VELOC)
-                  STOPP(2,IVEL,2) = STOPP(2,IVEL,2) + TRGOS(2)*QSTEP*   &
+                  RSTOPP(2,IVEL,2) = RSTOPP(2,IVEL,2) + TRGOS(2)*QSTEP*
      &                              PI*D4/(QVAL*VELOC*VELOC)
-                  STOPP(3,IVEL,2) = STOPP(3,IVEL,2) + TRGOS(3)*QSTEP*   &
+                  RSTOPP(3,IVEL,2) = RSTOPP(3,IVEL,2) + TRGOS(3)*QSTEP*
      &                              PI*D4/(QVAL*VELOC*VELOC)
 C
                ENDIF
 C
             ELSEIF ((QVAL .GE. QMINV) .AND. (QVAL .LE. QMAXV)) THEN
 C
-               STOPP(1,IVEL,2) = STOPP(1,IVEL,2) + TRGOS(1)*QSTEP*      &
+               RSTOPP(1,IVEL,2) = RSTOPP(1,IVEL,2) + TRGOS(1)*QSTEP*
      &                           PI*D4/(QVAL*VELOC*VELOC)
-               STOPP(2,IVEL,2) = STOPP(2,IVEL,2) + TRGOS(2)*QSTEP*      &
+               RSTOPP(2,IVEL,2) = RSTOPP(2,IVEL,2) + TRGOS(2)*QSTEP*
      &                           PI*D4/(QVAL*VELOC*VELOC)
-               STOPP(3,IVEL,2) = STOPP(3,IVEL,2) + TRGOS(3)*QSTEP*      &
+               RSTOPP(3,IVEL,2) = RSTOPP(3,IVEL,2) + TRGOS(3)*QSTEP*
      &                           PI*D4/(QVAL*VELOC*VELOC)
 C
             ENDIF
