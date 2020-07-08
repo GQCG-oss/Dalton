@@ -160,12 +160,15 @@ $\omega_B$, $\omega_C$, and $\omega_D$ are read
                     Cauchy vector equations.
  
 \item[\Key{OPERAT}] \verb| |\newline
-\verb|READ (LUCMD,'(4A)') LABELA, LABELB, LABELC, LABELD|\newline
+\verb|READ (LUCMD,'(4A8)') LABELA, LABELB, LABELC, LABELD|\newline
 \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
-\verb|  READ (LUCMD,'(4A)') LABELA, LABELB, LABELC, LABELD|\newline
+\verb|  READ (LUCMD,'(4A8)') LABELA, LABELB, LABELC, LABELD|\newline
 \verb|END DO|
 
-Read quadruples of operator labels.
+Read quadruples of operator labels, using exactly 8 characters for each. 
+This means that if you should want e.g LABELA='XXROTSTR', LABELB='YYROTSTR', LABELC='XANGMOM ', and LABELD='XYROTSTR'
+you must enter\newline
+\verb|XXROTSTRYYROTSTRXANGMOM XYROTSTR|
 For each of these operator quadruples the cubic response
 function will be evaluated at all frequency triples.
 Operator quadruples which do not correspond to symmetry allowed

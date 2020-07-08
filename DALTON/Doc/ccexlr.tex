@@ -75,12 +75,16 @@ For excited-state second-order properties the \Key{HALFFR} keyword is
 equivalent to the \Key{STATIC} keyword.
  
 \item[\Key{OPERAT}] \verb| |\newline
-\verb|READ (LUCMD,'(2A)') LABELA, LABELB|\newline
+\verb|READ (LUCMD,'(2A8)') LABELA, LABELB|\newline
 \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
-\verb|  READ (LUCMD,'(2A)') LABELA, LABELB|\newline
+\verb|  READ (LUCMD,'(2A8)') LABELA, LABELB|\newline
 \verb|END DO|
 
-Read pairs of operator labels.
+Read pairs of operator labels, using exactly 8 characters for each. 
+This means that if you should want e.g LABELA='XXROTSTR' and LABELB='YYROTSTR'
+you must enter\newline
+\verb|XXROTSTRYYROTSTR|
+
 For each of these operator pairs, the double residues of the cubic response
 function will be evaluated at all frequencies.
 Operator pairs which do not correspond to symmetry-allowed
