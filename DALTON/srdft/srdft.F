@@ -37,19 +37,22 @@ C     which defines the Exchange and Correlation functionals
 C     to be used for the DFT-hybrid model in question.
 C
 C*****************************************************************************
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
 #include "dftcom.h"
 C     variables for SRCPBERI
       real*8 :: mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C     general variables
-      INTEGER, PARAMETER :: NXTABLE=30, NCTABLE=43, maxfld=3
-      character(len=23) :: XTABLE(NXTABLE), CTABLE(NCTABLE)
-      CHARACTER :: SRFTMP*80
-      character(len=23) :: fields(maxfld)
-      integer :: lenfld(maxfld)
+      character, intent(in) :: SRFTMP*80
       logical :: SETXFUN, SETCFUN
+      integer, parameter :: NXTABLE=21, NCTABLE=36, NXCTABLE=6, maxfld=3
+      integer :: lenfld(maxfld), I, J, IXWINT, ICWINT, nfld
+      character(len=23) :: XTABLE(NXTABLE), CTABLE(NCTABLE),
+     &                     XCTABLE(NXCTABLE), SRXCFUN, fields(maxfld)
+      DATA XCTABLE/'SRLDA                  ','SRPBEGWS               ', ! 1:2
+     &             'SRPBERI                ','SRPBE0GWS              ', ! 3:4
+     &             'LRCLDA                 ','LRCPBEGWS              '/ ! 5:6
       DATA XTABLE /'NULL                   ','SRXLDA                 ', ! 1:2
      &             'SRXGGA                 ','SRBCK                  ', ! 3:4
      &             'HFEXCH                 ','SRGGA2                 ', ! 5:6
@@ -57,14 +60,10 @@ C     general variables
      &             'SRXWI3                 ','SRXWI4                 ', ! 9:10
      &             'SRXPBEHSE              ','SRXPBETCS              ', ! 11:12
      &             'SRXPBERI               ','SRXPBEGWS              ', ! 13:14
-     &             'SRXLDA_S               ','NULL_S                 ', ! 15:16
-     &             'LXLDAS                 ','LXLDA                  ', ! 17:18
-     &             'LXPBEGWS               ','LXBCK                  ', ! 19:20
-     &             'SRXPBEGWSS             ','SRXLDA_C               ', ! 21:22
-     &             'SRXTPSS_S              ','SRXTPSS                ', ! 23:24
-     &             'LRCWPBE_S              ','LRCWPBE                ', ! 25:26
-     &             'SRLDA                  ','SRPBEGWS               ', ! 27:28
-     &             'SRPBERI                ','SRPBE0GWS              '/! 29:30
+     &             'LXLDAS                 ','LXLDA                  ', ! 15:16
+     &             'LXPBEGWS               ','LXBCK                  ', ! 17:18
+     &             'SRXLDA_C               ','SRXTPSS                ', ! 19:20
+     &             'LRCWPBE                '/                           ! 21:22
       DATA CTABLE /'NULL                   ','SRCLDA                 ', ! 1:2
      &             'SRCGGA                 ','SRCMULO_A              ', ! 3:4
      &             'SRLYPT                 ','SRCWIB                 ', ! 5:6
@@ -75,18 +74,14 @@ C     general variables
      &             'SRCPBEGWSC             ','SRCLDA_S               ', ! 15:16
      &             'SRCMULO_B              ','SRCMULO_C              ', ! 17:18
      &             'SRCMULO_D              ','SRCMULO_E              ', ! 19:20
-     &             'NULL_S                 ','SRCMDLDA               ', ! 21:22
-     &             'LNSCLDAS               ','LNSCLDA                ', ! 23:24
-     &             'LSCLDA                 ','LNSCPBEGWS             ', ! 25:26
-     &             'LSCPBEGWS              ','LNCLYP                 ', ! 27:28
-     &             'LSCLYP                 ','SRCLYPRI               ', ! 29:30
-     &             'SRCPBEGWSS             ','SRCPBEGWS              ', ! 31:32
-     &             'SRCLDA_C               ','SRCVWN5_S              ', ! 33:34
-     &             'SRCTPSS_S              ','SRCTPSS                ', ! 35:36
-     &             'CPBE_NOMUS             ','CPBE_NOMU              ', ! 37:38
-     &             'SRCVWN5                ','SRCPW92_S              ', ! 39:40
-     &             'SRCPW92                ','CVWN5NOMUS             ', ! 41:42
-     &             'CVWN5_NOMU             '/ ! 43:44
+     &             'SRCMDLDA               ','LNSCLDAS               ', ! 21:22
+     &             'LNSCLDA                ','LSCLDA                 ', ! 23:24
+     &             'LNSCPBEGWS             ','LSCPBEGWS              ', ! 25:26
+     &             'LNCLYP                 ','LSCLYP                 ', ! 27:28
+     &             'SRCLYPRI               ','SRCPBEGWS              ', ! 29:30
+     &             'SRCLDA_C               ','SRCTPSS                ', ! 31:32
+     &             'CPBE                   ','SRCVWN5                ', ! 33:34
+     &             'SRCPW92                ','CVWN5                  '/ ! 35:36
 
 C K. Sharkas and J. Toulouse beg
 C List of lambda-dependent complement density functionals for linear separation of the electron-electron interaction.
@@ -107,17 +102,6 @@ C LNSCPBEGWS: lambda-dependent correlation PBE (from srPBEGWS at mu=0) without d
 C LSCLYP: lambda-dependent correlation LYP with density scaling
 C LNCLYP: lambda-dependent correlation LYP without density scaling
 C
-C Example of input:
-C  **WAVE FUNCTIONS
-C   .MCSRDFT
-C   .SRFUN
-C    LXLDA  LSCLDA   or
-C    LXLDA  LNSCLDA  or
-C    LXPBEGWS LSCPBEGWS or
-C    LXPBEGWS LNSCPBEGWS or
-C    LXBCK LSCLYP or
-C    LXBCK LNCLYP
-C
 C See in herdrv.F for how to activate the scaling of the two-electron integrals by lambda.
 C
 C C K. Sharkas and J. Toulouse end
@@ -129,184 +113,341 @@ C C K. Sharkas and J. Toulouse end
       mu_0   = -1.0D0
 
 C Cut string SRFTMP
-
-      call  CUT_INTO_FIELDS (SRFTMP,' ',maxfld,fields,lenfld,Nfld)
-      IF (NFld .LE. 0) THEN
-          WRITE(LUPRI,'(//A/A/2A)') ' FATAL INPUT ERROR, '//
-     &  'invalid specification of short range functionals.',
-     &  ' Both an exchange and a correlation functional must be given.',
-     &  ' Input line: ',SRFTMP
-          WRITE(LUPRI,'(/A/,(5X,A))') ' Known exchange functionals:',
-     &       (XTABLE(I),I=1,NXTABLE)
-          WRITE(LUPRI,'(/A/,(5X,A))') ' Known correlation functionals:',
-     &       (CTABLE(I),I=1,NCTABLE)
-          CALL QUIT('Invalid specification of short range functionals')
-      END IF
-      IF (NFld .EQ. 1) THEN
-         SRXFUN = fields(1)
+      call CUT_INTO_FIELDS(SRFTMP, ' ', maxfld, fields, lenfld, nfld)
+      IF (nfld .EQ. 1) THEN
+         SRXCFUN = fields(1)
+         SRXFUN = ' '
          SRCFUN = ' '
          SRLOCALSPIN = ' '
          DFT_LOCALSPIN = .FALSE.
-      ELSE IF (NFld .EQ. 2) THEN
+         DFT_SPINDNS = .TRUE.
+      ELSE IF (nfld .GE. 2) THEN
+         SRXCFUN = ' '
          SRXFUN = fields(1)
          SRCFUN = fields(2)
          SRLOCALSPIN = ' '
          DFT_LOCALSPIN = .FALSE.
-      ELSE IF (NFld .GE. 3) THEN
+         DFT_SPINDNS = .TRUE.
+      END IF
+      IF (nfld .GE. 3) THEN
          SRLOCALSPIN = fields(3)
          IF (INDEX(SRLOCALSPIN,'SRLOCALSP') .GT. 0) THEN
             DFT_LOCALSPIN = .TRUE.
             DFT_SPINDNS   = .TRUE.
             write (lupri,*) 'DFT_LOCALSPIN activated! ',SRLOCALSPIN
-! --- do not quit, field 3 might be mu_0 for SRCPBERI below /160523-hjaaj
-!        ELSE
-!           WRITE (LUPRI,'(//2A/2A)') 'FATAL INPUT ERROR, '//
-!    &      'invalid specification of local spin option: ',SRLOCALSPIN,
-!    &      ' Input line: ',SRFTMP
-!          CALL QUIT('Invalid specification of short range functionals')
+            ! Do not quit if field 3 not used here.
+            ! field 3 might be mu_0 for SRCPBERI below 
+            ! 160523-hjaaj
+         ELSE IF (SRLOCALSPIN .EQ. 'NO_SPINDENSITY') THEN
+            DFT_SPINDNS = .FALSE.
          END IF
       END IF
-
-      SETXFUN = .TRUE.
-      DO 100 II = 1, NXTABLE
-        IF (XTABLE(II) .EQ. SRXFUN) THEN
-          GO TO (101,102,103,104,105,106,107,108,109,110,111,112,113,
-     &           114,115,116,117,118,119,120,121,122,123,124,125,126,
-     &            127,128,129,130),II
+      
+      DO I = 1, NXCTABLE
+        IF (XCTABLE(I) .EQ. SRXCFUN) THEN
+          GO TO (301, 302, 303, 304, 305, 306),I
         END IF
- 100  CONTINUE
+      END DO
+      GO TO 10
+C Short-range LDA functional (erk 30 jun. 20)
+301   SRXFUN = 'SRXLDA                 '
+      SRCFUN = 'SRCVWN5                '
+      GO TO 10
+C Short-range Goll-Werner-Stoll PBE functional (erk 30 jun. 20)
+302   SRXFUN = 'SRXPBEGWS              '
+      SRCFUN = 'SRCPBEGWS              '
+      GO TO 10
+C Short-range PBERI functional (erk 30 jun. 20)
+303   SRXFUN = 'SRXPBEHSE              '
+      SRCFUN = 'SRCPBERI               '
+      GO TO 10
+C Short-range Goll-Werner-Stoll PBE0 functional (erk 30 jun. 20)
+304   SRXFUN = 'SRXPBEGWS              '
+      SRCFUN = 'SRCPBEGWS              '
+      HFXFAC = 0.25D0
+      HFXSET = .TRUE.
+      GO TO 10
+C Long-range correction LDA functional (erk 30 jun. 20)
+305   SRXFUN = 'SRXLDA                 '
+      SRCFUN = 'CVWN5                  '
+      GO TO 10
+C Long-range correction PBE functional with GWS exchange (erk 30 jun. 20)
+306   SRXFUN = 'SRXPBEGWS              '
+      SRCFUN = 'CPBE                   '
+      GO TO 10
+
+  10  CONTINUE
+      SETXFUN = .TRUE.
+      DO I = 1, NXTABLE
+        IF (XTABLE(I) .EQ. SRXFUN) THEN
+          GO TO (101,102,103,104,105,106,107,108,109,110,111,112,113,
+     &           114,115,116,117,118,119,120,121),I
+        END IF
+      END DO
       SETXFUN = .FALSE.
       GO TO 15
- 101  GO TO 15 ! NULL
- 102  DOSRX_LDA = .TRUE.
+C     No Exchange functional
+101   ISJT      = .TRUE.
+      GO TO 15 ! NULL
+C     No description
+102   DOSRX_LDA = .TRUE.
       ISJT      = .TRUE.
       GO TO 15
- 103  DOSRX_GGA = .TRUE.
+C     No description
+103   DOSRX_GGA = .TRUE.
       GO TO 15
- 104  DOSRBCK  = .TRUE.
+C     No description
+104   DOSRBCK  = .TRUE.
       GO TO 15
- 105  DOHFEXCH = .TRUE.
+C     100 % Hartree-Fock like exchange
+105   DOHFEXCH = .TRUE.
       IF (.NOT.HFXSET) THEN
          HFXFAC = 1.0D0
          HFXSET = .TRUE.
       END IF
       GO TO 15
- 106  DOSRGGA2 = .TRUE.
+C     No description
+106   DOSRGGA2 = .TRUE.
       GO TO 15
- 107  DOSRX_WIB = .TRUE.
+C     No description
+107   DOSRX_WIB = .TRUE.
       IXWINT    = 1
       GO TO 15
- 108  DOSRX_WIB = .TRUE.
+C     No description
+108   DOSRX_WIB = .TRUE.
       IXWINT    = 2
       GO TO 15
- 109  DOSRX_WIB = .TRUE.
+C     No description
+109   DOSRX_WIB = .TRUE.
       IXWINT    = 3
       GO TO 15
- 110  DOSRX_WIB = .TRUE.
+C     No description
+110   DOSRX_WIB = .TRUE.
       IXWINT    = 12
       GO TO 15
 C     Short-range exchange PBE functional of HSE
- 111  DOSRX_PBEHSE = .TRUE.
+111   DOSRX_PBEHSE = .TRUE.
       ISJT        = .TRUE.
       GO TO 15
 C     Short-range exchange PBE functional of TCS
- 112  DOSRX_PBETCS = .TRUE.
+112   DOSRX_PBETCS = .TRUE.
       ISJT        = .TRUE.
       GO TO 15  ! Manu 01-02-2006
 C Short-range exchange rational interpolation functional
- 113  DOSRX_PBERI = .TRUE.
+113   DOSRX_PBERI = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
 C Short-range exchange PBE functional of GWS (JT 11-08-09)
- 114  DOSRX_PBEGWS = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 15
-C Short-range spin-dependent exchange LDA functional (JT 11-08-09)
- 115  DOSRX_LDA = .TRUE.
-      DFT_SPINDNS = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 15
-C NULL_S : Spin-density with no exchange functional (unless HFXFAC set non-zero elsewhere)
- 116  CONTINUE
-      DFT_SPINDNS = .TRUE.
+114   DOSRX_PBEGWS = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
 C Complement spin-dependent exchange LDA functional (KS 08-08-11)
 C  based on DOSRX_LDA_S of JT for mu=0
-117   DOLAX_LDAS = .TRUE.
+115   DOLAX_LDAS = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
 C  based on standard dalton DOSRX_LDA for mu=0 (KS 2011) 
-118   DOLAX_LDA = .TRUE.
+116   DOLAX_LDA = .TRUE.
       GO TO 15
 C  Complement exchange PBE functional (KS 08-08-11)
-119   DOLAX_PBEGWS = .TRUE.
+117   DOLAX_PBEGWS = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
 C Complement Beck exchange functional (KS 08-08-11)
-120   DOLAX_GGABCK = .TRUE.
-       GO TO 15
-C Short-range spin-dependent exchange GGA functional (edh 10-02-16)
-121   DOSRX_PBEGWS = .TRUE.
-      DFT_SPINDNS    = .TRUE.
-      ISJT    = .TRUE.
+118   DOLAX_GGABCK = .TRUE.
       GO TO 15
 C Short-range spin-dependent exchange LDA functional to fit with LDA (edh 10-02-16)
-! Equivalent to "normal" LDA but goes through J. Toulouse new routines
-122   DOSRC_LDA_PW92 = .TRUE.
+119   DOSRX_LDA = .TRUE.
       ISJT    = .TRUE.
       GO TO 15
-C Short-range spin-dependent TPSS exchange functional (erk 27 aug. 18)
-123   DOSRX_TPSS = .TRUE.
-      DFT_SPINDNS  = .TRUE.
-      ISJT         = .TRUE.
-      GO TO 15
 C Short-range TPSS exchange functional (erk 27 aug. 18)
-124   DOSRX_TPSS   = .TRUE.
-      ISJT         = .TRUE.
-      GO TO 15
-C Short-range spin-dependent wPBE exchange functional (erk 27 feb. 19)
-125   DOSRX_wPBE = .TRUE.
-      DFT_SPINDNS  = .TRUE.
+120   DOSRX_TPSS   = .TRUE.
       ISJT         = .TRUE.
       GO TO 15
 C Short-range wPBE exchange functional (erk 27 feb. 19)
-126   DOSRX_wPBE   = .TRUE.
+121   DOSRX_wPBE   = .TRUE.
       ISJT         = .TRUE.
       GO TO 15
-C Short-range LDA functional (erk 30 jun. 20)
-127   DOSRX_LDA    = .TRUE.
-      DOSRC_VWN5   = .TRUE.
-      DFT_SPINDNS  = .TRUE.
-      ISJT         = .TRUE.
-      SETCFUN      = .TRUE.
-      GO TO 20
-C Short-range Goll-Werner-Stoll PBE functional (erk 30 jun. 20)
-128   DOSRX_PBEGWS = .TRUE.
-      DOSRC_PBEGWS = .TRUE.
-      DFT_SPINDNS  = .TRUE.
-      ISJT         = .TRUE.
-      SETCFUN      = .TRUE.
-      GO TO 20
-C Short-range PBERI functional (erk 30 jun. 20)
-129   DOSRX_PBEHSE = .TRUE.
-      DOSRC_PBERI  = .TRUE.
-      DFT_SPINDNS  = .TRUE.
-      ISJT         = .TRUE.
-      SETCFUN      = .TRUE.
-      GO TO 20
-C Short-range Goll-Werner-Stoll PBE0 functional (erk 30 jun. 20)
-130   DOSRX_PBEGWS = .TRUE.
-      DOSRC_PBEGWS = .TRUE.
-      DFT_SPINDNS  = .TRUE.
-      ISJT         = .TRUE.
-      HFXFAC       = 0.25D0
-      HFXSET       = .TRUE.
-      SETCFUN      = .TRUE.
-      GO TO 20
-
 
   15  CONTINUE
+
+      SETCFUN = .TRUE.
+      DO I = 1, NCTABLE
+        IF (CTABLE(I) .EQ. SRCFUN) THEN
+          GO TO (201,202,203,204,205,206,207,208,209,210,211,212,213,
+     &           214,215,216,217,218,219,220,221,222,223,224,225,226,
+     &           227,228,229,230,231,232,233,234,235,236),I
+        END IF
+      END DO
+      SETCFUN = .FALSE.
+      GO TO 20
+
+C     No correlation functional
+201   ISJT      = .TRUE. 
+      GO TO 20 ! NULL
+C     No description
+202   DOSRC_LDA = .TRUE.
+      ISJT      = .TRUE. 
+      GO TO 20
+C     No description
+203   DOSRC_GGA = .TRUE.
+      GO TO 20
+C     SRCMULO_A : AMUL = A/r_s
+204   DOSRC_MULOCAL(0) = .TRUE.
+      DOSRC_MULOCAL(1) = .TRUE.
+      GO TO 20
+C     No description
+205   DOSRLYPT = .TRUE.
+      GO TO 20
+C     No description
+206   DOSRC_WIB = .TRUE.
+      ICWINT    = 1
+      GO TO 20
+C     No description
+207   DOSRC_WIB = .TRUE.
+      ICWINT    = 2
+      GO TO 20
+C     No description
+208   DOSRC_WIB = .TRUE.
+      ICWINT    = 3
+      GO TO 20
+C     No description
+209   DOSRC_WIB = .TRUE.
+      ICWINT    = 12
+      GO TO 20
+C     Short-range correlation PBE TCS functional
+210   DOSRC_PBETCS = .TRUE.
+      ISJT     = .TRUE.
+      GO TO 20
+C     Short-range correlation PBE TCS J functional
+211   DOSRC_PBETCSJ = .TRUE.
+      ISJT     = .TRUE.
+      GO TO 20
+C     Rational interpolation
+212   DOSRC_PBERI = .TRUE.
+      ISJT    = .TRUE.
+      IF (nfld .ge. 3 .AND. .NOT.DFT_LOCALSPIN .AND. 
+     &   (.NOT. SRLOCALSPIN .EQ. 'NO_SPINDENSITY')) THEN
+         read (fields(3),*) MU_0
+         mu_0_m4 = mu_0 ** (-4)
+         mu_0_m6 = mu_0 ** (-6)
+         mu_0_m7 = mu_0 ** (-7)
+         write (lupri,*) 'SRC_PBE_RI mu_0 = ',mu_0,
+     &      mu_0_m4,mu_0_m6,mu_0_m7
+      END IF
+      GO TO 20
+C     No description
+213   DOSRC_PBELO   = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+C     Weighted interpolation
+214   DOSRC_PBEWI = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+C Short-range correlation PBE function of GWS (JT 11-08-09)
+215   DOSRC_PBEGWS = .TRUE.
+      ISJT         = .TRUE. 
+      GO TO 20
+C Short-range spin-dependent correlation LDA function (JT 18-08-09)
+216   DOSRC_LDA = .TRUE.
+      ISJT    = .TRUE. 
+      GO TO 20
+C     SRCMULO_B :
+C Short-range LDA type correlation functional with lokal mu value
+C of mu=2*sqrt(alpha/pi)/sqrt(r_s)
+217   DOSRC_MULOCAL(0) = .TRUE.   
+      DOSRC_MULOCAL(2) = .TRUE.
+      GO TO 20
+C     SRCMULO_C :
+C Short-range LDA type correlation functional with lokal mu value
+C of mu=abs(grad n(r))/4*n(r)
+218   DOSRC_MULOC_GGA = .TRUE.
+      ISJT = .TRUE.
+      GO TO 20
+C     SRCMULO_D :
+219   DOSRC_MULOD_GGA = .TRUE.
+      ISJT = .TRUE.
+      GO TO 20
+C     SRCMULO_E :
+C Extension of the SRCMULO_A functional: XMULFAC depends on grd/rho
+220   DOSRC_MULOE_GGA = .TRUE.
+      ISJT = .TRUE.
+      GO TO 20
+C Short-range correlation LDA function with multideterminant reference (for OEP) (JT 26-08-11)
+C ... or for RSDHf calculations (Manu 06-12-2012) 
+221   DOSRC_MD_LDA = .TRUE.
+!     IF(DOSRX_OEP) THEN
+!      DOSRXC_NOLRSYS=.TRUE.
+!     END IF
+      ISJT    = .TRUE.
+      GO TO 20
+C Complement spin-dependent (NON-Scaled) correlation LDA functional (KS 08-08-11)
+222   DOLANSC_LDAS = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+C Complement (NON-Scaled) correlation LDA functional (KS 08-08-11)
+223   DOLANSC_LDA = .TRUE.
+      GO TO 20
+C Complement (Scaled) correlation LDA functional (KS 08-08-11)
+224   DOLASC_LDA = .TRUE.
+      GO TO 20
+C Complemnt Non-scaled correlation PBE function (KS 08-08-11)
+225   DOLANSC_PBEGWS = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+C Complemnt (scaled) correlation PBE function (KS 08-08-11)
+226   DOLASC_PBEGWS = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+C Non-scaled Complement correlation LYP functional (KS 08-08-11)
+227   DOLANC_GGALYP = .TRUE.
+      GO TO 20
+C Scaled complement correlation LYP functional (KS 08-08-11)
+228   DOLASC_GGALYP = .TRUE.
+      GO TO 20
+C Rational interpolation LYP functional                             
+229   DOSRC_LYPRI = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+C Modified short-range spin-dependent correlation PBE functional of GWS (edh 21-03-15)
+230   DOSRC_PBEGWS = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+C Short-range spin-dependent correlation LDA functional w. PW92 param. (edh 29-03-15)
+231   DOSRC_LDA_PW92 = .TRUE.
+      ISJT           = .TRUE.
+      GO TO 20
+C Short-range TPSS spin-unpolarized correlation functional (erk 03 sep. 18)
+232   DOSRC_TPSS   = .TRUE.
+      ISJT         = .TRUE.
+      GO TO 20
+C mu independt PBE spin-polarized correlation functional (erk 27 feb. 19)
+233   DOC_PBE_nomu = .TRUE.
+      ISJT         = .TRUE.
+      GO TO 20
+C Short-range correlation LDA functional w. VWN5c param. (erk 27 feb. 19)
+234   DOSRC_VWN5  = .TRUE.
+      ISJT        = .TRUE.
+      GO TO 20
+C Short-range spin-dependent correlation LDA functional w. PW92 param. (edh 29-03-15)
+235   DOSRC_LDA_PW92 = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
+C mu independt VWN5 spin-unpolarized correlation functional (erk 01 mar. 19)
+236   DOC_VWN5_nomu = .TRUE.
+      ISJT          = .TRUE.
+      GO TO 20
+
+  20  CONTINUE
+
+      IF ((nfld .EQ. 1) .AND. (.NOT.SETXFUN) .AND. (.NOT.SETCFUN)) THEN
+          WRITE(LUPRI,'(/2A/,A/)')
+     & '  SRFUN_INPUT : Invalid or no SR exchange func. specified : ',
+     &    SRXCFUN,'             Currently implemented functionals are :'
+          DO J = 1,NXCTABLE
+              WRITE(LUPRI,'(13X,A)') XCTABLE(J)
+          ENDDO
+      ENDIF
 
       IF (.NOT.SETXFUN) THEN
           WRITE(LUPRI,'(/2A/,A/)')
@@ -316,202 +457,6 @@ C Short-range Goll-Werner-Stoll PBE0 functional (erk 30 jun. 20)
               WRITE(LUPRI,'(13X,A)') XTABLE(J)
           ENDDO
       ENDIF
-
-      SETCFUN = .TRUE.
-      DO 200 II = 1, NCTABLE
-        IF (CTABLE(II) .EQ. SRCFUN) THEN
-          GO TO (201,202,203,204,205,206,207,208,209,210,211,212,213,
-     &           214,215,216,217,218,219,220,221,222,223,224,225,226,
-     &           227,228,229,230,231,232,233,234,235,236,237,238,239,
-     &           240,241,242,243),II
-        END IF
- 200  CONTINUE
-      SETCFUN = .FALSE.
-      GO TO 20
-
- 201  GO TO 20 ! NULL
- 202  DOSRC_LDA = .TRUE.
-      ISJT      = .TRUE. 
-      GO TO 20
- 203  DOSRC_GGA = .TRUE.
-      GO TO 20
-C     SRCMULO_A : AMUL = A/r_s
- 204  DOSRC_MULOCAL(0) = .TRUE.
-      DOSRC_MULOCAL(1) = .TRUE.
-      GO TO 20
- 205  DOSRLYPT = .TRUE.
-      GO TO 20
- 206  DOSRC_WIB = .TRUE.
-      ICWINT    = 1
-      GO TO 20
- 207  DOSRC_WIB = .TRUE.
-      ICWINT    = 2
-      GO TO 20
- 208  DOSRC_WIB = .TRUE.
-      ICWINT    = 3
-      GO TO 20
- 209  DOSRC_WIB = .TRUE.
-      ICWINT    = 12
-      GO TO 20
-C     Short-range correlation PBE TCS functional
- 210  DOSRC_PBETCS = .TRUE.
-      ISJT     = .TRUE.
-      GO TO 20
-C     Short-range correlation PBE TCS J functional
- 211  DOSRC_PBETCSJ = .TRUE.
-      ISJT     = .TRUE.
-      GO TO 20
-C     Rational interpolation
- 212  DOSRC_PBERI = .TRUE.
-      ISJT    = .TRUE.
-CFRAN      IF (Nfld .ge. 3) THEN
-      IF (Nfld .ge. 3 .AND. .NOT.DFT_LOCALSPIN) THEN
-         read (fields(3),*) MU_0
-         mu_0_m4 = mu_0 ** (-4)
-         mu_0_m6 = mu_0 ** (-6)
-         mu_0_m7 = mu_0 ** (-7)
-         write (lupri,*) 'SRC_PBE_RI mu_0 = ',mu_0,
-     &      mu_0_m4,mu_0_m6,mu_0_m7
-      END IF
-      GO TO 20
-
- 213  DOSRC_PBELO   = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 20
-C     Weighted interpolation
- 214  DOSRC_PBEWI = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 20
-C Short-range correlation PBE function of GWS (JT 11-08-09)
- 215  DOSRC_PBEGWS = .TRUE.
-      ISJT         = .TRUE. 
-      GO TO 20
-C Short-range spin-dependent correlation LDA function (JT 18-08-09)
- 216  DOSRC_LDA = .TRUE.
-      DFT_SPINDNS = .TRUE.
-      ISJT    = .TRUE. 
-      GO TO 20
-C     SRCMULO_B :
-C Short-range LDA type correlation functional with lokal mu value
-C of mu=2*sqrt(alpha/pi)/sqrt(r_s)
- 217  DOSRC_MULOCAL(0) = .TRUE.   
-      DOSRC_MULOCAL(2) = .TRUE.
-      GO TO 20
-C     SRCMULO_C :
-C Short-range LDA type correlation functional with lokal mu value
-C of mu=abs(grad n(r))/4*n(r)
- 218  DOSRC_MULOC_GGA = .TRUE.
-      ISJT = .TRUE.
-      GO TO 20
-C     SRCMULO_D :
- 219  DOSRC_MULOD_GGA = .TRUE.
-      ISJT = .TRUE.
-      GO TO 20
-C     SRCMULO_E :
-C Extension of the SRCMULO_A functional: XMULFAC depends on grd/rho
- 220  DOSRC_MULOE_GGA = .TRUE.
-      ISJT = .TRUE.
-      GO TO 20
-C NULL_S   : Spin density with no correlation functional
- 221  DFT_SPINDNS = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 20
-C Short-range correlation LDA function with multideterminant reference (for OEP) (JT 26-08-11)
-C ... or for RSDHf calculations (Manu 06-12-2012) 
- 222  DOSRC_MD_LDA = .TRUE.
-!     IF(DOSRX_OEP) THEN
-!      DOSRXC_NOLRSYS=.TRUE.
-!     END IF
-      ISJT    = .TRUE.
-      GO TO 20
-C Complement spin-dependent (NON-Scaled) correlation LDA functional (KS 08-08-11)
-223   DOLANSC_LDAS = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 20
-C Complement (NON-Scaled) correlation LDA functional (KS 08-08-11)
-224   DOLANSC_LDA = .TRUE.
-      GO TO 20
-C Complement (Scaled) correlation LDA functional (KS 08-08-11)
-225   DOLASC_LDA = .TRUE.
-      GO TO 20
-C Complemnt Non-scaled correlation PBE function (KS 08-08-11)
-226   DOLANSC_PBEGWS = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 20
-C Complemnt (scaled) correlation PBE function (KS 08-08-11)
-227   DOLASC_PBEGWS = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 20
-C Non-scaled Complement correlation LYP functional (KS 08-08-11)
-228   DOLANC_GGALYP = .TRUE.
-      GO TO 20
-C Scaled complement correlation LYP functional (KS 08-08-11)
-229   DOLASC_GGALYP = .TRUE.
-      GO TO 20
-C Rational interpolation LYP functional                             
-230   DOSRC_LYPRI = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 20
-C Short-range spin-dependent correlation PBE function of GWS (edh 10-02-15)
-231   DOSRC_PBEGWS = .TRUE.
-      DFT_SPINDNS    = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 20
-C Modified short-range spin-dependent correlation PBE functional of GWS (edh 21-03-15)
-232   DOSRC_PBEGWS = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 20
-C Short-range spin-dependent correlation LDA functional w. PW92 param. (edh 29-03-15)
-233   DOSRC_LDA_PW92 = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 20
-C Short-range spin-dependent correlation LDA functional w. VWN5c param. (erk 07 feb. 18)
-234   DOSRC_VWN5 = .TRUE.
-      DFT_SPINDNS = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 20
-C Short-range TPSS spin-polarized correlation functional (erk 27 aug. 18)
-235   DOSRC_TPSS = .TRUE.
-      DFT_SPINDNS  = .TRUE.
-      ISJT         = .TRUE.
-      GO TO 20
-C Short-range TPSS spin-unpolarized correlation functional (erk 03 sep. 18)
-236   DOSRC_TPSS   = .TRUE.
-      ISJT         = .TRUE.
-      GO TO 20
-C mu independt PBE spin-polarized correlation functional (erk 27 feb. 19)
-237   DOC_PBE_nomu = .TRUE.
-      DFT_SPINDNS    = .TRUE.
-      ISJT           = .TRUE.
-      GO TO 20
-C mu independt PBE spin-unpolarized correlation functional (erk 27 feb. 19)
-238   DOC_PBE_nomu = .TRUE.
-      ISJT         = .TRUE.
-      GO TO 20
-C Short-range correlation LDA functional w. VWN5c param. (erk 27 feb. 19)
-239   DOSRC_VWN5  = .TRUE.
-      ISJT        = .TRUE.
-      GO TO 20
-C Short-range spin-dependent correlation LDA functional w. PW92 param. (edh 29-03-15)
-240   DOSRC_LDA_PW92 = .TRUE.
-      DFT_SPINDNS      = .TRUE.
-      ISJT             = .TRUE.
-      GO TO 20
-C Short-range spin-dependent correlation LDA functional w. PW92 param. (edh 29-03-15)
-241   DOSRC_LDA_PW92 = .TRUE.
-      ISJT    = .TRUE.
-      GO TO 20
-C mu independt VWN5 spin-polarized correlation functional (erk 01 mar. 19)
-242   DOC_VWN5_nomu = .TRUE.
-      DFT_SPINDNS     = .TRUE.
-      ISJT            = .TRUE.
-      GO TO 20
-C mu independt VWN5 spin-unpolarized correlation functional (erk 01 mar. 19)
-243   DOC_VWN5_nomu = .TRUE.
-      ISJT          = .TRUE.
-      GO TO 20
-
-  20  CONTINUE
 
       IF (.NOT.SETCFUN) THEN
           WRITE(LUPRI,'(/2A/A/)')

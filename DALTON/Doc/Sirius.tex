@@ -1370,7 +1370,11 @@ For example, \verb| SRXPBEGWS SRCPBEGWS| (which is the same combined functional 
 
 \item[SRLDA] combination of \quotekw{SRXLDA} for exchange and \quotekw{SRCVWN5} for correlation~\cite{srdft:LDAERF}
 
+\item[LRCLDA] combination of \quotekw{SRXLDA} for exchange and \quotekw{CVWN5} for correlation~\cite{srdft:LDAERF}
+
 \item[SRPBEGWS] combination of \quotekw{SRXPBEGWS} for exchange and \quotekw{SRCPBEGWS} for correlation~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
+
+\item[LRCPBEGWS] combination of \quotekw{SRXPBEGWS} for exchange and \quotekw{CPBE} for correlation~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
 
 \item[SRPBE0GWS] combination of \quotekw{SRXPBEGWS} with \quotekw{.HFXFAC} set to 0.25 for exchange and \quotekw{SRCPBEGWS} for correlation~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
 
@@ -1402,15 +1406,29 @@ For example, \verb| SRXPBEGWS SRCPBEGWS| (which is the same combined functional 
 
 \item[SRCVWN5] short-range LDA correlation functional based on VWN5 by Paziani \textit{et al.}~\cite{srdft:LDAERF}
 
+\item[CVWN5] full-range LDA correlation functional by Vosko, Wilk and Nusair\cite{dft:vwn}
+
 \item[SRCPW92] short-range LDA correlation functional based on PW92 by Paziani \textit{et al.}~\cite{srdft:LDAERF}
+
+\item[CPW92] full-range LDA correlation functional by Perdew and Wang, 1992~\cite{dft:pw91,dft:pw92}
 
 \item[SRCPBEGWS] short-range GGA correlation functional based on the PBE correlation functional by Goll, Werner and Stoll~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
 
 \item[SRCPBERI] short-range GGA correlation functional based on rational interpolation of the PBE correlation functionalbetween the short-range limit and the long-range limit by Toulouse, Colonna and Savin~\cite{srdft:erfgau}
 
+\item[CPBE] full-range GGA correlation functional by Perdew, Burke and Ernzerhof~\cite{dft:pbe}
+
 \end{description}
  
+\subsubsection{Third Options}
+\providecommand\corfn[1]{#1}
+\begin{description}
+
+\item[NO\_SPINDENSITY] can be put as a third option in the functional specification to force the program to not use spin-densities. This option only works with explicitly specified exchange and correlation functional. For example, \verb|SRXPBEGWS SRCPBEGWS NO_SPINDENSITY|
+
+\end{description}
 \pagebreak[3]
+
 \subsection{\label{ref-haminp}\Sec{HAMILTONIAN}}
 
 {\bf Purpose:}

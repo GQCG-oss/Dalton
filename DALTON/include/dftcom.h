@@ -71,7 +71,7 @@
 !
       CHARACTER*6  DFTTYP
 !     variables for srDFT
-      CHARACTER*10 SRXFUN, SRCFUN, SRLOCALSPIN
+      CHARACTER*23 SRXFUN, SRCFUN, SRLOCALSPIN
       COMMON /DFTCHR/ DFTTYP,                                           &
      &                SRXFUN, SRCFUN, SRLOCALSPIN
 ! -- end of dftcom.h --
