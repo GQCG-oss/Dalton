@@ -344,7 +344,7 @@ C     Disable "MP2FRO" if result not to be printed
       CHIVAL_SAVE = CHIVAL
 C
 C     if SRMP2_SRINTS
-C     1)  calculate "EMP2" from AO2SRINT integrals (i.e. short-range integrals),
+C     1)  calculate "EMP2" from AOSR2INT integrals (i.e. short-range integrals),
 C     2)  set SRMP2_SRINTS false, go back to label 10, and redo the
 C         standard srMP2 "EMP2" from AOTWOINT integrals (i.e. long-range integrals)
 C     3)  make sure MP2 energy with short-range integrals is printed!
@@ -830,7 +830,8 @@ C     ... skip to calculate energy with full integrals if
 C         calculating MP2 correlation energy with short-range integrals
 C
 C     Write the correlation coefficients and second order one-density to
-C     the interface file LUSIFC
+C     the interface file SIRIFC (orbitals are RHF orbitals, as needed
+C     for SOPPA, i.e. not MP2 natural orbitals, as used for MCSCF start.)
 C
       IF ( FLAG(25) ) THEN
          CALL MP2IFC(WRK(KDONE),WRK(KKAPPA))
@@ -841,7 +842,7 @@ C occupation numbers of the MP2 natural orbitals including the
 C long-range corrections only (the short-range contributions are
 C calculated by MP2SRDFTDEN) for analysis purposes in case SRMP2_SELFCONSISTENT is
 C TRUE (which means that we also want to calculate the self-consistency
-C effects). Thus we must save CMO before calling natorb for the
+C effects). Thus we must save CMO before calling mp2_natorb for the
 C first time otherwise we use in MP2SRDFTDEN natural orbitals to
 C calculate the F operator instead of HF-SRDFT orbitals
 C (which leads to symmetry dependent results ...)
@@ -857,7 +858,7 @@ C
      &    ,' contributions are NOT taken into account.'
      &    ,' *******************************************************'
 C
-      CALL NATORB(IPRMP2,WRK(KOCCUP),WRK(KDONE),WRK(KCMO),
+      CALL MP2_NATORB(IPRMP2,WRK(KOCCUP),WRK(KDONE),WRK(KCMO),
      &            WRK(KFREE),LFREE)
 C
 #ifdef MOD_SRDFT
@@ -898,7 +899,7 @@ C
 C
 C        Get the SRMP2_SELFCONSISTENT natural orbitals and occ. numbers
 C
-         CALL NATORB(IPRMP2,WRK(KOCCUP),WRK(KDONE),WRK(KCMO),
+         CALL MP2_NATORB(IPRMP2,WRK(KOCCUP),WRK(KDONE),WRK(KCMO),
      &               WRK(KFREE),LFREE)
 C
 C
@@ -1030,7 +1031,7 @@ C
      &    ,' contributions are NOT taken into account.'
      &    ,' *******************************************************'
 C
-         CALL NATORB(IPRMP2,WRK(KOCCUP),WRK(KDONEF),WRK(KCMO1),
+         CALL MP2_NATORB(IPRMP2,WRK(KOCCUP),WRK(KDONEF),WRK(KCMO1),
      &               WRK(KFREE),LFREE)
 C
 C        Manu June 07 : If MP2SRDFT calculation ...
@@ -1069,7 +1070,7 @@ C
 C
 C           Get the natural orbitals and occ. numbers
 C
-            CALL NATORB(IPRMP2,WRK(KOCCUP),WRK(KDONEF),WRK(KCMO1),
+            CALL MP2_NATORB(IPRMP2,WRK(KOCCUP),WRK(KDONEF),WRK(KCMO1),
      &                  WRK(KFREE),LFREE)
 C
 #endif
@@ -1111,8 +1112,8 @@ C
       CALL QEXIT('MP2CTL')
       RETURN
       END
-C  /* Deck natorb */
-      SUBROUTINE NATORB(IPRNO,OCCUP,DONE,CMO,WRK,LFRSAV)
+C  /* Deck MP2_natorb */
+      SUBROUTINE MP2_NATORB(IPRNO,OCCUP,DONE,CMO,WRK,LFRSAV)
 C
 C PURPOSE : DETERMINE NATURAL ORBITALS
 C
@@ -1126,8 +1127,9 @@ C
 C
 C Used from common blocks:
 C
-C pgroup : REP
-C INFIND : ISSMO
+C pgroup.h : REP
+C inforb.h : NORB(), ...
+C infind.h : ISSMO
 C
 #include "maxorb.h"
 #include "maxash.h"
@@ -1139,7 +1141,7 @@ C
 #include "inftap.h"
 #include "infpri.h"
 C
-      CALL QENTER('NATORB')
+      CALL QENTER('MP2_NATORB')
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LFRSAV
@@ -1212,10 +1214,10 @@ C
  1851 FORMAT(' (supersymmetry in parenthesis)'//,(5(F12.8,' (',I2,')')))
 #endif
 C
-      CALL MEMREL('NATORB',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
-      CALL QEXIT('NATORB')
+      CALL MEMREL('MP2_NATORB',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('MP2_NATORB')
       RETURN
-C     ... end of NATORB
+C     ... end of MP2_NATORB
       END
 C  /* Deck mp2den */
       SUBROUTINE MP2DEN(NFROZ,IFROZ,JAH,JMP,IAHMP,ISYMAM,H2PHD,DONE,
@@ -1701,14 +1703,7 @@ C
       IF (NORBI.EQ.0) GO TO 299
          NFRRHF_I = NFRRHF(ISYM)
          IF (NFRRHF_I  .GT. 0) FCKFRO = .TRUE.
-         IF (NFRRHF_I  .GT. NFRMP2(ISYM)) THEN
-            NWARN = NWARN + 1
-            WRITE (LUPRI,'(3(/A,I5))')
-     +      ' ***** WARNING from MP2FCK for symmetry',ISYM,
-     +      ' Number of frozen MP2 orbitals this symmetry',NFRMP2(ISYM),
-     +      ' is reset to number of frozen RHF orbitals  ',NFRRHF_I
-            NFRMP2(ISYM) = NFRRHF_I
-         ELSE IF (NFRMP2(ISYM) .GT. NRHF(ISYM)) THEN
+         IF (NFRMP2(ISYM) .GT. NRHF(ISYM)) THEN
             WRITE (LUPRI,'(3(/A,I5),/A/A)')
      +      ' INFO from MP2FCK for symmetry',ISYM,
      +      ' INFO Number of frozen MP2 orbitals         ',NFRMP2(ISYM),
@@ -1899,6 +1894,8 @@ C
       CALL GETDAT(LAB123(2),LAB123(3))
 C     ... place date in LAB123(2) and time in LAB123(3)
 C
+      WRITE(LUPRI,'(/A)')
+     &' MP2INFO for SOPPA (RHF orbitals) written to SIRIFC'
 C Open the FNSIFC file
       IF (LUSIFC .LT. 0) CALL GPOPEN(LUSIFC,FNSIFC,
      &   'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)

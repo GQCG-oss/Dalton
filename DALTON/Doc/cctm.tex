@@ -40,13 +40,19 @@ Calculate the three-photon moments and strengths for all possible
 combinations of Cartesian 
 components of the electric dipole moment operator (729 combinations).
 \item[\Key{OPERAT}] \verb| |\newline
-\verb|READ (LUCMD,'(6A)') LABELA, LABELB, LABELC, LABELD, LABELE, LABELF|\newline
+\verb|READ (LUCMD,'(6A8)') LABELA, LABELB, LABELC, LABELD, LABELE, LABELF|\newline
 \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
-\verb|   READ (LUCMD,'(6A)') LABELA, LABELB, LABELC, LABELD, LABELE, LABELF|\newline
+\verb|   READ (LUCMD,'(6A8)') LABELA, LABELB, LABELC, LABELD, LABELE, LABELF|\newline
 \verb|ENDDO|\newline   
 Select the sextuples of operator labels for which to calculate the three-photon transition
 moments. Operator sextuples which do not correspond to symmetry-allowed combinations will be
 ignored during the calculation.
+Use exactly 8 characters for each label,
+this means that if you should want e.g LABELA='XXROTSTR', LABELB='YYROTSTR', LABELC='XANGMOM ', LABELD='XYROTSTR',
+LABELE=' YDIPLEN', and LABELF='ZZROTSTR'
+you must enter\newline
+\verb|XXROTSTRYYROTSTRXANGMOM XYROTSTRYDIPLEN ZZROTSTR|
+
 \item[\Key{PRINT}] \verb| |\newline
 \verb|READ (LUCMD,*) IPRTM|\newline
 Read print level. Default is 0.

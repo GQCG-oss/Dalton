@@ -1884,7 +1884,7 @@ C
       ELSE
          IF (IPRRSP.GT.20) WRITE(LUPRI,'(/A)')
      &      '      NUMBER      EIGENVALUE      PAIRED EIGENVALUE'
-         DO, I=1,IPOS
+         DO I=1,IPOS
             RELDIF = ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I)))
             IF (ABS(ALFAR(I)) .GT. ZEROT)
      &         RELDIF = RELDIF / ABS(ALFAR(I))
@@ -2311,7 +2311,7 @@ C                    .ge. PRFAC * (max. absolut value)
 C
 #include "implicit.h"
       DIMENSION RSPVEC(*)
-      PARAMETER (PRFAC = 1.D-1)
+      PARAMETER (PRFAC = 0.1D0)
 C
 C Used from common blocks:
 C   INFVAR : JWOPSY
@@ -2330,18 +2330,21 @@ C
 C 1. find maximum absolute value in RSPVEC
 C
       IF (IUNITX.GT.0) THEN
-         MAXX   = IDAMAX(NZCONF,RSPVEC,1)
-         MAXY   = IDAMAX(NZCONF,RSPVEC(IOFFY+1),1)
-         THPLIM = PRFAC * MAX( ABS(RSPVEC(MAXX)), ABS(RSPVEC(MAXY)) )
+!        MAXX   = IDAMAX(NZCONF,RSPVEC,1)
+!        MAXY   = IDAMAX(NZCONF,RSPVEC(IOFFY+1),1)
+! absolute value test, relative test gives too many irrelevant values
+!        THPLIM = PRFAC * MAX( ABS(RSPVEC(MAXX)), ABS(RSPVEC(MAXY)) )
+         THPLIM = PRFAC
 C        WRITE (IUNIT,1000) JWOPSY,PRFAC*100.
       ELSE
+         THPLIM = 0.0D0
 C        WRITE (IUNIT,1010) JWOPSY
       ENDIF
       WRITE (IUNIT,1020)
       INPR = 0
       DO 200 IG = 1,NZCONF
-         IF (IUNITX.LT.0 .OR. ABS(RSPVEC(IG))       .GT. THPLIM
-     *        .OR. ABS(RSPVEC(IOFFY+IG)) .GT. THPLIM) THEN
+         IF (ABS(RSPVEC(IG))       .GT. THPLIM .OR.
+     &       ABS(RSPVEC(IOFFY+IG)) .GT. THPLIM) THEN
             WRITE (IUNIT,1100) IG,RSPVEC(IG),RSPVEC(IOFFY+IG)
          ELSE
             INPR = INPR + 1
@@ -2364,12 +2367,10 @@ C1010 FORMAT(/5X,'Response configuration operator symmetry =',I2)
      *       /,5X,' ----------                      --------------',
      *            '      --------------')
  1100 FORMAT(I12,20X,2F20.10)
- 1200 FORMAT(/I9,' elements with absolute value less than',
-     *       1P,D9.2,' not printed.',
-     *       //' The numbers in parenthesis',
-     *         ' give the configuration symmetry.')
+ 1200 FORMAT(/I9,' elements with absolute value ≤',
+     *       1P,D9.2,' not printed.')
  3000 FORMAT(/5X,'Configuration operator symmetry =',I2,
-     *       /5X,'>> NO ELEMENTS <<')
+     *       /5X,'>> NO CONFIGURATIONS THIS SYMMETRY <<')
 C
 C -- end of subroutine RSPPRC
 C
@@ -2393,7 +2394,7 @@ C                    .ge. PRFAC * (max. absolut value)
 C
 #include "implicit.h"
       DIMENSION RSPVEC(*),XNDXCI(*),SYMPRO(*)
-      PARAMETER (PRFAC = 1.D-1, PRSOP1 = 0.3D0, PRSOP2 = 0.25D0)
+      PARAMETER (PRFAC = 0.1D0, PRSOP1 = 0.3D0, PRSOP2 = 0.25D0)
 C
 C Used from common blocks:
 C   INFINP : FLAG(27), LSYM
@@ -2424,7 +2425,9 @@ C
             THPLIM = PRSOP1 * MAX( ABS(RSPVEC(MAXX)), ABS(RSPVEC(MAXY)))
             THPSOP = PRSOP2 * MAX( ABS(RSPVEC(MAXX)), ABS(RSPVEC(MAXY)))
          ELSE
-            THPLIM = PRFAC * MAX( ABS(RSPVEC(MAXX)), ABS(RSPVEC(MAXY)) )
+! absolute value test, relative test gives too many irrelevant values
+!           THPLIM = PRFAC * MAX( ABS(RSPVEC(MAXX)), ABS(RSPVEC(MAXY)) )
+            THPLIM = PRFAC
          END IF
 C        WRITE (IUNIT,1000) JWOPSY,PRFAC*100.
       ELSE
@@ -2442,7 +2445,7 @@ C        WRITE (IUNIT,1010) JWOPSY
       ENDIF
       INPR = 0
       DO 200 IG = 1,NZCONF
-         IF (ABS(RSPVEC(IG)) .GT. THPLIM .OR.
+         IF (ABS(RSPVEC(IG))       .GT. THPLIM .OR.
      &       ABS(RSPVEC(IOFFY+IG)) .GT. THPLIM) THEN
             IF (SOPPA) THEN
                IF (IPRRSP .GT. 20) THEN
@@ -2470,6 +2473,7 @@ C        980820-hjaaj: Find out if vector is in CSFs or in det.s
          ICSF = 0
          IF (.NOT. FLAG(27) .AND. .NOT.TRPFLG .AND. ISYMV .EQ. LSYM)
      &      ICSF = 1
+         THPLIM = PRFAC ! do not print very small numbers if rspvec is in orbital space
          CALL ANACIN(RSPVEC,ISYMV,THPLIM,100,XNDXCI,SYMPRO,IUNITX,ICSF)
       END IF
 C
@@ -2496,9 +2500,7 @@ C1010 FORMAT(/5X,'Response configuration operator symmetry =',I2)
  1110 FORMAT(I10,I6,'(',I1,')',I4,'(',I1,')',I4,'(',I1,')',I4,'(',
      *       I1,')',A3,2F17.10)
  1200 FORMAT(/I9,' elements with absolute value ≤',
-     *       1P,D9.2,' are not printed.',
-     *       //' The numbers in parenthesis',
-     *         ' give the configuration symmetry.')
+     *       1P,D9.2,' are not printed.')
  1210 FORMAT(/I9,' elements with absolute value ≤',
      *       1P,D9.2,' are not printed.',
      *       //' The numbers in parenthesis give the symmetry of the ',
@@ -2522,10 +2524,10 @@ C  IUNIT = IABS(IUNITX)
 C
 C  If IUNITX .lt. 0, write all elements;
 C  if IUNITX .gt. 0, write only elements with absolut value
-C                    .ge. PRFAC * (max. absolut value)
+C                    .ge. PRFAC
 C
 #include "implicit.h"
-      PARAMETER (PRFAC = 1.D-1)
+      PARAMETER (PRFAC = 0.1D0)
       DIMENSION WOP(*), UDV(NASHDI,*)
       REAL*8  :: WOP_SCALED(NWOPT,2)   ! allocatable array
 C
@@ -2583,7 +2585,9 @@ C
 C 1. find maximum absolute value in scaled WOP
 C
       IF (IUNITX.GT.0) THEN
-         THPWOP = PRFAC * WOP_SC_AMAX
+! absolute value test, relative test gives too many irrelevant values
+!        THPWOP = PRFAC * WOP_SC_AMAX
+         THPWOP = PRFAC
          WRITE (IUNIT,1000) JWOPSY,PRFAC*100.D0
       ELSE
          THPWOP = 0.0D0
@@ -2655,7 +2659,7 @@ C
 #include "infvar.h"
 #include "infrsp.h"
       DIMENSION WOP(*), MJWOP(2,MAXWOP,8)
-      PARAMETER (PRFAC = 1.D-1)
+      PARAMETER (PRFAC = 0.1D0)
 C
 C Used from common blocks:
 C   INFIND : ISMO(*)
@@ -2671,16 +2675,18 @@ C
       IF (IUNITX.GT.0) THEN
          MAXX   = IDAMAX(NZWOPT,WOP,1)
          MAXY   = IDAMAX(NZWOPT,WOP(IOFFY+1),1)
-         THPWOP = PRFAC * MAX( ABS(WOP(MAXX)) , ABS(WOP(MAXY)) )
-         WRITE (IUNIT,1000) NWOPSY,PRFAC*100.D0
+!        THPWOP = PRFAC * MAX( ABS(WOP(MAXX)) , ABS(WOP(MAXY)) )
+         THPWOP = PRFAC
+!        WRITE (IUNIT,1000) NWOPSY,PRFAC*100.D0
       ELSE
+         THPWOP = 0.0D0
          WRITE (IUNIT,1010) NWOPSY
       ENDIF
       WRITE (IUNIT,1020)
       INPR = 0
       DO 200 IG = 1,NZWOPT
-         IF (IUNITX.LT.0 .OR. ABS(WOP(IG))       .GT. THPWOP
-     *                   .OR. ABS(WOP(IOFFY+IG)) .GT. THPWOP) THEN
+         IF (ABS(WOP(IG))       .GT. THPWOP .OR.
+     &       ABS(WOP(IOFFY+IG)) .GT. THPWOP) THEN
             K  = MJWOP(1,IG,NWOPSY)
             L  = MJWOP(2,IG,NWOPSY)
             KS = ISMO(K)
@@ -2707,7 +2713,7 @@ C
      *       /,5X,' ----------    -----  -----      --------------',
      *            '      --------------')
  1100 FORMAT(I12,I10,'(',I1,')',I4,'(',I1,')',2F20.10)
- 1200 FORMAT(/I9,' elements with absolute value less than',
+ 1200 FORMAT(/I9,' elements with absolute value ≤',
      *       1P,D9.2,' not printed.',
      *       //' The numbers in parenthesis give the orbital symmetry.')
  3000 FORMAT(/5X,'Orbital operator symmetry =',I2,

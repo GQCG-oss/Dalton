@@ -66,14 +66,16 @@ combinations will be ignored during the calculation.
 This is the default.
 
 \item[\Key{OPERAT}] \verb| |\newline
-\verb|READ (LUCMD,'(3A)') LABELA, LABELB, LABELC|\newline
+\verb|READ (LUCMD,'(3A8)') LABELA, LABELB, LABELC|\newline
 \verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
-\verb|  READ (LUCMD,'(3A)') LABELA, LABELB, LABELC|\newline
+\verb|  READ (LUCMD,'(3A8)') LABELA, LABELB, LABELC|\newline
 \verb|END DO|
 %
 
 Manually select the operator label triplets defining the operator
 Cartesian components involved in the ${\cal B}$ term. 
+Note that exactly 8 characters must be used for each label, with
+no spacing between.
 %, or, in general, in the $S^of_AB,C(0)$ strength.
 The first two operators \verb+(LABELA,LABELB)+
 are those that enter the two-photon moment.
@@ -93,10 +95,10 @@ combination will be ignored during the calculation.
 %In case we need to specify relaxed/derivative operators
 %the \Key{OPERAT} input is slightly different:
 %\item[\Key{OPERAT}] \verb| |\newline
-%\verb|READ (LUCMD'(3A)') LABELA, LABELB, LABELC|\newline
+%\verb|READ (LUCMD'(3A8)') LABELA, LABELB, LABELC|\newline
 %\verb|DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')|\newline
-%\verb|  READ (LUCMD'(3A)') (UNREL), (RELAX), (UNREL)|\newline
-%\verb|  READ (LUCMD'(3A)') LABELA,  LABELB,  LABELC|\newline
+%\verb|  READ (LUCMD'(3A8)') (UNREL), (RELAX), (UNREL)|\newline
+%\verb|  READ (LUCMD'(3A8)') LABELA,  LABELB,  LABELC|\newline
 %\verb|END DO|
 %where \verb+(UNREL)+ refers to unrelaxed operators and 
 %      \verb+(RELAX)+to relaxed operators.

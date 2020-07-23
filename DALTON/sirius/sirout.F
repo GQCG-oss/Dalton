@@ -309,19 +309,16 @@ C     ... get total molecular charge
      *      ' The molecule is placed in a static field.',
      *      ' Field strength (a.u.)          Field operator',
      *      ' ---------------------          --------------'
-csonia 04/10/95
+csonia 04/10/95: LUCME output
          IF (LUCME.GT.0) WRITE (LUCME,'(/A/A/A)')
      &         ' The molecule is placed in a static field.',
      &         ' Field strength (a.u.)          Field operator',
      &         ' ---------------------          --------------'
-csonia 04/10/95
          DO 100 IFIELD = 1,NFIELD
             WRITE (LUPRI,'(1P,G18.8,18X,A8)')
      *         EFIELD(IFIELD),LFIELD(IFIELD)
-csonia 04/10/95
             IF (LUCME.GT.0) WRITE (LUCME,'(1P,G18.8,18X,A8)')
      &         EFIELD(IFIELD), LFIELD(IFIELD)
-csonia 04/10/95
   100    CONTINUE
          WRITE (LUPRI,'()')
       END IF
@@ -338,13 +335,14 @@ csonia 04/10/95
       ELSE IF (PCM .AND. (.NOT.MMPCM)) THEN
          IF (NONEQ) THEN
             WRITE (LUPRI,'(/5X,A,2(/10X,A,F12.6))')
-     *           'SOLVATION MODEL: polarizable continuum model (PCM),'
-     *           ,'dielectric constant =',EPSINF,
-     *           'static diel. const. =',EPS
+     &           'SOLVATION MODEL: '//
+     &           'non-equlibrium polarizable continuum model (PCM),'
+     &           ,'dielectric constant =',EPSINF
+     &           ,'static diel. const. =',EPS
          ELSE
             WRITE (LUPRI,'(/5X,A,(/10X,A,F12.6))')
-     *           'SOLVATION MODEL: polarizable continuum model (PCM),'
-     *           ,'dielectric constant =',EPS
+     &           'SOLVATION MODEL: polarizable continuum model (PCM),'
+     &           ,'dielectric constant =',EPS
          END IF
 #ifdef HAS_PCMSOLVER
       ELSE IF (pcm_cfg%do_pcm) THEN
@@ -395,11 +393,13 @@ C        CI calculation
             WRITE (LUPRI,5012)
          END IF
       ELSE IF (FLAG(2) .AND. MCTYPE .GT. 0) THEN
-C        MCSCF calculation
+C        MCSCF type calculation
          IF (DOMCSRDFT) THEN
+            WRITE (LUPRI,5013)
             WRITE (LUPRI,5024) ISTATE,EMCSCF,CONV_text,
      &         POTNUC,(EMCSCF-POTNUC-ESOLT)
          ELSE
+            WRITE (LUPRI,5014)
             WRITE (LUPRI,5020) ISTATE,EMCSCF,CONV_text,
      &         POTNUC,(EMCSCF-POTNUC-ESOLT)
          END IF
@@ -441,6 +441,8 @@ C        ... DIIS-DFT or QC-DFT optimization
      *       /'@    Total charge of molecule:',T31,I5)
  5010 FORMAT(/'@    This was a CI-NO calculation.')
  5012 FORMAT(/'@    This was a CI calculation.')
+ 5013 FORMAT(/'@    This was an MCSCF calculation.')
+ 5014 FORMAT(/'@    This was an MC-srDFT calculation.')
  5020 FORMAT( '@    State number:',T31,I5,
      *      //'@    Final MCSCF energy:',T31,F20.12,A,
      *       /'@    Nuclear repulsion:',T31,F20.12,

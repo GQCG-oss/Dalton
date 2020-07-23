@@ -103,6 +103,11 @@ Integrals needed for operator DIPVEL, ANGMOM, and ROTSTR.
 \verb|READ (LUCMD,'(2A8)') LABELA, LABELB|\newline
 %
 Read pairs of operator labels for which the residue of the linear response function is desired.
+Use exactly 8 characters for each,
+this means that if you should want e.g LABELA='XXROTSTR' and LABELB='YYROTSTR'
+you must enter\newline
+\verb|XXROTSTRYYROTSTR|
+
 Can be used to calculate the transition property for a given operator
 by specifying that operator twice. The operator can be any of the one-electron
 operators for which integrals are available in the \Sec{*INTEGRALS} input part.

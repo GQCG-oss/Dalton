@@ -1392,9 +1392,11 @@ C#######################################################################
 !
 ! Calculate integrals if not found
 !
-      LUPROP=-1
-      CALL GPOPEN(LUPROP,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',
-     &   0,.FALSE.)
+      IF (LUPROP .LE. 0) THEN
+         LUPROP=-1
+         CALL GPOPEN(LUPROP,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',
+     &      0,.FALSE.)
+      END IF
       REWIND LUPROP
       IF (.NOT.FNDLB2('XDIPLEN ',RTNLBL,LUPROP)) THEN
          if (debug) write(LUPRI,*)'calling pr1int DIPLEN'

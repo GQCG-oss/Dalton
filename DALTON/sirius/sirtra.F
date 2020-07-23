@@ -1755,7 +1755,7 @@ C
 C  FTRCTL in exeinf.h forces integral sort and transformation,
 C      FTRCTL is true if Hermit has calculated a new AOTWOINT file
 C      since last call of TRACTL, or if integral type has changed
-C      (example: switch between AO2SRINT and AOTWOINT for srDFT)
+C      (example: switch between AOSR2INT and AOTWOINT for srDFT)
 C
       IF (FTRCTL) THEN ! new geometry, force new integral transformation
          ITRLVL_LAST = -999

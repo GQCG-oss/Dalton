@@ -23,18 +23,18 @@
 
 \newcommand{\newbibentry}[1]{{\begin{NoHyper}\bibentry{#1}\end{NoHyper}}}
 
-\typeout{***               }
-\typeout{***   Modification history: }
-\typeout{***   version 1.0 by PRT, June 1992 }
-\typeout{***   version 2.0 by Kenneth Ruud, autumn 1994 and spring 1995}
-\typeout{***   Converted to LaTeX2e in April 1995, Kenneth Ruud}
-\typeout{***   Added response manual from Linkoeping in Feb.96, Kenneth Ruud}
-\typeout{***   Added Sirius manual from Hans J\o rgen/Hans \AA gren in Feb.96, kr}
-\typeout{***   Added cc manual in Mar. 2001, Christof Haettig}
-\typeout{***   Revision for Dalton 1.2 in May 2001, Kenneth Ruud}
-\typeout{***   Revision for Dalton 2.0 in 2004/2005, Kenneth Ruud++}
-\typeout{***   Revision for Dalton 2011 in 2011, Hans J\o rgen Aa. Jensen }
-\typeout{***               }
+%\typeout{***               }
+%\typeout{***   Modification history: }
+%\typeout{***   version 1.0 by PRT, June 1992 }
+%\typeout{***   version 2.0 by Kenneth Ruud, autumn 1994 and spring 1995}
+%\typeout{***   Converted to LaTeX2e in April 1995, Kenneth Ruud}
+%\typeout{***   Added response manual from Linkoeping in Feb.96, Kenneth Ruud}
+%\typeout{***   Added Sirius manual from Hans J\o rgen/Hans \AA gren in Feb.96, kr}
+%\typeout{***   Added cc manual in Mar. 2001, Christof Haettig}
+%\typeout{***   Revision for Dalton 1.2 in May 2001, Kenneth Ruud}
+%\typeout{***   Revision for Dalton 2.0 in 2004/2005, Kenneth Ruud++}
+%\typeout{***   Revision for Dalton 2011 in 2011, Hans J\o rgen Aa. Jensen }
+%\typeout{***               }
 
 \setcounter{secnumdepth}{3}
 
@@ -88,9 +88,10 @@
 \newcommand{\kw}[1]{{\texttt{#1}}}             % Feb. 2017   -> now
 \newcommand{\quotekw}[1]{{\texttt{"#1"}}}      % Feb. 2017   -> now
 
+\newcommand{\starstarkey}{\quotekw{**}}
 \newcommand{\starkey}{\quotekw{*}}
 \newcommand{\dotkey}{\quotekw{.}}
-\newcommand{\f}[1]{{"{f#1}" }}
+%\newcommand{\f}[1]{{"{f#1}" }}  % not used, what was it define for ??
 \newenvironment{inputex}%
 { \hspace{1cm} \begin{minipage}{15cm} }%
 { \end{minipage} }
@@ -283,7 +284,7 @@ and H.~{\AA}gren.
 %
 \include{Preface}
 \include{Intro}
-%\include{New}
+\include{New}
 \part{\dalton\ Installation Guide}
 \include{Install}
 \include{Maintain}
@@ -347,7 +348,7 @@ and H.~{\AA}gren.
 \include{Appendix}
 \part{References}
 \bibliographystyle{unsrt}
-\bibliography{dalton,dft,Symm_tut,fde}
+\bibliography{dalton,dft,Symm_tut,fde,srdft}
 %
 % Index
 %

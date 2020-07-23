@@ -1337,6 +1337,7 @@ C------------------------------
 C
       IF (KEEPAOTWO.LT.2) THEN
          IF (LUINTA.LE.0) THEN
+           CALL MAKE_AOTWOINT(WORK(KEND4),LWRK4)
            LUINTA = -1
            CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ','UNFORMATTED',
      *                 IDUMMY,.FALSE.)

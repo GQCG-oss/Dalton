@@ -24,7 +24,9 @@ options are omitted.
    with no leading blanks.  The preceding lines in the input file may
    contain arbitrary information.
 }
-\item{ Input is directed by keywords written in upper case.
+
+\item{Input is directed by keywords which internally are stored
+   in upper case, however, in the input file they may be written in upper, lower, or mixed case.
    Only the first 7 characters including the prompt are significant.
    The keywords are divided in a number of main input groups. Each main
    input group is initiated by a {\starkey}. For example
@@ -34,17 +36,21 @@ options are omitted.
 \end{verbatim} \end{inputex}
    marks the beginning of the input group for orbital input.
 }
-\item { The keywords belonging to one of the main input groups begin with
+
+\item {The keywords belonging to one of the main input groups begin with
    the prompt {\dotkey}.
 }
-\item { Keywords that are necessary to specify are marked by "Required".
+
+\item {Keywords that are necessary to specify are marked by "Required".
    For other keywords the default values can be used in ordinary runs.
 }
+
 \item {Any keyword line beginning with a \quotekw{!} or
    \quotekw{\#} will be treated as a
    comment line.  An illegal keyword will cause a dump of all keywords
    for the current input section.
 }
+
 \item{A dump of keywords can be obtained in any input section by
 specifying the keyword \quotekw{\Key{OPTIONS}}.  For example, the input
 
@@ -53,27 +59,34 @@ specifying the keyword \quotekw{\Key{OPTIONS}}.  For example, the input
 .OPTIONS
 **END OF DALTON INPUT
 \end{verbatim} \end{inputex}
-   will cause a dump of the labels for the main input groups in {\sir},
-   while
+
+   will cause a dump  of all keywords in the main input groups in {\sir}, while
 
 \begin{inputex} \begin{verbatim}
-**WAVE FUNCTIONS
-*ORBITAL INPUT
-.OPTIONS
-**END OF DALTON INPUT
+**Wave functions
+*Orbital input
+.options
+**End of Dalton input
 \end{verbatim} \end{inputex}
-   will cause a dump of the labels for the \quotekw{*ORBITAL INPUT} input group
-   in {\sir}.
+
+   will cause a dump of all keywords in the \quotekw{*ORBITAL INPUT} input group
+   in {\sir} (this is also an example of using mixed case for the keywords).
 }
-\item{ The {\sir} input is finished with a line beginning with two stars,
-   {\it e.g.\/}
+
+\item{ The {\sir} input is finished with a line beginning with two stars {\starstarkey},
+   {\it e.g.}
 
 \begin{inputex} \begin{verbatim}
 **END OF DALTON INPUT
 \end{verbatim} \end{inputex}
+   or {\it e.g.}
+
+\begin{inputex} \begin{verbatim}
+**Properties
+\end{verbatim} \end{inputex}
+
 }
 \end{enumerate}
-
 
 \pagebreak[3]
 \section{\label{sec:ref-newinp}
@@ -113,7 +126,7 @@ Section~\ref{ref-solinp} \Sec{SOLVENT}
 
 \noindent
 The next input group specifies the configurations included
-in the MCSCF and CI wave functions:
+in the MCSCF, MC--srDFT, CI, and CI--srDFT wave functions:
 
 Section~\ref{ref-wavinp} \Sec{CONFIGURATION INPUT}
 
@@ -126,7 +139,7 @@ Section~\ref{ref-orbinp} \Sec{ORBITAL INPUT}
 Section~\ref{ref-civinp} \Sec{CI VECTOR}
 
 \noindent
-The two following input groups control the second-order MCSCF
+The two following input groups control a second-order MCSCF, MC--srDFT, HF, HF-srDFT, or DFT
 optimization:
 
 Section~\ref{ref-optinp} \Sec{OPTIMIZATION}
@@ -137,11 +150,11 @@ Section~\ref{ref-stpinp} \Sec{STEP CONTROL}
 The next groups have special input only relevant for the
 specified calculation types:
 
-Section~\ref{ref-rhfinp} \Sec{SCF INPUT}, for \Key{HF} (or \Key{SCF}) and \Key{DFT}
+Section~\ref{ref-rhfinp} \Sec{SCF INPUT}, for \Key{HF}, \Key{DFT}, and \Key{HFsrDFT}
 
 Section~\ref{ref-dftinp} \Sec{DFT INPUT}, for \Key{DFT}
 
-Section~\ref{ref-mp2inp} \Sec{MP2 INPUT}, for \Key{MP2}
+Section~\ref{ref-mp2inp} \Sec{MP2 INPUT}, for \Key{MP2} or \Key{MP2SRDFT}
 
 Section~\ref{ref-nevpt2inp} \Sec{NEVPT2 INPUT}, for \Key{NEVPT2}
 
@@ -151,14 +164,14 @@ Section~\ref{ref-stexinp} \Sec{STEX INPUT}, for \Key{STEX}
 
 \noindent
 The next section is used to select some types of analysis of the final
-Hartree--Fock, DFT, MCSCF, or CI wave function:
+HF, HF-srDFT, DFT, MCSCF, MC--srDFT, CI, or CI--srDFT wave function:
 
 Section~\ref{ref-popinp} \Sec{POPULATION ANALYSIS}
 
 \noindent
 The next section is used to change the default integral transformation
 and specify any final integral transformation after convergence (a
-program following {\sir} may need a higher transformation level):
+main Dalton module following {\sir} may need a higher transformation level):
 
 Section~\ref{ref-trainp} \Sec{TRANSFORMATION}
 
@@ -180,12 +193,12 @@ Chapter~\ref{ch:CC} \Sec{CC INPUT}
 \bigskip
 \noindent
 The wave function input is finished when a line is encountered beginning
-with two stars, for example
+with two stars {\starstarkey}, two examples:
 
 \begin{inputex} \begin{verbatim}
    **END OF DALTON INPUT
 \end{verbatim} \end{inputex}
-or
+and
 
 \begin{inputex} \begin{verbatim}
    **MOLORB
@@ -210,52 +223,142 @@ of the input file.
 
 Specification of which wave function calculation is to be performed.
 
-{\bf Primary keywords, listed in the order the corresponding modules
- will be executed by the program (if the keyword is set): }
+{\bf Primary keywords, {\color{red} listed in the order the corresponding modules
+ will be executed by the program (if the keyword is set)}: }
+
+\begin{description}
+
+\item[{\color{blue}Single configuration models}] Models with a single configuration SCF (HF, DFT, or HFsrDFT)
 
 \begin{description}
 
 \item[\Key{HF}]
-  Restricted closed-shell or one open-shell 
-  Hartree--Fock\index{HF}\index{SCF}\index{Hartree--Fock}\index{open shell!HF} calculation.
+  Restricted closed-shell, one open-shell, or high-spin spin-restricted Hartree--Fock calculation.
+  \index{HF}\index{SCF}\index{Hartree--Fock}\index{open shell!HF}\index{high spin!HF}
+  (Unrestricted HF is not possible in \dalton.)
   The occupied orbitals, optimization control etc. are specified in the
-  \quotekw{*SCF INPUT} submodule.
-  Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
+  \quotekw{*SCF INPUT} submodule. \\
+  Note: you can only specify one of the \quotekw{.HF}, \quotekw{.DFT}, and \quotekw{.HFsrDFT} keywords.
 
-%\item[\Key{SCF}]
-%  Alias for \Key{HF}. Deprecated.
+\item[\Key{HFsrDFT}]
+  Long-range Hartree-Fock  and short-range DFT (HF-srDFT) calculation. \index{HF-srDFT}
+  (Unrestricted HF-srDFT is not possible in \dalton.)
+  The short-range srDFT functional must be defined with the \quotekw{.SRFUN} keyword in this input section.
+  The occupied orbitals, optimization control etc. are specified in the
+  \quotekw{*SCF INPUT} submodule. \\
+  Default range-separation is the error function with $\mu = 0.4$, our standard value.
+  The value can be canged with the \quotekw{.ERF} keyword. \\
+  This option is quite similar to long-range corrected Kohn-Sham functionals, the only difference
+  is that long-range correction is also performed on the correlation funtional.
+  HF-srDFT with srPBEGWS may therefore be expected to give results close to LC-PBE.
+  Note: you can only specify one of the \quotekw{.HF}, \quotekw{.DFT}, and \quotekw{.HFsrDFT} keywords.
 
 \item[\Key{DFT}] \ \\
   \kw{READ (LUINP,'(A80)') LINE} \\
-  Restricted closed-shell, one
-  open-shell or high-spin spin-restricted Kohn-Sham density functional
-  theory\index{DFT}\index{Kohn--Sham}\index{open shell!DFT}
+  Restricted closed-shell, one open-shell, or high-spin spin-restricted Kohn-Sham density functional
+  theory\index{DFT}\index{Kohn--Sham}\index{open shell!DFT}\index{high spin!DFT}
+  (Unrestricted Kohn-Sham DFT is not possible in \dalton.)
   calculation.  On the following line you must specify which
   functional to use.  The occupied orbitals, optimization control
   etc. are specified in the \quotekw{*SCF INPUT} submodule shared with
-  the \quotekw{.HF} option.  The DFT specific input options are
+  the \quotekw{.HF} option. The DFT specific input options are
   collected in the \quotekw{*DFT INPUT} input submodule.
-  Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
+  Note: you can only specify one of the \quotekw{.HF}, \quotekw{.DFT}, and \quotekw{.HFsrDFT} keywords.
 
-\item[\Key{MP2}]
- \index{M{\o}ller-Plesset!second-order}\index{MP2}
-  M{\o}ller-Plesset second-order perturbation theory calculation.
-  Requires \quotekw{.HF} or previously calculated canonical Hartree--Fock orbitals.
-
-\item[(\quotekw{.FC MVO} in \quotekw{*SCF INPUT}]
-  Calculation of modified virtual SCF orbitals based on the
+\item[\quotekw{.FC MVO} in \quotekw{*SCF INPUT}]
+  Calculation of modified virtual SCF orbitals after SCF convergence based on the
   potential determined by the keyword (see comments below).
   The occupied SCF orbitals are not modified.
-  Note that this keyword is not located in this module but in the
+  MVOs are typically used for subsequent CI calculation.
+  {\em Note that this keyword is not located in this module but in the
   \quotekw{*SCF INPUT} submodule. It is mentioned here to make clear
-  at what point this transformation will be performed, if requested.
+  at what point this orbital transformation will be performed, if requested.}
+  Option is incompatible with CC, which requires canonical orbitals.
+
+\item[\Key{SRFUN}] \ \\
+  \kw{READ (LUINP,'(A80)') LINE} \\
+  Specification of functional used for \quotekw{.HFSRDFT}, \quotekw{.MP2SRDFT}, \quotekw{.CISRDFT},
+  and \quotekw{.MCSRDFT} calculations. It is \emph{required} for these calculations, there is not default functional.
+  \index{Short-range functionals!.SRFUN}
+  Note that this keyword must not be specified together with the Kohn--Shan DFT keyword \quotekw{.DFT}.
+
+\item[\Key{HFXFAC}] \ \\
+  \kw{READ (LUINP,'(A80)') LINE} \\
+  Specification of the full-range Hartree-Fock like exchange for \quotekw{.HFSRDFT} and \quotekw{.MCSRDFT} calculations.
+
+\item[\Key{STEX}]
+  Static exchange calculation based on an SCF wave function.\index{Static exchange}
+
+\end{description}
+
+\item[{\color{blue} Single configuration based correlation models}] Models based on a single configuration (e.g.\ MP2, CC, and CI with orbitals from a single determinant calculation).
+
+\begin{description}
+
+\item[\Key{MP2}]
+ \index{M{\o}ller-Plesset!second-order, MP2}\
+  M{\o}ller-Plesset second-order perturbation theory calculation,
+  based on canoncial orbitals from an HF calculation calculation.
+  Calculates second-order energy, second-order natural orbitals\index{natural orbitals!MP2},
+  and first-order wave function for SOPPA.
+  Requires \quotekw{.HF} or previously calculated canonical HF orbitals.
+
+\item[\Key{MP2srDFT}]
+ \index{M{\o}ller-Plesset!MP2--srDFT}\
+  M{\o}ller-Plesset second-order perturbation theory calculation with short-range srDFT functionals,
+  based on canoncial orbitals from an HFsrDFT calculation.
+  Calculates second-order energy, second-order natural orbitals\index{natural orbitals!MP2--srDFT},
+  and first-order wave function for SOPPA--srDFT.
+  Requires \quotekw{.HFsrDFT}
+  or previously calculated canonical HF-srDFT orbitals.
+
+\item[\Key{CC}]
+  \index{Coupled Cluster!CC}
+  Coupled cluster calculation. Automatically activates Hartree--Fock (\quotekw{.HF}).
+  After the Hartree--Fock calculation,
+  the \cc\ module is called to do a coupled cluster (response) calculation.
+  M
+  For further input options for the \cc\ module see Section~\ref{sec:ccgeneral}. 
+
+\item[\Key{CC ONLY}] Skip the calculation of a Hartree--Fock wave
+  function, and start directly in the coupled cluster part. Convenient
+  for restarts in the coupled cluster module.
+
+\end{description}
+
+\item[{\color{blue} Multi-configuration models}] CI, MCSCF, NEVPT2, GAS-CI; CI--srDFT, MC--srDFT, srNEVPT2.
+
+\begin{description}
 
 \item[\Key{CI}]
-  \index{CI}\index{Configuration Interaction}
+  \index{Configuration Interaction!CI}
   Configuration interaction calculation.
+  This CI will be based on the molecular orbitals from one of the SCF options, or
+  read in from file (then they can be from MCSCF, MP2, ...).
+
+\item[\Key{CIsrDFT}]
+  \index{CI--srDFT}\index{Configuration Interaction!CI--srDFT}
+  Long range configuration interaction and short-range DFT (CI--srDFT) calculation.
+  The short-range srDFT functional must be defined with the \quotekw{.SRFUN} keyword in this input section.
+  This CI--srDFT will be based on the molecular orbitals from one of the SCF options, or
+  read in from file (then they can be from MCsrDFT, MP2-srDFT, or in fact also from MCSCF, MP2, ...).
+  Note: you can only specify one of the \quotekw{.CI} and \quotekw{.CIsrDFT} keywords.
 
 \item[\Key{MCSCF}]
-  Multiconfiguration self-consistent field (MCSCF) calculation.\index{MCSCF}
+  Multiconfiguration self-consistent field (MCSCF) calculation. CASSCF or RASSCF .\index{MCSCF}\\
+  It is in most cases recommended that you use initial orbitals from MP2 for faster convergence to
+  the desired state (other initial guesses more often end in a local minimum).
+  For open-shell states not well described with MP2 you may consider using the \quotekw{.CINO} option for initial orbitals.\\
+  Note: you can only specify one of the \quotekw{.MCSCF} and \quotekw{.MCsrDFT} keywords.
+
+\item[\Key{MCsrDFT}]
+  Long-range MCSCF and short-range DFT (MC--srDFT) calculation. CAS-srDFT or RAS-srDFT.\index{MC--srDFT}
+  The short-range srDFT functional must be defined with the \quotekw{.SRFUN} keyword in this input section.
+  Default range-separation is the error function with $\mu = 0.4$, our standard value.
+  The value can be canged with the \quotekw{.ERF} keyword. \\
+  It is normally recommended that you use initial orbitals from MP2-srDFT for faster convergence to
+  the desired state (other initial guesses more often end in a local minimum). \\
+  Note: you can only specify one of the \quotekw{.MCSCF} and \quotekw{.MCsrDFT} keywords.
 
 \item[\Key{VIRTRUNC}] \ \\
   \kw{READ (LUINP,*) N, THR\_VIRTUNC} \\
@@ -270,20 +373,9 @@ Specification of which wave function calculation is to be performed.
 
 \item[\Key{NEVPT2}]
   Multireference second-order perturbation theory calculation.\index{NEVPT2}
+  Requires preceding MCSCF or MC--srDFT calculation.
 
-\item[\Key{STEX}]
-  Static exchange calculation.\index{Static exchange}
-
-\item[\Key{CC}]
-  \index{Coupled Cluster}\index{CC}
-  Coupled cluster calculation. Automatically activates Hartree--Fock (\quotekw{.HF}).
-  After the Hartree--Fock calculation,
-  the \cc\ module is called to do a coupled cluster (response) calculation.
-  For further input options for the \cc\ module see Section~\ref{sec:ccgeneral}. 
-
-\item[\Key{CC ONLY}] Skip the calculation of a Hartree--Fock wave
-  function, and start directly in the coupled cluster part. Convenient
-  for restarts in the coupled cluster module.
+\end{description}
 
 \end{description}
 
@@ -291,9 +383,14 @@ Specification of which wave function calculation is to be performed.
 
 \begin{description}
 
+\item[\Key{ERF}] \ \\
+  \kw{READ (LUINP,*) new\_mu\_value} \\
+  Default range-separation for all srDFT modelse is the error function with $\mu = 0.4$, our standard value.
+  With this option you can change the $\mu$ as desired.
+
 \item[\Key{FLAGS}] \ \\
   \kw{READ (LUINP,NMLSIR)} \\
-  Read namelist. Example: \verb" $NMLSIR NPATH=3,5,-7, $END" \\
+  Read namelist "NMLSIR". Example: \verb" $NMLSIR NPATH=3,5,-7, $END" \\
   Set internal flags no. 3 and 5 to true and flag no. 7 to false.
   Only for debugging. Set internal control flags directly.
   For example  \verb" &NMLSIR NPATH=61,-43,  &END" sets flag(61) true and flag(43) false.
@@ -316,8 +413,8 @@ Specification of which wave function calculation is to be performed.
   (default is the general print level from \verb|**DALTON|).
 
 \item[\Key{RESTART}]
-  Restart {\sir}\index{restart!wave function} second order optimization,
-  the {\sir} restart file (\verb|SIRIUS.RST|) must be available and contain restart information.
+  Restart {\sir}\index{restart!wave function} second order optimization of HF, HF-srDFT, MCSCF, or MC--srDFT.
+  The {\sir} restart file (\verb|SIRIUS.RST|) must be available and contain restart information.
 
 %hjaaj Oct 2003: obsolete, we want the specific .HF or .DFT
 %\item[\Key{SCF}]
@@ -403,12 +500,12 @@ Options for a CI calculation.
 \begin{description}
 \item[\Key{CIDENSITY}]
   Calculate CI one-electron density matrix and natural
-  orbital\index{natural orbital}
+  orbital\index{natural orbitals!CI}
   occupations after convergence.
 
 \item[\Key{CINO}]
   Generate CI\index{CI}\index{Configuration Interaction} natural
-  orbitals\index{natural orbital} for CI root
+  orbitals\index{natural orbitals!CINO} for CI root
   number \kw{ISTACI},
   clear the \verb|SIRIUS.RST| file and write the orbitals with label \quotekw{NEWORB  }.
   The \quotekw{\Key{STATE}} option must be specified.
@@ -690,6 +787,7 @@ To specify the parameters of the DFT integration and the optional use of empiric
   Determines the quality of the angular Lebedev grid -- the angular
   integration of spherical harmonics will be exact up to the specified
   order. Default value is 35.
+
 \item[\Key{GRID TYPE}] \ \\
   \kw{READ (LUINP,*) LINE} \\
   Allows specification of different partitioning methods and radial
@@ -708,7 +806,7 @@ To specify the parameters of the DFT integration and the optional use of empiric
   Shortcut keyword for radial integration accuracy $10^{-11}$ and
   angular expansion order equal to $35$.
 \item[\Key{NORMAL}]
-  Shortcut keyword for radial integration accuracy $10^{-13}$ and
+  Default. Shortcut keyword for radial integration accuracy $10^{-13}$ and
   angular expansion order equal to $35$.
 \item[\Key{FINE}]
   Shortcut keyword for radial integration accuracy $10^{-13}$ and
@@ -719,7 +817,7 @@ To specify the parameters of the DFT integration and the optional use of empiric
 
 \end{description}
 
-\subsection{\label{ref-dft}DFT functionals}
+\subsection{\label{ref-dft}Kohn--Sham DFT functionals}
 
 In general, functionals in \dalton\ can be divided into two groups: 
 generic exchange and correlation functionals 
@@ -1078,7 +1176,7 @@ with the same meanings and syntax as for the CAMB3LYP functional.\index{rCAMB3LY
   functional LYPr.\index{EDF1}
  \funexample{Combine Slater=1.030952 Becke=-8.44793 mBecke=10.4017 LYPr=1}
 
-\item[EDF2] is a linear combination of the Hartree-Fock exchange and the Double-Becke 
+\item[EDF2] is a linear combination of the Hartree--Fock exchange and the Double-Becke 
   exchange, Slater exchange, LYP correlation, revised LYPr correlation and VWN 
   correlation functionals \cite{dft:edf2}\index{EDF2}.
  \funexample{Combine HF=0.1695 Slater=0.2811 Becke=0.6227 mBecke=-0.0551 VWN=0.3029 LYP=0.5998 LYPr=-0.0053}
@@ -1254,8 +1352,83 @@ are possible with the \verb|Combine| keyword.
 \end{description}
 
 Note that at present double-hybrid functionals are implemented for energies only, analytic gradient contributions are not implemented.
-
 \pagebreak[3]
+
+\subsection{\label{ref-srdft}Short-range srDFT functionals}
+
+In this sections available srDFT functionals are listed.
+Note that these functionals may only be specified if one of the 
+srDFT wave functions have been selected.
+The functonals are actived by specifying them in the input line following the \quotekw{.SRFUN} keyword.
+The most common srDFT functionals can be specified as a single word, whereas custom combinations of exchange and correlation are specified with two words.
+The exchange functional must be specified first and the correlation functional second.
+For example, \verb| SRXPBEGWS SRCPBEGWS| (which is the same combined functional as obtained with the \verb| SRPBEGWS| keyword).
+
+\subsubsection{Combined functionals}
+\providecommand\onefn[1]{#1}
+\begin{description}
+
+\item[SRLDA] combination of \quotekw{SRXLDA} for exchange and \quotekw{SRCVWN5} for correlation~\cite{srdft:LDAERF}
+
+\item[LRCLDA] combination of \quotekw{SRXLDA} for exchange and \quotekw{CVWN5} for correlation~\cite{srdft:LDAERF}
+
+\item[SRPBEGWS] combination of \quotekw{SRXPBEGWS} for exchange and \quotekw{SRCPBEGWS} for correlation~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
+
+\item[LRCPBEGWS] combination of \quotekw{SRXPBEGWS} for exchange and \quotekw{CPBE} for correlation~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
+
+\item[SRPBE0GWS] combination of \quotekw{SRXPBEGWS} with \quotekw{.HFXFAC} set to 0.25 for exchange and \quotekw{SRCPBEGWS} for correlation~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
+
+\item[SRPBERI] combination of \quotekw{SRXPBEHSE} for exchange and \quotekw{SRCPBERI} for correlation~\cite{srdft:erfgau,srdft:Heyd2004}
+
+\end{description}
+
+\subsubsection{Exchange Functionals}
+\providecommand\exfn[1]{#1}
+\begin{description}
+
+\item[NULL] no exchange functional.
+
+\item[HFEXCH] 100\% full-range Hartree-Fock like exchange. Combination of HF-like exchange together with an srDFT exchange functional can be obtained with the keyword \quotekw{.HFXFAC}.
+
+\item[SRXLDA] a short-range LDA exchange functional based on the uniform electron gas by Paziani \textit{et al.}~\cite{srdft:LDAERF}
+
+\item[SRXPBEGWS] short-range GGA exchange functional based on the PBE exchange functional by Goll, Werner and Stoll~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
+
+\item[SRXPBEHSE] short-range GGA exchange functional based on the PBE exchange functional by Heyd and Scuseria~\cite{srdft:Heyd2004}
+
+\end{description}
+
+\subsubsection{Correlation Functionals}
+\providecommand\corfn[1]{#1}
+\begin{description}
+
+\item[NULL] no correlation functional.
+
+\item[SRCVWN5] short-range LDA correlation functional based on VWN5 by Paziani \textit{et al.}~\cite{srdft:LDAERF}
+
+\item[CVWN5] full-range LDA correlation functional by Vosko, Wilk and Nusair\cite{dft:vwn}
+
+\item[SRCPW92] short-range LDA correlation functional based on PW92 by Paziani \textit{et al.}~\cite{srdft:LDAERF}
+
+\item[CPW92] full-range LDA correlation functional by Perdew and Wang, 1992~\cite{dft:pw91,dft:pw92}
+
+\item[SRCPBEGWS] short-range GGA correlation functional based on the PBE correlation functional by Goll, Werner and Stoll~\cite{srdft:PBEGWSa,srdft:PBEGWSb}
+
+\item[SRCPBERI] short-range GGA correlation functional based on rational interpolation of the PBE correlation functionalbetween the short-range limit and the long-range limit by Toulouse, Colonna and Savin~\cite{srdft:erfgau}
+
+\item[CPBE] full-range GGA correlation functional by Perdew, Burke and Ernzerhof~\cite{dft:pbe}
+
+\end{description}
+ 
+\subsubsection{Third Options}
+\providecommand\corfn[1]{#1}
+\begin{description}
+
+\item[NO\_SPINDENSITY] can be put as a third option in the functional specification to force the program to not use spin-densities. This option only works with explicitly specified exchange and correlation functional. For example, \verb|SRXPBEGWS SRCPBEGWS NO_SPINDENSITY|
+
+\end{description}
+\pagebreak[3]
+
 \subsection{\label{ref-haminp}\Sec{HAMILTONIAN}}
 
 {\bf Purpose:}
@@ -1268,12 +1441,23 @@ Add extra terms to the Hamiltonian (for finite field\index{finite field} calcula
   \kw{READ (LUINP,  *  ) EFIELD(NFIELD)} \\
   \kw{READ (LUINP,'(A)') LFIELD(NFIELD)} \\
   Enter field strength (in atomic units) and property label on separate lines
-  where label is a \molecule-style property label on file \verb|AOPROPER|
+  where label is a \molecule-style property label on the file \verb|AOPROPER|
   produced by the property module, see Chapter~\ref{ch:hermit}.
   The calculation of the necessary property integral(s) must be requested
   in the \quotekw{**INTEGRALS} input module. \\
+  NOTE: Only real (symmetric) operators are allowed, becaus the wave-function
+  choices are only implemented for real wave functions. \\
   NOTE: This keyword may be repeated several times for adding more than
-  one finite field (max \mxfelt fields).
+  one finite field (max \mxfelt fields). Example, to specify $\oper{H}' = 0.1 \oper{x} + 0.2 \oper{y}$:
+
+\begin{inputex} \begin{verbatim}
+.FIELD TERM
+ 0.1
+ XDIPLEN
+.FIELD TERM
+ 0.2
+ YDIPLEN
+\end{verbatim} \end{inputex}
 
 \item[\Key{PRINT}]
   Default = 0.\\
@@ -1282,12 +1466,6 @@ Add extra terms to the Hamiltonian (for finite field\index{finite field} calcula
   print the one-electron Hamiltonian matrix, including
   specified field-dependent terms, in AO basis.
 \end{description}
-
-\noindent{\bf Comments:}
-
-Up to \mxfelt simultaneous fields may be specified by repeating the
-\quotekw{\Key{FIELD TERM}} keyword.
-The field integrals are read from file \verb|AOPROPER| with the specified label.
 
 \pagebreak[3]
 \subsection{\label{ref-mp2inp}\Sec{MP2 INPUT}}
@@ -1350,6 +1528,7 @@ the number of occupied Hartree--Fock orbitals in each symmetry must anyway be
 specified with the \quotekw{.DOUBLY OCCUPIED} under \quotekw{*SCF INPUT}.
 
 The MP2 calculation will produce the MP2 energy and the natural orbitals
+{natural orbitals!MP2}
 for the density matrix through second order.  The primary purpose of
 this option is to generate good starting orbitals for CI or MCSCF wave
 functions, but it
@@ -1771,7 +1950,7 @@ reordering and punching of orbitals.
   Delete unwanted components in Cartesian d, f, and g orbitals.
   (s in d; p in f; s and d in g). By default, \her\ provides atomic
   integrals in spherical basis, and this option should therefore not
-  be needed.
+  be needed nowadays.
 
 \item[\Key{AO DELETE}] \ \\
   \kw{READ (LUINP,*) THROVL } \\
@@ -1943,7 +2122,7 @@ identification of the various orbitals by inspection of the output.
 {\bf Purpose:}
 
 To direct population analysis\index{population analysis} of the wave function.
-Requires a set of natural orbitals\index{natural orbital} and their occupation.
+Requires a set of natural orbitals\index{natural orbitals!population analysis} and their occupation.
 
 \begin{description}
 \item[\Key{ALL}]
@@ -1994,7 +2173,7 @@ To control the printing of output.
 \begin{description}
 \item[\Key{CANONI}] \ \\
   Generate canonical/natural orbitals if the wave function has
-  converged\index{canonical orbital}\index{natural orbital}.
+  converged\index{canonical orbital}\index{natural orbitals}.
 
 \item[\Key{IPRAVE}] \ \\
   \kw{READ (LUINP,*) IPRAVE} \\

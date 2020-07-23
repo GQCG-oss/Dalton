@@ -925,7 +925,7 @@ C
             INPERR = INPERR + 1
          ELSE IF (MCTYPE .NE. 1) THEN
             WRITE (LUPRI,'(/A)') 'INPUT ERROR: NEVPT2 requested,'//
-     &      ' NEVPT2 is only implemented for complecte active space.'
+     &   ' NEVPT2 is only implemented for complete active space (CAS).'
             INPERR = INPERR + 1
          END IF
       END IF
@@ -1084,6 +1084,14 @@ C     (only set IPRTRA if not set explicitly in input)
 C
       IF (IPRTRA .EQ. -1) IPRTRA = IPRSIR
 C
+C     If MAXCIT not specified in input:
+      IF (MAXCIT .LT. 0) THEN
+         IF (.NOT.(DOSCF .OR. DOMP2 .OR. DOCINO) .AND. FLAG(13)) THEN
+C           ... only MC and reading orbitals from file:
+C               these may be converged orbitals thus MAXCIT = 20
+            MAXCIT = 20
+         END IF
+      END IF
 C     If MAXMAC, MAXJT, MAXMIC not specified in input:
       IF (MAXMAC .LT. 0) THEN
          IF (ISTATE .EQ. 1) THEN
@@ -1489,9 +1497,9 @@ C *** Check if initial occupation for RHF has been defined.
 C
       IF ((DOSCF .OR. DOMP2 .OR. DOCCSD) .AND. INIOCC .LE. 0) THEN
          INPERR = INPERR + 1
-         WRITE (LUPRI,'(/A/A)')
-     &     'ERROR: Input error for DFT, HF, MP2, or CC calculation:',
-     &     'ERROR: Initial SCF occupation has not been defined.'
+         WRITE (LUPRI,'(/A/A)') 'ERROR: '//
+     &      'Input error for DFT, HF, MP2, CC, or a srDFT calculation:',
+     &      'ERROR: Initial SCF occupation has not been defined.'
          INIOCC = 0
 C        ... set INIOCC = 0 for SIR_PRTINP
       END IF
@@ -2234,14 +2242,14 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 40)
+      PARAMETER (NTABLE = 41)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      &          REWORD*20, TITLIN*80, SR_FUNCS*80
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
       character(80) :: functional_line
-      logical functional_line_read
+      logical functional_line_read, SRFUN_set
 C
 C Used from common:
 C  INFINP : FLAG(*), IORTO, DO*
@@ -2272,11 +2280,13 @@ C
      *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',  ! 21:25
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',  ! 26:30
      *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','.VIRTRU',  ! 31:35
-     *            '.MULOFA','.DSFAC ','.PVALUE','.HFXFAC','xXXXXXX'/  ! 36:40
+     *            '.MULOFA','.DSFAC ','.PVALUE','.HFXFAC','.ERF   ',  ! 36:40
+     *            '.MP2SRD'/                                          ! 41
 C
       functional_line_read = .false.
 C
       SR_FUNCS = ' ERROR: .SRFUN was not specified in input.'
+      SRFUN_set = .FALSE.
 C
 C     ***** PROCESS INPUT FOR SIR_GENINP *****
 C
@@ -2292,7 +2302,8 @@ C
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,106,117,118,119,120,
      &                   121,122,123,124,125,126,127,128,129,130,
-     &                   131,132,133,134,135,136,137,138,139,140), II
+     &                   131,132,133,134,135,136,137,138,139,140,
+     &                   141), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION' .OR. WORD .EQ. '.ALLOPT') THEN
@@ -2620,6 +2631,7 @@ C&&& SRFUN : Read Correlation (SRCFUN) and
 C&&&         Exchange (SRXFUN) functionals
   130 READ (LUCMD,'(A)') SR_FUNCS
       DFTADD = .TRUE.
+      SRFUN_set = .TRUE.
       GO TO 100
 C&&&  SRHYBR : Perform a DFT MC-SRDFT hybrid calculation.
 C&&&           Treat core with regular DFT and valence with MC-SRDFT
@@ -2661,14 +2673,48 @@ C     Multiplication factor for DS in the localspin model
       IF (HFXSET) WRITE(LUPRI,*)
      &   'New     HFXFAC = ',HFXFAC
       HFXSET = .TRUE.
-  140 CONTINUE ! not used yet
+      GO TO 100
+  140 CONTINUE ! .ERF
+      READ (LUCMD,*) CHIVAL
+      GO TO 100
+C *** Option  10 >MP2SRD<  srDFT Moeller-Plesset PT2 calculation
+  141 CONTINUE
+        DOMP2    = .TRUE.
+        ADDSRI   = .TRUE.
+        NUMRUN   = NUMRUN + 1
+        FLAG(3)  = .FALSE.
       GO TO 100
 C
  8000 CONTINUE
 
 !     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
-      IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
+      IF (ADDSRI) THEN
+        IF (SRFUN_set) THEN
+          CALL SRFUN_INPUT(SR_FUNCS)
+          IF (CHIVAL .LT. 0.0D0) THEN
+            CHIVAL = 0.4D0
+            WRITE(LUPRI,'(/A)')
+     &      ' mu value for srDFT set to 0.4 (default)'
+          ELSE
+            WRITE(LUPRI,'(/A,F5.2,A)')
+     &      ' mu value for srDFT is',CHIVAL,' (user input)'
+          END IF
+          DOSRIN = .TRUE.
+          ! default is erf
+        ELSE
+          CALL QUIT('ERROR: '//
+     &      '.SRFUN not specified for srDFT wave function')
+        END IF
+        IF (DODFT) THEN
+          CALL QUIT('ERROR: Both .DFT and an srDFT model not allowed')
+        END IF
+      ELSE IF (DODFT) THEN
+        IF (SRFUN_set) THEN
+          CALL QUIT('ERROR: .SRFUN specified for Kohn-Sham DFT')
+        END IF
+      END IF
+
 #else
       IF (ADDSRI) CALL QUIT('srDFT is not available in this version')
 #endif
@@ -5392,12 +5438,18 @@ C     formulation of NEVPT.
             WRITE (IWUNIT,1050)
      &      'Antisymmetrized Product of Strongly Orthogonal Geminals'
             NUMRUN_LOCAL = NUMRUN_LOCAL - 1
-         ELSE IF ( DOMC ) THEN
-            IF (WFTYPE .EQ. ' ') WFTYPE='MC-SCF'
-            WRITE (IWUNIT,1050) 'MC-SCF optimization.'
+         ELSE IF ( DOMCSRDFT ) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='MC-srDFT'
+            WRITE (IWUNIT,1050) 'MC-srDFT optimization.'
             NUMRUN_LOCAL = NUMRUN_LOCAL - 1
             IF ( DORSP ) WRITE (IWUNIT,1050)
-     *         'Multi-configurational response calculation.'
+     *         'MC-srDFT response calculation.'
+         ELSE IF ( DOMC ) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='MC-SCF'
+            WRITE (IWUNIT,1050) 'MCSCF optimization.'
+            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
+            IF ( DORSP ) WRITE (IWUNIT,1050)
+     *         'MCSCF response calculation.'
          ELSE
             IF (DOCINO) THEN
                WRITE (IWUNIT,1050) 'CI-NO calculation.'
@@ -5647,15 +5699,15 @@ C
       WRITE(IWUNIT,1000)
       IF (DOCCSD) THEN
          WRITE(IWUNIT,'(/5X,A/)')
-     &   'For the specification of the Coupled Cluster: see later.'
+     &   'For the specification of the Coupled Cluster: see below.'
       END IF
       IF (DOLUCITA) THEN
          WRITE(IWUNIT,'(/5X,A/)')
-     &   'For the specification of the GAS CI in LUCITA: see later.'
+     &   'For the specification of the GAS CI in LUCITA: see below.'
       END IF
       IF (DOAPSG) THEN
          WRITE(IWUNIT,'(/5X,A/)')
-     &   'For the specification of the APSG: see later.'
+     &   'For the specification of the APSG: see below.'
       END IF
       IF (USE_PELIB()) THEN
          WRITE(IWUNIT,'(/5X,A/5X,A/)')
@@ -5917,24 +5969,41 @@ C
 C
 C ***
 C
-      NFROT = ISUM(NSYM,NFRO,1)
-      NFRHT = ISUM(NSYM,NFRRHF,1)
-      NFRMT = ISUM(NSYM,NFRMP2,1)
-      IF (DOSCF .AND. NFRHT .GT. 0) THEN
-         IF (.NOT.DODFT) THEN
-            WRITE (IWUNIT,6110) NFRHT,(NFRRHF(I),I=1,NSYM)
+      NFROT   = ISUM(NSYM,NFRO,1)
+      NFRRHFT = ISUM(NSYM,NFRRHF,1)
+      NFRMP2T = ISUM(NSYM,NFRMP2,1)
+      IF (DOSCF .AND. NFRHFT .GT. 0) THEN
+         IF (DODFT) THEN
+            WRITE (IWUNIT,6110) NFRRHFT,(NFRRHF(I),I=1,NSYM)
+         ELSE IF (DOHFSRDFT) THEN
+            WRITE (IWUNIT,6112) NFRRHFT,(NFRRHF(I),I=1,NSYM)
          ELSE
-            WRITE (IWUNIT,6111) NFRHT,(NFRRHF(I),I=1,NSYM)
+            WRITE (IWUNIT,6111) NFRRHFT,(NFRRHF(I),I=1,NSYM)
          END IF
       END IF
-      IF (DOMP2 .AND. NFRMT .GT. 0) THEN
-         WRITE (IWUNIT,6120) NFRMT,(NFRMP2(I),I=1,NSYM)
+      IF (DOMP2 .AND. NFRMP2T .GT. 0) THEN
+         IF (NFRMP2T .EQ. 0 .AND. NFRRHFT .GT. 0) THEN
+            WRITE (LUPRI,'(//A/A)')
+     &    '@INFO: Frozen SCF orbitals must also be frozen in MP2.',
+     &    '@INFO: Therefore frozen MP2 orbitals are set'//
+     &    ' equal to frozen SCF orbitals (default).'
+            NFRMP2(1:8) = NFRRHF(1:8)
+            NFRMP2T     = NVRRHFT
+         END IF
+         WRITE (IWUNIT,6120) NFRMP2T,(NFRMP2(I),I=1,NSYM)
+         IF (NFRMP2T .LT. NFRRHFT) THEN
+            WRITE (IWUNIT, '(/A)') '@ FATAL ERROR: '//
+     &      'a frozen SCF orbital must also be frozen in MP2'
+            CALL QUIT(' FATAL ERROR: '//
+     &      'a frozen SCF orbital must also be frozen in MP2')
+         END IF
       END IF
       IF (DOMC .AND. NFROT.GT.0) THEN
          WRITE (IWUNIT,6100) NFROT,(NFRO(I),I=1,NSYM)
       END IF
  6110 FORMAT(//'@    Number of frozen SCF orbitals',T38,I5,' |',8I5)
  6111 FORMAT(//'@    Number of frozen KS orbitals',T38,I5,' |',8I5)
+ 6112 FORMAT(//'@    Number of frozen srHF orbitals',T38,I5,' |',8I5)
  6120 FORMAT(//'@    Number of frozen MP2 orbitals',T38,I5,' |',8I5)
  6100 FORMAT(//'@    Number of frozen MCSCF orbitals',T38,I5,' |',8I5)
 C

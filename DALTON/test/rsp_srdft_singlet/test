@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+mc = Filter()
+mc.add(string = 'Final MC-SRDFT energy',
+      rel_tolerance = 1.0e-4)
+mc.add(string = '@ Excitation energy :',
+      rel_tolerance = 1.0e-2)
+hf = Filter()
+hf.add(string = 'Final HF-SRDFT energy',
+      rel_tolerance = 1.0e-4)
+hf.add(string = '@ Excitation energy :',
+      rel_tolerance = 1.0e-2)
+
+test.run(['mcsrtpss_mu_04.dal'],
+         ['water.mol'],
+         f={'out': mc})
+test.run(['mcsrtpss_mu04_nosym.dal'],
+         ['water_nosym.mol'],
+         f={'out': mc})
+test.run(['hfsrtpss_mu_04_nosym.dal'],
+         ['water_nosym.dal'],
+         f={'out': hf})
+test.run(['hfsrtpss_mu_04.dal'],
+         ['water.mol'],
+         f={'out': hf})
+
+
+sys.exit(test.return_code)
