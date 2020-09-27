@@ -9,3 +9,6 @@ DALTON/Dalton_PDFmanual
 .DS_Store
 venv/
 tags*
+
+.devcontainer/
+*.code-workspace

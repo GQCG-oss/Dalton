@@ -1,0 +1,30 @@
+name: Docker dev build
+
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile-dev'
+    branches:
+      - 'develop'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+    - name: Build Docker image
+      uses:  docker/build-push-action@v1
+      with:
+        repository: gqcg/dalton-dev
+        tags: latest
+        registry: docker.io
+        dockerfile: Dockerfile-dev
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        push: false
+    
