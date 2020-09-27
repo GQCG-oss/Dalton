@@ -3,7 +3,7 @@ name: Docker dev build
 on:
   pull_request:
     paths:
-      - 'Dockerfile'
+      - 'Dockerfile-dev'
     branches:
       - 'develop'
 
