@@ -21,8 +21,8 @@ RUN conda --version
 RUN conda install -c conda-forge openblas=0.3.10 lapack=3.6.1 openmpi-mpicc=4.0.5 openmpi-mpifort=4.0.5 hdf5=1.12.0 cmake=3.18.2 gcc_linux-64=7.5 gxx_linux-64=7.5 gfortran_linux-64=7.5
 
 COPY . .
-ENV DALTON_LAUNCHER="mpirun -n 4 --allow-run-as-root"
-ARG DALTON_LAUNCHER="mpirun -n 4 --allow-run-as-root"
+ENV DALTON_LAUNCHER="mpirun -n 3 --allow-run-as-root"
+ARG DALTON_LAUNCHER="mpirun -n 3 --allow-run-as-root"
 RUN python setup --mpi --explicit-libs="-lopenblas -llapack" --prefix="/usr/local/miniconda3"
 RUN cd build && make -j3 VERBOSE=1 && ctest --output-on-failure -L essential && make install
 
