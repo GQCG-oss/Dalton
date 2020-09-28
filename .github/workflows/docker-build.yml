@@ -2,8 +2,6 @@ name: Docker build
 
 on:
   pull_request:
-    paths:
-      - 'Dockerfile'
     branches:
       - 'develop'
 

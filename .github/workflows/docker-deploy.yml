@@ -2,8 +2,6 @@ name: Docker deploy
 
 on:
   push:
-    paths:
-      - 'Dockerfile'
     branches:
       - 'develop'
 
